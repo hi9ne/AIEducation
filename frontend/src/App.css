@@ -1,0 +1,64 @@
+
+body {
+  background: #f7faf7;
+  margin: 0;
+  font-family: 'Montserrat', Arial, sans-serif;
+  display: block;
+  color: #1a2e1a;
+}
+
+.main-page {
+  background: #f7faf7;
+  min-height: 100vh;
+}
+
+.main-header {
+  background: #fff;
+  box-shadow: 0 2px 12px #b6e5c7aa;
+  padding: 0;
+}
+.main-header__container {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0 18px 0;
+}
+.main-header__logo h2 {
+  color: #0f551c;
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0;
+}
+.main-header__subtitle {
+  color: #1a2e1a;
+  font-size: 16px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+.main-header__nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.profile-button, .login-button {
+  background: linear-gradient(90deg, #1bbf3a 0%, #6be585 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  padding: 10px 28px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 2px 12px #b6e5c7aa;
+}
+.profile-button:hover, .login-button:hover {
+  background: #fff;
+  color: #1bbf3a;
+  border: 1.5px solid #1bbf3a;
+}
+  
+
