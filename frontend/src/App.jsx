@@ -45,7 +45,7 @@ function PublicRoute({ children }) {
 function Home() {
   const navigate = useNavigate();
   const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
-  const user = useSelector(state => state.auth.user);
+  // const user = useSelector(state => state.auth.user);
 
   // Логика кнопок регистрации и профиля оставлена без изменений
   return (
@@ -75,7 +75,7 @@ function Home() {
               </button>
             ) : (
               <button className="login-button" onClick={() => navigate('/login')}>
-                <span>Регистрация</span>
+                <span>Login</span>
               </button>
             )}
           </nav>

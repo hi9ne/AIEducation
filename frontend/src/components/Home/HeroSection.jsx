@@ -5,6 +5,7 @@ import italy_flag from '../../../public/images/italy-flag.png';
 
 const HeroSection = () => (
   <div className="parallax">
+    <div className="mask"></div>
     <div className="hero-container">
       <div className="hero-label">
         <h2>

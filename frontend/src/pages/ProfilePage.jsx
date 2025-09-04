@@ -1,200 +1,488 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { logoutUser } from '../store/authSlice';
-import { useNavigate } from 'react-router-dom';
+import { logoutUser, fetchProfile, updateProfile, changePassword, requestEmailVerification, clearError, clearSuccess, verifyEmail } from '../store/authSlice';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { fetchProfile } from '../store/authSlice';
-import { authAPI } from '../services/api';
 
 export function ProfilePage() {
   const user = useSelector(state => state.auth.user);
+  const { error, success, profileUpdating, passwordChanging, emailVerificationSent } = useSelector(state => state.auth);
   const dispatch = useDispatch();
+  const location = useLocation();
   const navigate = useNavigate();
 
-  const [profileForm, setProfileForm] = useState({ username: '', email: '' });
-  const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '' });
-  const [saveMsg, setSaveMsg] = useState('');
-  const [pwdMsg, setPwdMsg] = useState('');
-  const [verifyMsg, setVerifyMsg] = useState('');
-  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('profile');
+  const [profileForm, setProfileForm] = useState({ 
+    username: '', 
+    email: '', 
+    first_name: '', 
+    last_name: '' 
+  });
+  const [passwordForm, setPasswordForm] = useState({ 
+    current_password: '', 
+    new_password: '', 
+    new_password2: '' 
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
 
   useEffect(() => {
     dispatch(fetchProfile());
   }, [dispatch]);
 
   useEffect(() => {
-    if (user) setProfileForm({ username: user.username || '', email: user.email || '' });
+    if (user) {
+      setProfileForm({ 
+        username: user.username || '', 
+        email: user.email || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || ''
+      });
+    }
   }, [user]);
 
+  // Очищаем сообщения при смене табов
+  useEffect(() => {
+    dispatch(clearError());
+    dispatch(clearSuccess());
+  }, [activeTab, dispatch]);
+
+  // Проверка email токена из URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token');
+    if (token) {
+      dispatch(verifyEmail(token));
+    }
+  }, [dispatch, location.search]);
+
   const handleLogout = async () => {
-    await dispatch(logoutUser());
-    navigate('/');
+    if (window.confirm('Вы уверены, что хотите выйти?')) {
+      await dispatch(logoutUser());
+      navigate('/');
+    }
   };
 
   const handleProfileSave = async (e) => {
     e.preventDefault();
-    setSaveMsg('');
+    
+    // Проверяем, есть ли изменения
+    const hasChanges = Object.keys(profileForm).some(
+      key => profileForm[key] !== (user[key] || '')
+    );
+
+    if (!hasChanges) {
+      dispatch(clearError());
+      return;
+    }
+
     try {
-      await authAPI.updateProfile(profileForm);
-      await dispatch(fetchProfile());
-      setSaveMsg('Сохранено');
-    } catch {
-      setSaveMsg('Ошибка сохранения');
+      await dispatch(updateProfile(profileForm));
+    } catch (error) {
+      console.error('Profile update error:', error);
     }
   };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    setPwdMsg('');
+    
+    if (passwordForm.new_password !== passwordForm.new_password2) {
+      return;
+    }
+
     try {
-      await authAPI.changePassword(passwordForm);
-      setPwdMsg('Пароль изменён');
-      setPasswordForm({ current_password: '', new_password: '' });
-    } catch {
-      setPwdMsg('Ошибка смены пароля');
+      await dispatch(changePassword({
+        current_password: passwordForm.current_password,
+        new_password: passwordForm.new_password
+      }));
+      
+      // Очищаем форму пароля при успехе
+      setPasswordForm({ current_password: '', new_password: '', new_password2: '' });
+    } catch (error) {
+      console.error('Password change error:', error);
     }
   };
 
-  const handleEmailVerify = async () => {
-    setVerifyMsg('');
-    setVerifyLoading(true);
+  const handleEmailVerification = async () => {
     try {
-      await authAPI.requestEmailVerify();
-      setVerifyMsg('Письмо отправлено. Проверьте почту.');
-    } catch {
-      setVerifyMsg('Не удалось отправить письмо. Попробуйте позже.');
-    } finally {
-      setVerifyLoading(false);
+      await dispatch(requestEmailVerification());
+    } catch (error) {
+      console.error('Email verification error:', error);
     }
   };
+
+  const getProfileCompletion = () => {
+    if (!user) return 0;
+    
+    const fields = ['username', 'email', 'first_name', 'last_name'];
+    const filled = fields.filter(field => user[field]).length;
+    const emailBonus = user.is_email_verified ? 1 : 0;
+    
+    return Math.round(((filled + emailBonus) / (fields.length + 1)) * 100);
+  };
+  // Процент заполненности профиля
+  const completion = getProfileCompletion();
+
+  const getPasswordStrength = (password) => {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/(?=.*[a-z])/.test(password)) strength++;
+    if (/(?=.*[A-Z])/.test(password)) strength++;
+    if (/(?=.*\d)/.test(password)) strength++;
+    if (/(?=.*[!@#$%^&*])/.test(password)) strength++;
+
+    switch (strength) {
+      case 0:
+      case 1:
+        return { level: 'weak', text: 'Слабый', color: '#ef4444' };
+      case 2:
+        return { level: 'fair', text: 'Удовлетворительный', color: '#f59e0b' };
+      case 3:
+        return { level: 'good', text: 'Хороший', color: '#10b981' };
+      case 4:
+      case 5:
+        return { level: 'strong', text: 'Сильный', color: '#059669' };
+      default:
+        return { level: 'weak', text: 'Слабый', color: '#ef4444' };
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="profile-container">
+        <div className="profile-loading">
+          <div className="loading-spinner"></div>
+          <p>Загрузка профиля...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-container">
-      <div className="profile-card">
-        <div className="back-button-container">
+      <div className="profile-header">
+        <button type="button" className="back-button" onClick={() => navigate(-1)}>
+          ← Назад
+        </button>
+        <div className="profile-avatar">
+          <div className="avatar-circle">
+            {user.first_name ? user.first_name[0].toUpperCase() : user.username[0].toUpperCase()}
+          </div>
+        </div>
+        <div className="profile-info">
+          <h1>{user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.username}</h1>
+          <p className="profile-email">
+            {user.email}
+            {user.is_email_verified ? (
+              <span className="verified-badge">✓ Подтвержден</span>
+            ) : (
+              <span className="unverified-badge">⚠ Не подтвержден</span>
+            )}
+          </p>
+          {completion < 100 && (
+            <div className="profile-completion">
+              <div className="completion-bar">
+                <div 
+                  className="completion-fill" 
+                  style={{ width: `${completion}%` }}
+                ></div>
+              </div>
+              <span>Заполненность профиля: {completion}%</span>
+            </div>
+          )}
+        </div>
+        <button className="logout-button" onClick={handleLogout}>
+          Выйти
+        </button>
+      </div>
+
+      <div className="profile-content">
+        <div className="profile-tabs">
           <button 
-            className="back-button" 
-            onClick={() => navigate('/')}
-            type="button"
+            className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
+            onClick={() => setActiveTab('profile')}
           >
-            ← Назад
+            Профиль
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'security' ? 'active' : ''}`}
+            onClick={() => setActiveTab('security')}
+          >
+            Безопасность
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'subscription' ? 'active' : ''}`}
+            onClick={() => setActiveTab('subscription')}
+          >
+            Подписка
           </button>
         </div>
-        
-        <h1 className="profile-title">Профиль</h1>
-        
-        {user ? (
-          <div>
-            {!user.email_verified && (
-              <div style={{
-                background:'linear-gradient(180deg, rgba(253,230,138,0.25), rgba(254,215,170,0.2))',
-                border:'1px solid rgba(251,191,36,0.6)',
-                color:'#7c2d12', padding:12, borderRadius:12, marginBottom:12
-              }}>
-                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:12, flexWrap:'wrap'}}>
-                  <div style={{fontWeight:700}}>Подтвердите почту, чтобы получать чеки об оплате</div>
-                  <div style={{display:'flex', gap:8, alignItems:'center'}}>
+
+        <div className="tab-content">
+          {/* Вкладка профиля */}
+          {activeTab === 'profile' && (
+            <div className="profile-tab">
+              <h2>Личная информация</h2>
+              
+              {success && (
+                <div className="form-success">
+                  {success}
+                </div>
+              )}
+
+              {error && (
+                <div className="form-error">
+                  {typeof error === 'string' ? error : error.error || 'Ошибка обновления'}
+                </div>
+              )}
+
+              <form onSubmit={handleProfileSave}>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Имя пользователя</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={profileForm.username}
+                      onChange={(e) => setProfileForm({...profileForm, username: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Email</label>
+                    <div className="email-input-group">
+                      <input
+                        type="email"
+                        className="form-input"
+                        value={profileForm.email}
+                        onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
+                      />
+                      {!user.is_email_verified && (
+                        <button
+                          type="button"
+                          className="verify-email-button"
+                          onClick={handleEmailVerification}
+                          disabled={emailVerificationSent}
+                        >
+                          {emailVerificationSent ? 'Отправлено' : 'Подтвердить'}
+                        </button>
+                      )}
+                    </div>
+                    {emailVerificationSent && (
+                      <p className="verification-sent">
+                        Письмо для подтверждения отправлено на ваш email
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Имя</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={profileForm.first_name}
+                      onChange={(e) => setProfileForm({...profileForm, first_name: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Фамилия</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={profileForm.last_name}
+                      onChange={(e) => setProfileForm({...profileForm, last_name: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="save-button"
+                  disabled={profileUpdating}
+                >
+                  {profileUpdating ? 'Сохранение...' : 'Сохранить изменения'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* Вкладка безопасности */}
+          {activeTab === 'security' && (
+            <div className="security-tab">
+              <h2>Безопасность</h2>
+
+              {success && (
+                <div className="form-success">
+                  {success}
+                </div>
+              )}
+
+              {error && (
+                <div className="form-error">
+                  {typeof error === 'string' ? error : error.error || 'Ошибка изменения пароля'}
+                </div>
+              )}
+
+              <form onSubmit={handlePasswordChange}>
+                <div className="form-group">
+                  <label className="form-label">Текущий пароль</label>
+                  <div className="password-input-container">
+                    <input
+                      type={showPasswords.current ? "text" : "password"}
+                      className="form-input"
+                      value={passwordForm.current_password}
+                      onChange={(e) => setPasswordForm({...passwordForm, current_password: e.target.value})}
+                      required
+                    />
                     <button
                       type="button"
-                      onClick={handleEmailVerify}
-                      disabled={verifyLoading}
-                      style={{ background:'#fff7ed', border:'1px solid #f59e0b', color:'#7c2d12', padding:'8px 12px', borderRadius:8, cursor:'pointer' }}
+                      className="password-toggle"
+                      onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
                     >
-                      {verifyLoading ? 'Отправка...' : 'Отправить письмо'}
+                      {showPasswords.current ? "🙈" : "👁️"}
                     </button>
                   </div>
                 </div>
-                {verifyMsg && <div style={{marginTop:6, fontSize:13}}>{verifyMsg}</div>}
-              </div>
-            )}
-            <div className="profile-info">
-              <div className="profile-item">
-                <span className="profile-label">Логин:</span>
-                <span className="profile-value">{user.username || user.login}</span>
-              </div>
-              
-              <div className="profile-item">
-                <span className="profile-label">Email:</span>
-                <span className="profile-value">{user.email} {user.email_verified ? '✓' : ''}</span>
-              </div>
 
-              {user.subscription && (
-                <div className="profile-item" style={{ marginTop: '12px' }}>
-                  <span className="profile-label">Подписка:</span>
-                  <span className="profile-value">
-                    {user.subscription.is_active ? 'Активна' : 'Не активна'}
-                    {user.subscription.plan ? `, план: ${user.subscription.plan}` : ''}
-                    {user.subscription.starts_at ? `, с: ${new Date(user.subscription.starts_at).toLocaleDateString()}` : ''}
-                    {user.subscription.expires_at ? `, до: ${new Date(user.subscription.expires_at).toLocaleDateString()}` : ''}
-                  </span>
+                <div className="form-group">
+                  <label className="form-label">Новый пароль</label>
+                  <div className="password-input-container">
+                    <input
+                      type={showPasswords.new ? "text" : "password"}
+                      className="form-input"
+                      value={passwordForm.new_password}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/[^\x20-\x7E]/g, '');
+                        setPasswordForm({...passwordForm, new_password: v});
+                      }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
+                    >
+                      {showPasswords.new ? "🙈" : "👁️"}
+                    </button>
+                  </div>
+                  
+                  {passwordForm.new_password && (
+                    <div className="password-strength">
+                      <div className="strength-bar">
+                        <div 
+                          className="strength-fill" 
+                          style={{ 
+                            width: `${(getPasswordStrength(passwordForm.new_password).level === 'weak' ? 25 : 
+                                     getPasswordStrength(passwordForm.new_password).level === 'fair' ? 50 : 
+                                     getPasswordStrength(passwordForm.new_password).level === 'good' ? 75 : 100)}%`,
+                            backgroundColor: getPasswordStrength(passwordForm.new_password).color 
+                          }}
+                        ></div>
+                      </div>
+                      <span style={{ color: getPasswordStrength(passwordForm.new_password).color }}>
+                        {getPasswordStrength(passwordForm.new_password).text}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Подтвердите новый пароль</label>
+                  <div className="password-input-container">
+                    <input
+                      type={showPasswords.confirm ? "text" : "password"}
+                      className="form-input"
+                      value={passwordForm.new_password2}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/[^\x20-\x7E]/g, '');
+                        setPasswordForm({...passwordForm, new_password2: v});
+                      }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
+                    >
+                      {showPasswords.confirm ? "🙈" : "👁️"}
+                    </button>
+                  </div>
+                  {passwordForm.new_password2 && passwordForm.new_password !== passwordForm.new_password2 && (
+                    <div className="form-error">Пароли не совпадают</div>
+                  )}
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="change-password-button"
+                  disabled={passwordChanging || passwordForm.new_password !== passwordForm.new_password2}
+                >
+                  {passwordChanging ? 'Изменение...' : 'Изменить пароль'}
+                </button>
+              </form>
+
+              <div className="security-info">
+                <h3>Рекомендации по безопасности:</h3>
+                <ul>
+                  <li>Используйте уникальный пароль для каждого сервиса</li>
+                  <li>Пароль должен содержать минимум 8 символов</li>
+                  <li>Включите заглавные и строчные буквы, цифры и символы</li>
+                  <li>Не используйте личную информацию в пароле</li>
+                  <li>Регулярно обновляйте пароли</li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Вкладка подписки */}
+          {activeTab === 'subscription' && (
+            <div className="subscription-tab">
+              <h2>Подписка</h2>
+              
+              {user.subscription ? (
+                <div className="subscription-info">
+                  <div className="subscription-card">
+                    <h3>Текущий план: {user.subscription.plan}</h3>
+                    <div className="subscription-status">
+                      <span className={`status-badge ${user.subscription.is_active ? 'active' : 'inactive'}`}>
+                        {user.subscription.is_active ? 'Активна' : 'Неактивна'}
+                      </span>
+                    </div>
+                    
+                    {user.subscription.is_active && (
+                      <div className="subscription-details">
+                        <p><strong>Начало:</strong> {new Date(user.subscription.starts_at).toLocaleDateString('ru-RU')}</p>
+                        <p><strong>Окончание:</strong> {new Date(user.subscription.expires_at).toLocaleDateString('ru-RU')}</p>
+                        <p><strong>Осталось дней:</strong> {user.subscription.days_left}</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <button 
+                    className="upgrade-button"
+                    onClick={() => navigate('/payment')}
+                  >
+                    {user.subscription.is_active ? 'Продлить подписку' : 'Оформить подписку'}
+                  </button>
+                </div>
+              ) : (
+                <div className="no-subscription">
+                  <h3>У вас нет активной подписки</h3>
+                  <p>Оформите подписку, чтобы получить доступ ко всем возможностям платформы</p>
+                  <button 
+                    className="upgrade-button"
+                    onClick={() => navigate('/payment')}
+                  >
+                    Оформить подписку
+                  </button>
                 </div>
               )}
             </div>
-            
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginTop: 16 }}>
-              <form onSubmit={handleProfileSave} style={{
-                background:'#fff', border:'1px solid #e5e7eb', borderRadius:12, padding:16,
-                boxShadow:'0 4px 14px rgba(0,0,0,0.06)'
-              }}>
-                <h3 style={{ marginTop:0, marginBottom:12 }}>Изменить профиль</h3>
-                <div className="form-group" style={{ marginBottom:12 }}>
-                  <label className="form-label">Логин</label>
-                  <input className="form-input" type="text" placeholder="Новый логин" value={profileForm.username} onChange={e => setProfileForm({ ...profileForm, username: e.target.value })} />
-                </div>
-                <div className="form-group" style={{ marginBottom:12 }}>
-                  <label className="form-label">Email</label>
-                  <input className="form-input" type="email" placeholder="Новый email" value={profileForm.email} onChange={e => setProfileForm({ ...profileForm, email: e.target.value })} />
-                </div>
-                <button className="auth-button" type="submit" style={{ width:'100%' }}>Сохранить</button>
-                {saveMsg && <div className="form-hint" style={{ marginTop: 8 }}>{saveMsg}</div>}
-              </form>
-
-              <form onSubmit={handlePasswordChange} style={{
-                background:'#fff', border:'1px solid #e5e7eb', borderRadius:12, padding:16,
-                boxShadow:'0 4px 14px rgba(0,0,0,0.06)'
-              }}>
-                <h3 style={{ marginTop:0, marginBottom:12 }}>Сменить пароль</h3>
-                <div className="form-group" style={{ marginBottom:12 }}>
-                  <label className="form-label">Текущий пароль</label>
-                  <input className="form-input" type="password" placeholder="Текущий пароль" value={passwordForm.current_password} onChange={e => setPasswordForm({ ...passwordForm, current_password: e.target.value })} />
-                </div>
-                <div className="form-group" style={{ marginBottom:12 }}>
-                  <label className="form-label">Новый пароль</label>
-                  <input className="form-input" type="password" placeholder="Новый пароль" value={passwordForm.new_password} onChange={e => setPasswordForm({ ...passwordForm, new_password: e.target.value })} />
-                </div>
-                <button className="auth-button" type="submit" style={{ width:'100%' }}>Изменить пароль</button>
-                {pwdMsg && <div className="form-hint" style={{ marginTop: 8 }}>{pwdMsg}</div>}
-              </form>
-            </div>
-
-            <div style={{ display:'flex', gap:12, marginTop:16, flexWrap:'wrap' }}>
-            <button
-              className="payment-button"
-              onClick={() => navigate('/payment')}
-              style={{
-                background: 'linear-gradient(45deg, #667eea, #764ba2)',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '1rem'
-              }}
-            >
-              💳 Оплата
-            </button>
-            
-            <button
-              className="logout-button"
-              onClick={handleLogout}
-                style={{ padding:'12px 24px' }}
-            >
-              Выйти
-            </button>
-            </div>
-          </div>
-        ) : (
-          <p style={{ color: 'var(--text-secondary)' }}>Нет данных о пользователе.</p>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
