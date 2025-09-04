@@ -3,14 +3,8 @@ import "./AboutCompany.css";
 
 const AboutCompany = () => (
   <section className="about-company-section">
-    <div className="about-company-content">
-      <div className="about-company-left">
-        <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=600&q=80" alt="graduates" className="about-company-img" />
-        <div className="about-company-years">
-          <span className="about-company-years-number">25</span>
-          <span className="about-company-years-label">ЛЕТ БЕЗУПРЕЧНОЙ РЕПУТАЦИИ</span>
-        </div>
-      </div>
+    <div className="container">
+      <div className="about-company-content">
       <div className="about-company-right">
         <h2 className="about-company-title">ПАРУ СЛОВ О НАС</h2>
         <div className="about-company-text">
@@ -32,6 +26,22 @@ const AboutCompany = () => (
         <div className="about-company-feature-title">НАЛИЧИЕ ПРАКТИКИ</div>
         <div className="about-company-feature-desc">Примерное описание. Текст редактируется через систему управления сайтом.</div>
       </div>
+      <div className="about-company-feature">
+        <div className="about-company-feature-icon">🎓</div>
+        <div className="about-company-feature-title">НАЛИЧИЕ ПРАКТИКИ</div>
+        <div className="about-company-feature-desc">Примерное описание. Текст редактируется через систему управления сайтом.</div>
+      </div>
+      <div className="about-company-feature">
+        <div className="about-company-feature-icon">🎓</div>
+        <div className="about-company-feature-title">НАЛИЧИЕ ПРАКТИКИ</div>
+        <div className="about-company-feature-desc">Примерное описание. Текст редактируется через систему управления сайтом.</div>
+      </div>
+      <div className="about-company-feature">
+        <div className="about-company-feature-icon">🎓</div>
+        <div className="about-company-feature-title">НАЛИЧИЕ ПРАКТИКИ</div>
+        <div className="about-company-feature-desc">Примерное описание. Текст редактируется через систему управления сайтом.</div>
+      </div>
+    </div>
     </div>
   </section>
 );

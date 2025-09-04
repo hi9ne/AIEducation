@@ -20,6 +20,7 @@ import { InstagramPage } from './pages/InstagramPage';
 import { WhatsAppPage } from './pages/WhatsAppPage';
 import { AddressPage } from './pages/AddressPage';
 import { fetchProfile } from './store/authSlice';
+import logo from '../public/images/aieducation_logo.jpg';
 import './App.css';
 
 
@@ -52,10 +53,16 @@ function Home() {
       <header className="main-header">
         <div className="main-header__container">
           <div className="main-header__logo">
-            <h2>НАЗВАНИЕ</h2>
-            <span className="main-header__subtitle">СТРОИМ БУДУЩЕЕ ВМЕСТЕ!</span>
+            <img className='logo_img' src={logo} alt="" />
           </div>
           <nav className="main-header__nav">
+            <ul>
+              <li><a href="/about">О нас</a></li>
+              <li><a href="/services">Услуги</a></li>
+              <li><a href="/steps">Этапы поступления</a></li>
+              <li><a href="/price">Цены</a></li>
+              <li><a href="/contacts">Контакты</a></li>
+            </ul>
             {isAuthenticated ? (
               <button
                 className="profile-button"
@@ -68,15 +75,15 @@ function Home() {
               </button>
             ) : (
               <button className="login-button" onClick={() => navigate('/login')}>
-                Регистрация
+                <span>Регистрация</span>
               </button>
             )}
           </nav>
         </div>
       </header>
       <HeroSection />
-      <EducationVariants />
       <AboutCompany />
+      <EducationVariants />
       <FacultyList />
       <ReviewsSection />
     </div>

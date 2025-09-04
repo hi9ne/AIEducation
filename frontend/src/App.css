@@ -1,21 +1,31 @@
-
+@import url('https://fonts.googleapis.com/css2?family=Lobster&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik+Mono+One&family=Story+Script&display=swap');
 body {
-  background: #f7faf7;
+  background: linear-gradient(135deg, #f8f4ff 0%, #f0f8ff 100%);
   margin: 0;
   font-family: 'Montserrat', Arial, sans-serif;
   display: block;
-  color: #1a2e1a;
+  color: #2d1b69;
 }
 
 .main-page {
-  background: #f7faf7;
+  background: linear-gradient(135deg, #f8f4ff 0%, #f0f8ff 100%);
   min-height: 100vh;
 }
 
 .main-header {
-  background: #fff;
-  box-shadow: 0 2px 12px #b6e5c7aa;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f4ff 100%);
   padding: 0;
+  box-shadow: 0 4px 20px rgba(139, 69, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(139, 69, 255, 0.1);
+}
+.container{
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .main-header__container {
   max-width: 1440px;
@@ -24,41 +34,159 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 0 18px 0;
+  padding: 15px 30px;
 }
-.main-header__logo h2 {
-  color: #0f551c;
-  font-size: 32px;
-  font-weight: 900;
-  margin: 0;
+
+.main-header__logo {
+  display: flex;
+  align-items: center;
 }
-.main-header__subtitle {
-  color: #1a2e1a;
-  font-size: 16px;
-  font-weight: 500;
-  margin-left: 8px;
+
+.logo_img {
+  max-width: 94px;
+  max-height: 94px;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+  border: 2px solid rgba(139, 92, 246, 0.1);
 }
+
+.logo_img:hover {
+  transform: scale(1.05) rotate(2deg);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
 .main-header__nav {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 25px;
 }
-.profile-button, .login-button {
-  background: linear-gradient(90deg, #1bbf3a 0%, #6be585 100%);
-  color: #fff;
-  font-weight: 700;
-  font-size: 18px;
-  padding: 10px 28px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  box-shadow: 0 2px 12px #b6e5c7aa;
-}
-.profile-button:hover, .login-button:hover {
-  background: #fff;
-  color: #1bbf3a;
-  border: 1.5px solid #1bbf3a;
-}
-  
 
+.main-header__nav ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 30px;
+}
+
+.main-header__nav ul li { 
+  position: relative;
+}
+
+.main-header__nav ul li a {
+  color: #6b46c1;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 8px 12px;
+  font-family: "Rubik Mono One", monospace;
+  font-weight: 400;
+  font-style: normal;
+  border-radius: 8px;
+}
+
+.main-header__nav ul li a:hover {
+  color: #8b5cf6;
+  background-color: rgba(139, 92, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+.main-header__nav ul li a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #8b5cf6, #a855f7);
+  transition: width 0.3s ease;
+  border-radius: 1px;
+}
+
+.main-header__nav ul li a:hover::after {
+  width: 100%;
+}
+
+.profile-button, .login-button {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+  color: #fff;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 12px 28px;
+  border-radius: 25px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 15px;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-button span, .login-button span {
+  position: relative;
+  z-index: 2;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.profile-button::before, .login-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.profile-button:hover::before, .login-button:hover::before {
+  left: 100%;
+}
+
+.profile-button svg {
+  margin-right: 0;
+  z-index: 1;
+  position: relative;
+}
+
+.profile-button:hover span, .login-button:hover span {
+  transform: scale(1.05);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 992px) {
+  .main-header__nav ul {
+    gap: 15px;
+  }
+
+@media (max-width: 768px) {
+  .main-header__container {
+    padding: 12px 20px;
+  }
+  
+  .main-header__nav ul {
+    display: none;
+  }
+  
+  .profile-button, .login-button {
+    padding: 8px 18px;
+    font-size: 14px;
+  }
+  
+  .logo_img {
+    max-width: 70px;
+    max-height: 70px;
+  }
+}
+}
