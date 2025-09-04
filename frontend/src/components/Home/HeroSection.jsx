@@ -10,8 +10,9 @@ const HeroSection = () => (
       <div className="hero-label">
         <h2>
           <span className="highlight_one">GET</span> HIGHER EDUCATION <br /> IN<span className="highlight"> ITALY</span>
-          <img src={italy_flag} alt="Italy Flag" className="italy_flag" />
+          
         </h2>
+        <img src={italy_flag} alt="Italy Flag" className="italy_flag" />
       </div>
     </div>
   </div>

@@ -29,8 +29,8 @@
   color: 	#A61D00;
 }
 .italy_flag {
-  width: 78px;
-  height: 78px;
+  width: 100%;
+  height: 8px;
   margin-left: 8px;
   z-index: 5;
   position: relative;

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Boldonse&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Rubik+Wet+Paint&family=Sixtyfour+Convergence&family=Zen+Dots&display=swap');
 .parallax_edc_var {
   background-image: url('../../../public/images/parallax_edc.jpg');
   height: 100vh;
@@ -36,16 +37,16 @@
 
 .education-variants-title {
   color: #ffffff;
-  font-size: 48px;
+  font-size: 108px;
   font-weight: 900;
   margin-bottom: 16px;
-  font-family: "Rubik Mono One", monospace;
+  font-family: "Audiowide", sans-serif;
   letter-spacing: 2px;
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .education-variants-subtitle {
-  font-size: 20px;
+  font-size: 40px;
   color: #ffffff;
   font-weight: 400;
   max-width: 600px;
@@ -112,7 +113,6 @@
 }
 
 .university-card:hover {
-  transform: translateY(-8px) scale(1.05);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.4);
   border-color: rgba(255, 255, 255, 0.6);
 }

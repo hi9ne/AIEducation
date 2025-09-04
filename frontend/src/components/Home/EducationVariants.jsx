@@ -221,9 +221,9 @@ const EducationVariants = () => {
       <div className="parallax_edc_var .mask"></div>
       <div className="education-variants-container">
         <div className="education-variants-header">
-          <h2 className="education-variants-title">НАШИ УНИВЕРСИТЕТЫ</h2>
+          <h2 className="education-variants-title">Our Universities</h2>
           <p className="education-variants-subtitle">
-            Мы помогаем поступить в престижные итальянские университеты
+            We help you enroll in prestigious Italian universities
           </p>
         </div>
         
