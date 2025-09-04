@@ -3,43 +3,144 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.decorators import api_view, permission_classes
 from django.core.mail import send_mail
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db import transaction
+from django.utils.crypto import get_random_string
+from django.urls import reverse
 from datetime import timedelta
-from .models import PasswordResetCode, Payment, Subscription, UserEmailVerification, EmailVerificationToken
-from .serializers import (
-    RegisterSerializer, 
-    MyTokenObtainPairSerializer, 
-    PasswordResetRequestSerializer,
-    PasswordResetVerifySerializer,
-    ProfileUpdateSerializer,
-    ChangePasswordSerializer,
-)
-from .freedompay import process_freedompay_payment, generate_payment_link
 import logging
 import uuid
 import os
 import hashlib
-from django.db import transaction
-from django.utils.crypto import get_random_string
-from django.urls import reverse
+
+from .models import (
+    PasswordResetCode, Payment, Subscription, 
+    UserEmailVerification, EmailVerificationToken,
+    UserLoginLog, UserProfile
+)
+from .serializers import (
+    RegisterSerializer, MyTokenObtainPairSerializer, 
+    PasswordResetRequestSerializer, PasswordResetVerifySerializer,
+    ProfileUpdateSerializer, ChangePasswordSerializer,
+    ProfileSerializer, EmailVerificationSerializer
+)
+from .freedompay import process_freedompay_payment
+
+logger = logging.getLogger(__name__)
+
+
+def get_client_ip(request):
+    """Получить IP адрес клиента"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+def get_user_agent(request):
+    """Получить User-Agent клиента"""
+    return request.META.get('HTTP_USER_AGENT', '')
+
 
 class LoginView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        
+        if response.status_code == 200:
+            # Логируем успешный вход
+            try:
+                username = request.data.get('username')
+                if '@' in username:
+                    user = User.objects.get(email=username.lower())
+                else:
+                    user = User.objects.get(username=username)
+                
+                UserLoginLog.objects.create(
+                    user=user,
+                    ip_address=get_client_ip(request),
+                    user_agent=get_user_agent(request),
+                    success=True
+                )
+                
+                # Обновляем last_login
+                user.last_login = timezone.now()
+                user.save(update_fields=['last_login'])
+                
+            except Exception as e:
+                logger.error(f"Error logging successful login: {e}")
+        else:
+            # Логируем неудачную попытку входа
+            try:
+                username = request.data.get('username')
+                UserLoginLog.objects.create(
+                    user=None,
+                    ip_address=get_client_ip(request),
+                    user_agent=get_user_agent(request),
+                    success=False
+                )
+            except Exception as e:
+                logger.error(f"Error logging failed login: {e}")
+        
+        return response
+
 
 class RegisterView(generics.CreateAPIView):
     permission_classes = (permissions.AllowAny,)
     serializer_class = RegisterSerializer
 
-class ProtectedView(APIView):
-    permission_classes = [IsAuthenticated]
-    
-    def get(self, request):
-        return Response({"message": "You are authenticated!"})
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        with transaction.atomic():
+            user = serializer.save()
+            
+            # Создаем профиль пользователя
+            UserProfile.objects.get_or_create(user=user)
+            
+            # Отправляем приветственное письмо
+            try:
+                self.send_welcome_email(user)
+            except Exception as e:
+                logger.error(f"Failed to send welcome email to {user.email}: {e}")
+        
+        return Response({
+            'message': 'Регистрация прошла успешно! Проверьте email для подтверждения.',
+            'user_id': user.id,
+            'username': user.username,
+            'email': user.email
+        }, status=status.HTTP_201_CREATED)
+
+    def send_welcome_email(self, user):
+        """Отправка приветственного письма"""
+        context = {
+            'username': user.username,
+            'year': timezone.now().year,
+            'site_name': 'AIEducation'
+        }
+        
+        html_message = render_to_string('emails/welcome.html', context)
+        plain_message = strip_tags(html_message)
+        
+        send_mail(
+            subject='Добро пожаловать в AIEducation!',
+            message=plain_message,
+            html_message=html_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+
 
 class PasswordResetRequestView(generics.CreateAPIView):
     permission_classes = (permissions.AllowAny,)
@@ -52,28 +153,63 @@ class PasswordResetRequestView(generics.CreateAPIView):
         email = serializer.validated_data['email']
         user = User.objects.get(email=email)
         
-        # Generate and save reset code
+        # Проверяем лимит отправки кодов (не более 3 за час)
+        hour_ago = timezone.now() - timedelta(hours=1)
+        recent_codes = PasswordResetCode.objects.filter(
+            user=user,
+            created_at__gte=hour_ago
+        ).count()
+        
+        if recent_codes >= 3:
+            return Response(
+                {"error": "Слишком много попыток. Попробуйте через час."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS
+            )
+        
+        # Генерируем и сохраняем код
         code = PasswordResetCode.generate_code()
-        PasswordResetCode.objects.create(user=user, code=code)
-        
-        # Prepare email
-        html_message = render_to_string('emails/password_reset.html', {'code': code})
-        plain_message = strip_tags(html_message)
-        
-        # Send email
-        send_mail(
-            subject='Password Reset Code',
-            message=plain_message,
-            html_message=html_message,
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[email],
-            fail_silently=False,
+        PasswordResetCode.objects.create(
+            user=user,
+            code=code,
+            ip_address=get_client_ip(request),
+            user_agent=get_user_agent(request)
         )
         
-        return Response(
-            {"message": "Password reset code has been sent to your email"},
-            status=status.HTTP_200_OK
-        )
+        # Отправляем email
+        try:
+            context = {
+                'code': code,
+                'username': user.username,
+                'year': timezone.now().year,
+                'valid_minutes': 30
+            }
+            
+            html_message = render_to_string('emails/password_reset.html', context)
+            plain_message = strip_tags(html_message)
+            
+            send_mail(
+                subject='Код для сброса пароля - AIEducation',
+                message=plain_message,
+                html_message=html_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            
+            logger.info(f"Password reset code sent to {email}")
+            
+        except Exception as e:
+            logger.error(f"Failed to send password reset email: {e}")
+            return Response(
+                {"error": "Ошибка отправки email. Попробуйте позже."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+        return Response({
+            "message": "Код для сброса пароля отправлен на ваш email",
+            "expires_in_minutes": 30
+        }, status=status.HTTP_200_OK)
+
 
 class PasswordResetVerifyView(generics.CreateAPIView):
     permission_classes = (permissions.AllowAny,)
@@ -87,9 +223,15 @@ class PasswordResetVerifyView(generics.CreateAPIView):
         code = serializer.validated_data['code']
         new_password = serializer.validated_data['new_password']
         
-        user = User.objects.get(email=email)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Пользователь не найден"},
+                status=status.HTTP_404_NOT_FOUND
+            )
         
-        # Check if code exists and is valid
+        # Проверяем код
         reset_code = PasswordResetCode.objects.filter(
             user=user,
             code=code,
@@ -99,50 +241,60 @@ class PasswordResetVerifyView(generics.CreateAPIView):
         
         if not reset_code:
             return Response(
-                {"error": "Invalid or expired code"},
+                {"error": "Неверный или истекший код"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Update password and mark code as used
-        user.set_password(new_password)
-        user.save()
-        reset_code.is_used = True
-        reset_code.save()
+        # Проверяем количество попыток (защита от брутфорса)
+        recent_attempts = PasswordResetCode.objects.filter(
+            user=user,
+            created_at__gte=timezone.now() - timedelta(hours=1)
+        ).count()
         
-        return Response(
-            {"message": "Password has been reset successfully"},
-            status=status.HTTP_200_OK
-        )
+        if recent_attempts > 5:
+            return Response(
+                {"error": "Слишком много попыток. Попробуйте через час."},
+                status=status.HTTP_429_TOO_MANY_REQUESTS
+            )
+        
+        # Сбрасываем пароль
+        with transaction.atomic():
+            user.set_password(new_password)
+            user.save()
+            
+            reset_code.mark_as_used()
+            
+            # Помечаем все остальные коды как использованные
+            PasswordResetCode.objects.filter(
+                user=user,
+                is_used=False
+            ).update(is_used=True)
+        
+        logger.info(f"Password reset successful for user {user.username}")
+        
+        return Response({
+            "message": "Пароль успешно изменен"
+        }, status=status.HTTP_200_OK)
+
 
 class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request):
-        # Просто для фронта: удаление refresh токена на клиенте
-        return Response({'detail': 'Logged out successfully.'}, status=status.HTTP_200_OK)
+        # Можно добавить логику для blacklist токенов
+        logger.info(f"User {request.user.username} logged out")
+        return Response({
+            'message': 'Успешный выход из системы'
+        }, status=status.HTTP_200_OK)
+
 
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-        try:
-            sub = user.subscription
-        except Subscription.DoesNotExist:
-            sub = None
-        subscription = None
-        if sub:
-            subscription = {
-                'plan': sub.plan,
-                'is_active': sub.is_active,
-                'starts_at': sub.starts_at.isoformat() if sub.starts_at else None,
-                'expires_at': sub.expires_at.isoformat() if sub.expires_at else None,
-            }
-        email_verified = bool(getattr(user, 'email_verification', None) and user.email_verification.verified_at)
-        return Response({
-            'username': user.username,
-            'email': user.email,
-            'email_verified': email_verified,
-            'subscription': subscription,
-        })
+        serializer = ProfileSerializer(request.user)
+        return Response(serializer.data)
+
 
 class ProfileUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
@@ -150,6 +302,42 @@ class ProfileUpdateView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        
+        if response.status_code == 200:
+            logger.info(f"Profile updated for user {request.user.username}")
+            
+            # Если изменился email, отправляем уведомление
+            if 'email' in request.data:
+                try:
+                    self.send_email_change_notification(request.user)
+                except Exception as e:
+                    logger.error(f"Failed to send email change notification: {e}")
+        
+        return response
+
+    def send_email_change_notification(self, user):
+        """Уведомление об изменении email"""
+        context = {
+            'username': user.username,
+            'new_email': user.email,
+            'year': timezone.now().year
+        }
+        
+        html_message = render_to_string('emails/email_changed.html', context)
+        plain_message = strip_tags(html_message)
+        
+        send_mail(
+            subject='Email адрес изменен - AIEducation',
+            message=plain_message,
+            html_message=html_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+
 
 class ChangePasswordView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
@@ -159,8 +347,180 @@ class ChangePasswordView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'detail': 'Password changed successfully'})
+        
+        logger.info(f"Password changed for user {request.user.username}")
+        
+        # Отправляем уведомление об изменении пароля
+        try:
+            self.send_password_change_notification(request.user)
+        except Exception as e:
+            logger.error(f"Failed to send password change notification: {e}")
+        
+        return Response({
+            'message': 'Пароль успешно изменен',
+            'timestamp': timezone.now().isoformat()
+        })
 
+    def send_password_change_notification(self, user):
+        """Уведомление об изменении пароля"""
+        context = {
+            'username': user.username,
+            'timestamp': timezone.now().strftime('%d.%m.%Y %H:%M'),
+            'year': timezone.now().year
+        }
+        
+        html_message = render_to_string('emails/password_changed.html', context)
+        plain_message = strip_tags(html_message)
+        
+        send_mail(
+            subject='Пароль изменен - AIEducation',
+            message=plain_message,
+            html_message=html_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+
+
+class EmailVerifyRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        serializer = EmailVerificationSerializer(data={}, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        
+        # Получаем или создаем запись верификации
+        email_verification, _ = UserEmailVerification.objects.get_or_create(user=user)
+        
+        # Проверяем, не верифицирован ли уже email
+        if email_verification.is_verified():
+            return Response({
+                'message': 'Email уже подтвержден'
+            }, status=status.HTTP_200_OK)
+        
+        # Проверяем лимиты
+        if not email_verification.can_send_email():
+            return Response({
+                'error': 'Письмо можно отправить не чаще чем раз в минуту'
+            }, status=status.HTTP_429_TOO_MANY_REQUESTS)
+        
+        # Генерируем токен
+        token = get_random_string(48)
+        EmailVerificationToken.objects.create(
+            user=user,
+            token=token,
+            ip_address=get_client_ip(request)
+        )
+        
+        # Формируем ссылку для верификации
+        verify_link = request.build_absolute_uri(
+            reverse('email-verify') + f'?token={token}'
+        )
+        
+        # Отправляем письмо
+        try:
+            context = {
+                'username': user.username,
+                'verify_link': verify_link,
+                'year': timezone.now().year,
+                'site_name': 'AIEducation'
+            }
+            
+            html_message = render_to_string('emails/email_verify.html', context)
+            plain_message = strip_tags(html_message)
+            
+            send_mail(
+                subject='Подтверждение email - AIEducation',
+                message=plain_message,
+                html_message=html_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=False,
+            )
+            
+            # Обновляем статистику
+            email_verification.increment_attempts()
+            
+            logger.info(f"Email verification sent to {user.email}")
+            
+        except Exception as e:
+            logger.error(f"Failed to send email verification: {e}")
+            return Response({
+                'error': 'Ошибка отправки письма. Попробуйте позже.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        return Response({
+            'message': 'Письмо для подтверждения отправлено на ваш email',
+            'expires_in_hours': 24
+        })
+
+
+class EmailVerifyView(APIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request):
+        token = request.query_params.get('token')
+        
+        if not token:
+            return Response({
+                'error': 'Токен не указан'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Проверяем токен
+        email_token = EmailVerificationToken.objects.filter(
+            token=token,
+            used_at__isnull=True,
+            expires_at__gt=timezone.now()
+        ).first()
+        
+        if not email_token:
+            return Response({
+                'error': 'Неверный или истекший токен'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Подтверждаем email
+        with transaction.atomic():
+            email_verification, _ = UserEmailVerification.objects.get_or_create(
+                user=email_token.user
+            )
+            email_verification.verify_email()
+            email_token.mark_as_used()
+        
+        logger.info(f"Email verified for user {email_token.user.username}")
+        
+        # Отправляем уведомление об успешной верификации
+        try:
+            self.send_verification_success_email(email_token.user)
+        except Exception as e:
+            logger.error(f"Failed to send verification success email: {e}")
+        
+        return Response({
+            'message': 'Email успешно подтвержден!',
+            'user': email_token.user.username
+        })
+
+    def send_verification_success_email(self, user):
+        """Отправка уведомления об успешной верификации"""
+        context = {
+            'username': user.username,
+            'year': timezone.now().year
+        }
+        
+        html_message = render_to_string('emails/verification_success.html', context)
+        plain_message = strip_tags(html_message)
+        
+        send_mail(
+            subject='Email подтвержден - AIEducation',
+            message=plain_message,
+            html_message=html_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+
+
+# Платежные views (сохраняем существующие)
 class PaymentView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -295,7 +655,7 @@ class PaymentWebhookView(APIView):
                     }
                     html = render_to_string('emails/payment_receipt.html', context)
                     send_mail(
-                        subject='Чек об оплате — TapZar',
+                        subject='Чек об оплате — AIEducation',
                         message='Оплата прошла успешно',
                         html_message=html,
                         from_email=settings.DEFAULT_FROM_EMAIL,
@@ -309,6 +669,7 @@ class PaymentWebhookView(APIView):
             pay.save(update_fields=['status', 'updated_at'])
         # Ответ согласно протоколу PayBox
         return Response({'pg_status': 'ok'})
+
 
 class PaymentSimulateView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -349,7 +710,7 @@ class PaymentSimulateView(APIView):
                 }
                 html = render_to_string('emails/payment_receipt.html', context)
                 send_mail(
-                    subject='Чек об оплате — TapZar',
+                    subject='Чек об оплате — AIEducation',
                     message='Оплата прошла успешно',
                     html_message=html,
                     from_email=settings.DEFAULT_FROM_EMAIL,
@@ -360,42 +721,27 @@ class PaymentSimulateView(APIView):
             logging.exception('Не удалось отправить чек по email (simulate)')
         return Response({'status': 'ok'})
 
-class EmailVerifyRequestView(APIView):
-    permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        user = request.user
-        ev, _ = UserEmailVerification.objects.get_or_create(user=user)
-        token = get_random_string(48)
-        EmailVerificationToken.objects.create(user=user, token=token)
-        verify_link = request.build_absolute_uri(reverse('email-verify') + f'?token={token}')
-        html = render_to_string('emails/email_verify.html', { 'username': user.username, 'verify_link': verify_link, 'year': timezone.now().year })
-        send_mail(
-            subject='Подтверждение почты — TapZar',
-            message=f'Подтвердите вашу почту по ссылке: {verify_link}',
-            html_message=html,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=True,
-        )
-        ev.last_sent_at = timezone.now()
-        ev.save(update_fields=['last_sent_at'])
-        return Response({'detail': 'Письмо отправлено'})
-
-class EmailVerifyView(APIView):
-    permission_classes = (permissions.AllowAny,)
-
-    def get(self, request):
-        token = request.query_params.get('token')
-        if not token:
-            return Response({'detail': 'token is required'}, status=status.HTTP_400_BAD_REQUEST)
-        et = EmailVerificationToken.objects.filter(token=token, used_at__isnull=True).first()
-        if not et:
-            return Response({'detail': 'invalid token'}, status=status.HTTP_400_BAD_REQUEST)
-        ev, _ = UserEmailVerification.objects.get_or_create(user=et.user)
-        ev.verified_at = timezone.now()
-        ev.save(update_fields=['verified_at'])
-        et.used_at = timezone.now()
-        et.save(update_fields=['used_at'])
-        # Можно редиректить на фронт-страницу успеха
-        return Response({'detail': 'Email verified'})
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_stats_view(request):
+    """Статистика для администраторов"""
+    if not request.user.is_staff:
+        return Response({
+            'error': 'Доступ запрещен'
+        }, status=status.HTTP_403_FORBIDDEN)
+    
+    stats = {
+        'total_users': User.objects.count(),
+        'verified_users': User.objects.filter(
+            email_verification__verified_at__isnull=False
+        ).count(),
+        'users_with_subscription': User.objects.filter(
+            subscription__is_active=True
+        ).count(),
+        'recent_registrations': User.objects.filter(
+            date_joined__gte=timezone.now() - timedelta(days=7)
+        ).count(),
+    }
+    
+    return Response(stats)

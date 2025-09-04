@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добро пожаловать в {{ site_name }}!</title>
+    <style>
+        /* Modern Email Styles */
+        body { margin:0; padding:0; font-family:'Helvetica Neue',Arial,sans-serif; background:#f0f2f5; color:#333; }
+        .container { max-width:600px; margin:20px auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.1); }
+        .header { background:#6366f1; padding:24px; text-align:center; }
+        .icon { font-size:32px; color:#fff; }
+        .title { margin:16px 0 0; font-size:22px; color:#fff; }
+        .content { padding:24px; font-size:16px; line-height:1.6; }
+        .btn-container { text-align:center; padding:16px; }
+        .btn { display:inline-block; background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; text-decoration:none; padding:12px 28px; border-radius:4px; font-weight:bold; transition:background 0.3s; }
+        .btn:hover { background:linear-gradient(135deg,#4f46e5,#7c3aed); }
+        .footer { background:#f0f2f5; padding:16px; text-align:center; font-size:12px; color:#777; }
+        @media(max-width:600px){.container{margin:10px;} .content{padding:16px;font-size:15px;} .btn{width:100%;box-sizing:border-box;}}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">{{ site_name }}</div>
+            <h1 class="welcome-title">Добро пожаловать!</h1>
+            <p class="subtitle">Спасибо за регистрацию, {{ username }}!</p>
+        </div>
+        
+        <div class="content">
+            <p>Здравствуйте, {{ username }}! Благодарим за регистрацию в {{ site_name }}. Рады видеть вас на нашей платформе.</p>
+        </div>
+        
+        <div class="footer">
+            <p>Если у вас есть вопросы, мы всегда готовы помочь!</p>
+            <p>&copy; {{ year }} {{ site_name }}. Все права защищены.</p>
+        </div>
+    </div>
+</body>
+</html>
