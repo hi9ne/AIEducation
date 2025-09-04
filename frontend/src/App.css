@@ -10,17 +10,25 @@ body {
 .main-page {
   background: linear-gradient(135deg, #f8f4ff 0%, #f0f8ff 100%);
   min-height: 100vh;
+  padding-top: 0;
 }
 
 .main-header {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f4ff 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 244, 255, 0.95) 100%);
   padding: 0;
-  box-shadow: 0 4px 20px rgba(139, 69, 255, 0.08);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.15);
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1050;
   transition: all 0.3s ease;
-  border-bottom: 1px solid rgba(139, 69, 255, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.1);
+  border-radius: 25px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  width: fit-content;
+  max-width: 90%;
 }
 .container{
   max-width: 1440px;
@@ -28,13 +36,11 @@ body {
   margin-right: auto;
 }
 .main-header__container {
-  max-width: 1440px;
-  margin-left: auto;
-  margin-right: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 15px 30px;
+  padding: 12px 25px;
+  gap: 20px;
 }
 
 .main-header__logo {
@@ -43,9 +49,9 @@ body {
 }
 
 .logo_img {
-  max-width: 94px;
-  max-height: 94px;
-  border-radius: 16px;
+  max-width: 90px;
+  max-height: 50px;
+  border-radius: 6px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
   border: 2px solid rgba(139, 92, 246, 0.1);
@@ -60,7 +66,7 @@ body {
 .main-header__nav {
   display: flex;
   align-items: center;
-  gap: 25px;
+  gap: 15px;
 }
 
 .main-header__nav ul {
@@ -68,7 +74,7 @@ body {
   list-style: none;
   margin: 0;
   padding: 0;
-  gap: 30px;
+  gap: 15px;
 }
 
 .main-header__nav ul li { 
@@ -78,11 +84,11 @@ body {
 .main-header__nav ul li a {
   color: #6b46c1;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 500;
   transition: all 0.3s ease;
   position: relative;
-  padding: 8px 12px;
+  padding: 5px 8px;
   font-family: "Rubik Mono One", monospace;
   font-weight: 400;
   font-style: normal;
@@ -116,9 +122,9 @@ body {
   background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
   color: #fff;
   font-weight: 600;
-  font-size: 16px;
-  padding: 12px 28px;
-  border-radius: 25px;
+  font-size: 12px;
+  padding: 6px 16px;
+  border-radius: 18px;
   border: 2px solid transparent;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -126,7 +132,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 15px;
   position: relative;
   overflow: hidden;
 }
@@ -169,10 +174,21 @@ body {
   .main-header__nav ul {
     gap: 15px;
   }
+}
 
 @media (max-width: 768px) {
+  .main-page {
+    padding-top: 80px;
+  }
+  
+  .main-header {
+    top: 15px;
+    max-width: 95%;
+  }
+  
   .main-header__container {
-    padding: 12px 20px;
+    padding: 8px 20px;
+    gap: 15px;
   }
   
   .main-header__nav ul {
@@ -180,13 +196,12 @@ body {
   }
   
   .profile-button, .login-button {
-    padding: 8px 18px;
-    font-size: 14px;
+    padding: 5px 12px;
+    font-size: 11px;
   }
   
   .logo_img {
-    max-width: 70px;
-    max-height: 70px;
+    max-width: 40px;
+    max-height: 40px;
   }
-}
 }

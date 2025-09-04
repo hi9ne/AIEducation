@@ -20,7 +20,7 @@ import { InstagramPage } from './pages/InstagramPage';
 import { WhatsAppPage } from './pages/WhatsAppPage';
 import { AddressPage } from './pages/AddressPage';
 import { fetchProfile } from './store/authSlice';
-import logo from '../public/images/aieducation_logo.jpg';
+import logo from '../public/images/iedulogo.png';
 import './App.css';
 
 
