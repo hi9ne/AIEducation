@@ -1,421 +1,524 @@
 import { create } from 'zustand';
-import educationAPI from '../api/educationApi';
+import educationApi from '../api/educationApi';
 
 const useEducationStore = create((set, get) => ({
   // Состояние
-  studentProfile: null,
   universities: [],
   majors: [],
+  courses: [],
+  enrollments: [],
   applications: [],
-  documents: [],
-  studentDocuments: [],
-  progressSteps: [],
+  achievements: [],
+  userAchievements: [],
   aiRecommendations: [],
   notifications: [],
-  achievements: [],
   studyPlans: [],
+  documents: [],
   dashboardStats: null,
   
-  // Загрузка
+  // Состояние загрузки
   loading: {
-    studentProfile: false,
     universities: false,
     majors: false,
+    courses: false,
+    enrollments: false,
     applications: false,
-    documents: false,
-    studentDocuments: false,
-    progressSteps: false,
+    achievements: false,
+    userAchievements: false,
     aiRecommendations: false,
     notifications: false,
-    achievements: false,
     studyPlans: false,
+    documents: false,
     dashboardStats: false,
   },
   
   // Ошибки
   errors: {
-    studentProfile: null,
     universities: null,
     majors: null,
+    courses: null,
+    enrollments: null,
     applications: null,
-    documents: null,
-    studentDocuments: null,
-    progressSteps: null,
+    achievements: null,
+    userAchievements: null,
     aiRecommendations: null,
     notifications: null,
-    achievements: null,
     studyPlans: null,
+    documents: null,
     dashboardStats: null,
   },
 
-  // Действия для профиля студента
-  async fetchStudentProfile() {
-    set(state => ({ loading: { ...state.loading, studentProfile: true } }));
-    try {
-      const profiles = await educationAPI.getStudentProfile();
-      const profile = profiles.length > 0 ? profiles[0] : null;
-      set({ studentProfile: profile });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, studentProfile: error.message } 
-      }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, studentProfile: false } }));
-    }
-  },
-
-  async createStudentProfile(profileData) {
-    set(state => ({ loading: { ...state.loading, studentProfile: true } }));
-    try {
-      const profile = await educationAPI.createStudentProfile(profileData);
-      set({ studentProfile: profile });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, studentProfile: error.message } 
-      }));
-      throw error;
-    } finally {
-      set(state => ({ loading: { ...state.loading, studentProfile: false } }));
-    }
-  },
-
-  async updateStudentProfile(profileId, profileData) {
-    set(state => ({ loading: { ...state.loading, studentProfile: true } }));
-    try {
-      const profile = await educationAPI.updateStudentProfile(profileId, profileData);
-      set({ studentProfile: profile });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, studentProfile: error.message } 
-      }));
-      throw error;
-    } finally {
-      set(state => ({ loading: { ...state.loading, studentProfile: false } }));
-    }
-  },
-
   // Действия для университетов
-  async fetchUniversities(params = {}) {
-    set(state => ({ loading: { ...state.loading, universities: true } }));
+  fetchUniversities: async (params = {}) => {
+    set((state) => ({
+      loading: { ...state.loading, universities: true },
+      errors: { ...state.errors, universities: null },
+    }));
+
     try {
-      const universities = await educationAPI.getUniversities(params);
-      set({ universities });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, universities: error.message } 
+      const data = await educationApi.getUniversities(params);
+      set((state) => ({
+        universities: data.results || data,
+        loading: { ...state.loading, universities: false },
       }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, universities: false } }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, universities: false },
+        errors: { ...state.errors, universities: error.message },
+      }));
     }
   },
 
-  async searchUniversities(searchParams) {
-    set(state => ({ loading: { ...state.loading, universities: true } }));
+  // Действия для специальностей
+  fetchMajors: async (params = {}) => {
+    set((state) => ({
+      loading: { ...state.loading, majors: true },
+      errors: { ...state.errors, majors: null },
+    }));
+
     try {
-      const result = await educationAPI.searchUniversities(searchParams);
-      set({ universities: result.results || result });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, universities: error.message } 
+      const data = await educationApi.getMajors(params);
+      set((state) => ({
+        majors: data.results || data,
+        loading: { ...state.loading, majors: false },
       }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, universities: false } }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, majors: false },
+        errors: { ...state.errors, majors: error.message },
+      }));
     }
   },
 
-  // Действия для направлений
-  async fetchMajors(params = {}) {
-    set(state => ({ loading: { ...state.loading, majors: true } }));
+  // Действия для курсов
+  fetchCourses: async (params = {}) => {
+    set((state) => ({
+      loading: { ...state.loading, courses: true },
+      errors: { ...state.errors, courses: null },
+    }));
+
     try {
-      const majors = await educationAPI.getMajors(params);
-      set({ majors });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, majors: error.message } 
+      const data = await educationApi.getCourses(params);
+      set((state) => ({
+        courses: data.results || data,
+        loading: { ...state.loading, courses: false },
       }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, majors: false } }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, courses: false },
+        errors: { ...state.errors, courses: error.message },
+      }));
+    }
+  },
+
+  // Действия для записей на курсы
+  fetchEnrollments: async () => {
+    set((state) => ({
+      loading: { ...state.loading, enrollments: true },
+      errors: { ...state.errors, enrollments: null },
+    }));
+
+    try {
+      const data = await educationApi.getEnrollments();
+      set((state) => ({
+        enrollments: data.results || data,
+        loading: { ...state.loading, enrollments: false },
+      }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, enrollments: false },
+        errors: { ...state.errors, enrollments: error.message },
+      }));
+    }
+  },
+
+  createEnrollment: async (data) => {
+    try {
+      const result = await educationApi.createEnrollment(data);
+      set((state) => ({
+        enrollments: [...state.enrollments, result],
+      }));
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  updateEnrollment: async (id, data) => {
+    try {
+      const result = await educationApi.updateEnrollment(id, data);
+      set((state) => ({
+        enrollments: state.enrollments.map((enrollment) =>
+          enrollment.id === id ? result : enrollment
+        ),
+      }));
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  deleteEnrollment: async (id) => {
+    try {
+      await educationApi.deleteEnrollment(id);
+      set((state) => ({
+        enrollments: state.enrollments.filter((enrollment) => enrollment.id !== id),
+      }));
+    } catch (error) {
+      throw error;
     }
   },
 
   // Действия для заявок
-  async fetchApplications() {
-    set(state => ({ loading: { ...state.loading, applications: true } }));
+  fetchApplications: async () => {
+    set((state) => ({
+      loading: { ...state.loading, applications: true },
+      errors: { ...state.errors, applications: null },
+    }));
+
     try {
-      const applications = await educationAPI.getApplications();
-      set({ applications });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, applications: error.message } 
+      const data = await educationApi.getApplications();
+      set((state) => ({
+        applications: data.results || data,
+        loading: { ...state.loading, applications: false },
       }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, applications: false } }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, applications: false },
+        errors: { ...state.errors, applications: error.message },
+      }));
     }
   },
 
-  async createApplication(applicationData) {
-    set(state => ({ loading: { ...state.loading, applications: true } }));
+  createApplication: async (data) => {
     try {
-      const application = await educationAPI.createApplication(applicationData);
-      set(state => ({ 
-        applications: [...state.applications, application] 
+      const result = await educationApi.createApplication(data);
+      set((state) => ({
+        applications: [...state.applications, result],
       }));
+      return result;
     } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, applications: error.message } 
-      }));
-      throw error;
-    } finally {
-      set(state => ({ loading: { ...state.loading, applications: false } }));
-    }
-  },
-
-  // Действия для документов
-  async fetchDocuments() {
-    set(state => ({ loading: { ...state.loading, documents: true } }));
-    try {
-      const documents = await educationAPI.getDocuments();
-      set({ documents });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, documents: error.message } 
-      }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, documents: false } }));
-    }
-  },
-
-  async fetchStudentDocuments() {
-    set(state => ({ loading: { ...state.loading, studentDocuments: true } }));
-    try {
-      const documents = await educationAPI.getStudentDocuments();
-      set({ studentDocuments: documents });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, studentDocuments: error.message } 
-      }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, studentDocuments: false } }));
-    }
-  },
-
-  async uploadDocument(documentData) {
-    set(state => ({ loading: { ...state.loading, studentDocuments: true } }));
-    try {
-      const document = await educationAPI.uploadDocument(documentData);
-      set(state => ({ 
-        studentDocuments: [...state.studentDocuments, document] 
-      }));
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, studentDocuments: error.message } 
-      }));
-      throw error;
-    } finally {
-      set(state => ({ loading: { ...state.loading, studentDocuments: false } }));
-    }
-  },
-
-  // Действия для прогресса
-  async fetchProgressSteps() {
-    set(state => ({ loading: { ...state.loading, progressSteps: true } }));
-    try {
-      const steps = await educationAPI.getProgressSteps();
-      set({ progressSteps: steps });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, progressSteps: error.message } 
-      }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, progressSteps: false } }));
-    }
-  },
-
-  async updateProgressStep(stepName) {
-    try {
-      await educationAPI.updateProgressStep(stepName);
-      // Обновляем локальное состояние
-      set(state => ({
-        progressSteps: state.progressSteps.map(step =>
-          step.step_name === stepName
-            ? { ...step, status: 'completed', completed_at: new Date().toISOString() }
-            : step
-        )
-      }));
-    } catch (error) {
-      console.error('Failed to update progress step:', error);
       throw error;
     }
   },
 
-  // Действия для AI рекомендаций
-  async fetchAIRecommendations() {
-    set(state => ({ loading: { ...state.loading, aiRecommendations: true } }));
+  updateApplication: async (id, data) => {
     try {
-      const recommendations = await educationAPI.getAIRecommendations();
-      set({ aiRecommendations: recommendations });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, aiRecommendations: error.message } 
+      const result = await educationApi.updateApplication(id, data);
+      set((state) => ({
+        applications: state.applications.map((application) =>
+          application.id === id ? result : application
+        ),
       }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, aiRecommendations: false } }));
-    }
-  },
-
-  async generateAIRecommendation(recommendationData) {
-    try {
-      const recommendation = await educationAPI.generateAIRecommendation(recommendationData);
-      set(state => ({ 
-        aiRecommendations: [...state.aiRecommendations, recommendation] 
-      }));
+      return result;
     } catch (error) {
-      console.error('Failed to generate AI recommendation:', error);
       throw error;
     }
   },
 
-  // Действия для уведомлений
-  async fetchNotifications() {
-    set(state => ({ loading: { ...state.loading, notifications: true } }));
+  deleteApplication: async (id) => {
     try {
-      const notifications = await educationAPI.getNotifications();
-      set({ notifications });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, notifications: error.message } 
-      }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, notifications: false } }));
-    }
-  },
-
-  async markNotificationRead(notificationId) {
-    try {
-      await educationAPI.markNotificationRead(notificationId);
-      set(state => ({
-        notifications: state.notifications.map(notification =>
-          notification.id === notificationId
-            ? { ...notification, is_read: true, read_at: new Date().toISOString() }
-            : notification
-        )
+      await educationApi.deleteApplication(id);
+      set((state) => ({
+        applications: state.applications.filter((application) => application.id !== id),
       }));
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
       throw error;
     }
   },
 
   // Действия для достижений
-  async fetchAchievements() {
-    set(state => ({ loading: { ...state.loading, achievements: true } }));
+  fetchAchievements: async () => {
+    set((state) => ({
+      loading: { ...state.loading, achievements: true },
+      errors: { ...state.errors, achievements: null },
+    }));
+
     try {
-      const achievements = await educationAPI.getAchievements();
-      set({ achievements });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, achievements: error.message } 
+      const data = await educationApi.getAchievements();
+      set((state) => ({
+        achievements: data.results || data,
+        loading: { ...state.loading, achievements: false },
       }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, achievements: false } }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, achievements: false },
+        errors: { ...state.errors, achievements: error.message },
+      }));
+    }
+  },
+
+  fetchUserAchievements: async () => {
+    set((state) => ({
+      loading: { ...state.loading, userAchievements: true },
+      errors: { ...state.errors, userAchievements: null },
+    }));
+
+    try {
+      const data = await educationApi.getUserAchievements();
+      set((state) => ({
+        userAchievements: data.results || data,
+        loading: { ...state.loading, userAchievements: false },
+      }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, userAchievements: false },
+        errors: { ...state.errors, userAchievements: error.message },
+      }));
+    }
+  },
+
+  // Действия для AI рекомендаций
+  fetchAIRecommendations: async () => {
+    set((state) => ({
+      loading: { ...state.loading, aiRecommendations: true },
+      errors: { ...state.errors, aiRecommendations: null },
+    }));
+
+    try {
+      const data = await educationApi.getAIRecommendations();
+      set((state) => ({
+        aiRecommendations: data.results || data,
+        loading: { ...state.loading, aiRecommendations: false },
+      }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, aiRecommendations: false },
+        errors: { ...state.errors, aiRecommendations: error.message },
+      }));
+    }
+  },
+
+  generateAIRecommendations: async () => {
+    try {
+      await educationApi.generateAIRecommendations();
+      // Обновляем список рекомендаций после генерации
+      get().fetchAIRecommendations();
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  updateAIRecommendation: async (id, data) => {
+    try {
+      const result = await educationApi.updateAIRecommendation(id, data);
+      set((state) => ({
+        aiRecommendations: state.aiRecommendations.map((recommendation) =>
+          recommendation.id === id ? result : recommendation
+        ),
+      }));
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Действия для уведомлений
+  fetchNotifications: async () => {
+    set((state) => ({
+      loading: { ...state.loading, notifications: true },
+      errors: { ...state.errors, notifications: null },
+    }));
+
+    try {
+      const data = await educationApi.getNotifications();
+      set((state) => ({
+        notifications: data.results || data,
+        loading: { ...state.loading, notifications: false },
+      }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, notifications: false },
+        errors: { ...state.errors, notifications: error.message },
+      }));
     }
   },
 
   // Действия для планов обучения
-  async fetchStudyPlans() {
-    set(state => ({ loading: { ...state.loading, studyPlans: true } }));
+  fetchStudyPlans: async () => {
+    set((state) => ({
+      loading: { ...state.loading, studyPlans: true },
+      errors: { ...state.errors, studyPlans: null },
+    }));
+
     try {
-      const studyPlans = await educationAPI.getStudyPlans();
-      set({ studyPlans });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, studyPlans: error.message } 
+      const data = await educationApi.getStudyPlans();
+      set((state) => ({
+        studyPlans: data.results || data,
+        loading: { ...state.loading, studyPlans: false },
       }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, studyPlans: false } }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, studyPlans: false },
+        errors: { ...state.errors, studyPlans: error.message },
+      }));
     }
   },
 
-  async createStudyPlan(studyPlanData) {
-    set(state => ({ loading: { ...state.loading, studyPlans: true } }));
+  createStudyPlan: async (data) => {
     try {
-      const studyPlan = await educationAPI.createStudyPlan(studyPlanData);
-      set(state => ({ 
-        studyPlans: [...state.studyPlans, studyPlan] 
+      const result = await educationApi.createStudyPlan(data);
+      set((state) => ({
+        studyPlans: [...state.studyPlans, result],
       }));
+      return result;
     } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, studyPlans: error.message } 
-      }));
       throw error;
-    } finally {
-      set(state => ({ loading: { ...state.loading, studyPlans: false } }));
     }
   },
 
-  // Действия для дашборда
-  async fetchDashboardStats() {
-    set(state => ({ loading: { ...state.loading, dashboardStats: true } }));
+  updateStudyPlan: async (id, data) => {
     try {
-      const stats = await educationAPI.getDashboardStats();
-      set({ dashboardStats: stats });
-    } catch (error) {
-      set(state => ({ 
-        errors: { ...state.errors, dashboardStats: error.message } 
+      const result = await educationApi.updateStudyPlan(id, data);
+      set((state) => ({
+        studyPlans: state.studyPlans.map((plan) =>
+          plan.id === id ? result : plan
+        ),
       }));
-    } finally {
-      set(state => ({ loading: { ...state.loading, dashboardStats: false } }));
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  deleteStudyPlan: async (id) => {
+    try {
+      await educationApi.deleteStudyPlan(id);
+      set((state) => ({
+        studyPlans: state.studyPlans.filter((plan) => plan.id !== id),
+      }));
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Действия для документов
+  fetchDocuments: async () => {
+    set((state) => ({
+      loading: { ...state.loading, documents: true },
+      errors: { ...state.errors, documents: null },
+    }));
+
+    try {
+      const data = await educationApi.getDocuments();
+      set((state) => ({
+        documents: data.results || data,
+        loading: { ...state.loading, documents: false },
+      }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, documents: false },
+        errors: { ...state.errors, documents: error.message },
+      }));
+    }
+  },
+
+  createDocument: async (data) => {
+    try {
+      const result = await educationApi.createDocument(data);
+      set((state) => ({
+        documents: [...state.documents, result],
+      }));
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  updateDocument: async (id, data) => {
+    try {
+      const result = await educationApi.updateDocument(id, data);
+      set((state) => ({
+        documents: state.documents.map((document) =>
+          document.id === id ? result : document
+        ),
+      }));
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  deleteDocument: async (id) => {
+    try {
+      await educationApi.deleteDocument(id);
+      set((state) => ({
+        documents: state.documents.filter((document) => document.id !== id),
+      }));
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Действия для статистики дашборда
+  fetchDashboardStats: async () => {
+    set((state) => ({
+      loading: { ...state.loading, dashboardStats: true },
+      errors: { ...state.errors, dashboardStats: null },
+    }));
+
+    try {
+      const data = await educationApi.getDashboardStats();
+      set((state) => ({
+        dashboardStats: data,
+        loading: { ...state.loading, dashboardStats: false },
+      }));
+    } catch (error) {
+      set((state) => ({
+        loading: { ...state.loading, dashboardStats: false },
+        errors: { ...state.errors, dashboardStats: error.message },
+      }));
     }
   },
 
   // Очистка ошибок
-  clearError(section) {
-    set(state => ({
-      errors: { ...state.errors, [section]: null }
+  clearError: (key) => {
+    set((state) => ({
+      errors: { ...state.errors, [key]: null },
     }));
   },
 
   // Сброс состояния
-  reset() {
+  reset: () => {
     set({
-      studentProfile: null,
       universities: [],
       majors: [],
+      courses: [],
+      enrollments: [],
       applications: [],
-      documents: [],
-      studentDocuments: [],
-      progressSteps: [],
+      achievements: [],
+      userAchievements: [],
       aiRecommendations: [],
       notifications: [],
-      achievements: [],
       studyPlans: [],
+      documents: [],
       dashboardStats: null,
       loading: {
-        studentProfile: false,
         universities: false,
         majors: false,
+        courses: false,
+        enrollments: false,
         applications: false,
-        documents: false,
-        studentDocuments: false,
-        progressSteps: false,
+        achievements: false,
+        userAchievements: false,
         aiRecommendations: false,
         notifications: false,
-        achievements: false,
         studyPlans: false,
+        documents: false,
         dashboardStats: false,
       },
       errors: {
-        studentProfile: null,
         universities: null,
         majors: null,
+        courses: null,
+        enrollments: null,
         applications: null,
-        documents: null,
-        studentDocuments: null,
-        progressSteps: null,
+        achievements: null,
+        userAchievements: null,
         aiRecommendations: null,
         notifications: null,
-        achievements: null,
         studyPlans: null,
+        documents: null,
         dashboardStats: null,
       },
     });

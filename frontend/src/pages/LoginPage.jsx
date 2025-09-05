@@ -10,7 +10,7 @@ function LoginPage() {
   const { loading, error, success } = useSelector((state) => state.auth);
   
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
 
@@ -52,7 +52,7 @@ function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.username || !formData.password) {
+    if (!formData.email || !formData.password) {
       return;
     }
 
@@ -75,7 +75,7 @@ function LoginPage() {
     navigate('/reset-password');
   };
 
-  const canSubmit = formData.username && formData.password && !loading;
+  const canSubmit = formData.email && formData.password && !loading;
 
   return (
     <div className="auth-container">
@@ -119,11 +119,11 @@ function LoginPage() {
             </label>
             <input
               id="username"
-              name="username"
+              name="email"
               type="text"
               className="form-input"
               placeholder="Введите логин или email"
-              value={formData.username}
+              value={formData.email}
               onChange={handleChange}
               required
               autoComplete="username"

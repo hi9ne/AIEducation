@@ -33,6 +33,10 @@ const UniversitalySection = ({ progress }) => {
   const [opened, setOpened] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
+  // Извлекаем значения из объекта progress
+  const overallProgress = progress?.overallProgress || 0;
+  const currentProgress = progress?.currentProgress || {};
+
   const steps = [
     {
       id: 1,
@@ -48,347 +52,268 @@ const UniversitalySection = ({ progress }) => {
       description: 'Подробная информация о себе',
       completed: true,
       required: true,
-      documents: ['Фото', 'Документы об образовании', 'IELTS сертификат']
+      documents: ['Фото', 'Документы', 'Справки']
     },
     {
       id: 3,
-      title: 'Выбор университетов',
-      description: 'До 20 университетов на выбор',
+      title: 'Выбор специальности',
+      description: 'Выбор направления обучения',
       completed: false,
       required: true,
-      documents: ['Список университетов', 'Приоритеты']
+      documents: ['Мотивационное письмо', 'Рекомендации']
     },
     {
       id: 4,
-      title: 'Подача заявки',
-      description: 'Окончательная подача документов',
+      title: 'Подача документов',
+      description: 'Загрузка всех необходимых файлов',
       completed: false,
       required: true,
-      documents: ['Все документы', 'Оплата пошлины']
+      documents: ['Диплом', 'Сертификаты', 'Портфолио']
     },
     {
       id: 5,
       title: 'Ожидание результатов',
-      description: 'Рассмотрение заявки университетами',
+      description: 'Рассмотрение заявки университетом',
       completed: false,
       required: false,
       documents: []
     }
   ];
 
-  const documents = [
-    {
-      id: 1,
-      name: 'Аттестат о среднем образовании',
-      status: 'uploaded',
-      required: true,
-      size: '2.3 MB',
-      uploadedAt: '2024-01-15'
-    },
-    {
-      id: 2,
-      name: 'IELTS сертификат',
-      status: 'uploaded',
-      required: true,
-      size: '1.8 MB',
-      uploadedAt: '2024-01-20'
-    },
-    {
-      id: 3,
-      name: 'Мотивационное письмо',
-      status: 'pending',
-      required: true,
-      size: null,
-      uploadedAt: null
-    },
-    {
-      id: 4,
-      name: 'Рекомендательные письма',
-      status: 'pending',
-      required: true,
-      size: null,
-      uploadedAt: null
-    },
-    {
-      id: 5,
-      name: 'Справка о доходах',
-      status: 'not_required',
-      required: false,
-      size: null,
-      uploadedAt: null
-    }
-  ];
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'uploaded': return 'green';
-      case 'pending': return 'yellow';
-      case 'not_required': return 'gray';
-      default: return 'red';
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'uploaded': return 'Загружено';
-      case 'pending': return 'Ожидает загрузки';
-      case 'not_required': return 'Не требуется';
-      default: return 'Ошибка';
-    }
-  };
-
   const completedSteps = steps.filter(step => step.completed).length;
-  const totalSteps = steps.filter(step => step.required).length;
+  const totalSteps = steps.length;
+  const progressPercentage = Math.round((completedSteps / totalSteps) * 100);
 
   return (
-    <Box className="p-6">
-      <Stack gap="xl">
-        {/* Header */}
-        <Box>
-          <Text size="xl" fw={700} c="dark">
-            Universitaly
-          </Text>
-          <Text size="md" c="dimmed">
-            Регистрация и подача документов через Universitaly
-          </Text>
-        </Box>
+    <Box p="md">
+      <Stack gap="lg">
+        {/* Заголовок секции */}
+        <Group justify="space-between">
+          <Box>
+            <Text size="xl" fw={700} c="blue">
+              Universitaly
+            </Text>
+            <Text size="sm" c="dimmed">
+              Регистрация и подача документов
+            </Text>
+          </Box>
+          <Badge color="blue" variant="light" size="lg">
+            {progressPercentage}% завершено
+          </Badge>
+        </Group>
 
-        {/* Progress Overview */}
-        <Paper className="p-6" shadow="sm">
-          <Grid>
-            <Grid.Col span={{ base: 12, md: 8 }}>
-              <Stack gap="md">
-                <Group justify="space-between" align="center">
-                  <Text size="lg" fw={600}>
-                    Прогресс регистрации: {completedSteps}/{totalSteps} шагов
-                  </Text>
-                  <Badge color="blue" variant="light">
-                    {Math.round((completedSteps / totalSteps) * 100)}%
-                  </Badge>
-                </Group>
-                <Progress
-                  value={(completedSteps / totalSteps) * 100}
-                  color="blue"
-                  size="xl"
-                  className="mb-2"
-                />
-                <Text size="sm" c="dimmed">
-                  Следующий шаг: {steps.find(step => !step.completed && step.required)?.title}
+        {/* Общий прогресс */}
+        <Card withBorder>
+          <Stack gap="md">
+            <Group justify="space-between">
+              <Text size="lg" fw={600}>
+                Общий прогресс
+              </Text>
+              <Text size="sm" c="dimmed">
+                {completedSteps} из {totalSteps} шагов
+              </Text>
+            </Group>
+            <Progress
+              value={progressPercentage}
+              size="lg"
+              radius="md"
+              color="blue"
+              animated
+            />
+          </Stack>
+        </Card>
+
+        {/* Статистика */}
+        <Grid>
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-green-0)' }}>
+              <Stack align="center" gap="sm">
+                <IconCheck size={48} color="var(--mantine-color-green-6)" />
+                <Text size="lg" fw={700} c="green">
+                  {completedSteps}
+                </Text>
+                <Text size="sm" c="dimmed" ta="center">
+                  Завершено шагов
                 </Text>
               </Stack>
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}>
-              <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)' }}>
-                <Stack align="center" gap="sm">
-                  <IconFileText size={48} color="var(--mantine-color-blue-6)" />
-                  <Text size="lg" fw={700} c="blue">
-                    {progress}%
-                  </Text>
-                  <Text size="sm" c="dimmed" ta="center">
-                    Общий прогресс
-                  </Text>
-                </Stack>
-              </Card>
-            </Grid.Col>
-          </Grid>
-        </Paper>
+            </Card>
+          </Grid.Col>
 
-        {/* Steps */}
-        <Paper className="p-6" shadow="sm">
-          <Text size="lg" fw={600} className="mb-4">
-            Пошаговый план
-          </Text>
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-orange-0)' }}>
+              <Stack align="center" gap="sm">
+                <IconClock size={48} color="var(--mantine-color-orange-6)" />
+                <Text size="lg" fw={700} c="orange">
+                  {totalSteps - completedSteps}
+                </Text>
+                <Text size="sm" c="dimmed" ta="center">
+                  Осталось шагов
+                </Text>
+              </Stack>
+            </Card>
+          </Grid.Col>
+
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)' }}>
+              <Stack align="center" gap="sm">
+                <IconFileText size={48} color="var(--mantine-color-blue-6)" />
+                <Text size="lg" fw={700} c="blue">
+                  {progressPercentage}%
+                </Text>
+                <Text size="sm" c="dimmed" ta="center">
+                  Общий прогресс
+                </Text>
+              </Stack>
+            </Card>
+          </Grid.Col>
+        </Grid>
+
+        {/* Список шагов */}
+        <Card withBorder>
           <Stack gap="md">
-            {steps.map((step, index) => (
-              <Card key={step.id} shadow="sm" padding="lg" radius="md" withBorder>
-                <Group justify="space-between" align="flex-start">
-                  <Group>
-                    <ActionIcon
-                      color={step.completed ? 'green' : 'blue'}
-                      variant={step.completed ? 'filled' : 'light'}
-                      size="lg"
-                    >
-                      {step.completed ? <IconCheck size={20} /> : <IconClock size={20} />}
-                    </ActionIcon>
-                    <Box>
-                      <Text size="md" fw={600} c="dark">
-                        {step.title}
-                      </Text>
-                      <Text size="sm" c="dimmed" className="mb-2">
+            <Text size="lg" fw={600}>
+              Пошаговый план
+            </Text>
+            <Stack gap="sm">
+              {steps.map((step, index) => (
+                <Paper
+                  key={step.id}
+                  p="md"
+                  withBorder
+                  style={{
+                    backgroundColor: step.completed 
+                      ? 'var(--mantine-color-green-0)' 
+                      : 'var(--mantine-color-gray-0)'
+                  }}
+                >
+                  <Group justify="space-between">
+                    <Box style={{ flex: 1 }}>
+                      <Group gap="sm" mb="xs">
+                        <Checkbox
+                          checked={step.completed}
+                          disabled
+                          color="green"
+                        />
+                        <Text fw={600} c={step.completed ? 'green' : 'dark'}>
+                          {step.title}
+                        </Text>
+                        {step.required && (
+                          <Badge color="red" variant="light" size="sm">
+                            Обязательно
+                          </Badge>
+                        )}
+                      </Group>
+                      <Text size="sm" c="dimmed" mb="sm">
                         {step.description}
                       </Text>
                       {step.documents.length > 0 && (
-                        <Text size="xs" c="dimmed">
-                          Требуемые документы: {step.documents.join(', ')}
-                        </Text>
+                        <Box>
+                          <Text size="sm" fw={500} mb="xs">
+                            Необходимые документы:
+                          </Text>
+                          <List size="sm" spacing="xs">
+                            {step.documents.map((doc, docIndex) => (
+                              <List.Item key={docIndex}>
+                                <Text size="sm" c="dimmed">
+                                  {doc}
+                                </Text>
+                              </List.Item>
+                            ))}
+                          </List>
+                        </Box>
                       )}
                     </Box>
+                    <Group gap="sm">
+                      {step.completed ? (
+                        <Badge color="green" variant="light">
+                          Завершено
+                        </Badge>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="light"
+                          leftSection={<IconPlayerPlay size={16} />}
+                        >
+                          Начать
+                        </Button>
+                      )}
+                    </Group>
                   </Group>
-                  <Group>
-                    {step.completed ? (
-                      <Badge color="green" variant="light">
-                        Завершено
-                      </Badge>
-                    ) : step.required ? (
-                      <Badge color="yellow" variant="light">
-                        Требуется
-                      </Badge>
-                    ) : (
-                      <Badge color="gray" variant="light">
-                        Опционально
-                      </Badge>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      leftSection={<IconEye size={16} />}
-                    >
-                      Подробнее
-                    </Button>
-                  </Group>
-                </Group>
-              </Card>
-            ))}
+                </Paper>
+              ))}
+            </Stack>
           </Stack>
-        </Paper>
+        </Card>
 
-        {/* Documents */}
-        <Paper className="p-6" shadow="sm">
-          <Group justify="space-between" align="center" className="mb-4">
+        {/* Действия */}
+        <Card withBorder>
+          <Stack gap="md">
             <Text size="lg" fw={600}>
-              Документы
+              Быстрые действия
             </Text>
-            <Button
-              leftSection={<IconUpload size={16} />}
-              onClick={() => setOpened(true)}
-            >
-              Загрузить документ
-            </Button>
-          </Group>
-          
-          <Stack gap="sm">
-            {documents.map((doc) => (
-              <Card key={doc.id} shadow="sm" padding="md" radius="md" withBorder>
-                <Group justify="space-between" align="center">
-                  <Group>
-                    <IconFileText size={20} color="var(--mantine-color-gray-6)" />
-                    <Box>
-                      <Text size="md" fw={500} c="dark">
-                        {doc.name}
-                      </Text>
-                      {doc.uploadedAt && (
-                        <Text size="xs" c="dimmed">
-                          Загружено: {new Date(doc.uploadedAt).toLocaleDateString('ru-RU')} • {doc.size}
-                        </Text>
-                      )}
-                    </Box>
-                  </Group>
-                  <Group>
-                    <Badge
-                      color={getStatusColor(doc.status)}
-                      variant="light"
-                    >
-                      {getStatusText(doc.status)}
-                    </Badge>
-                    {doc.status === 'uploaded' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        leftSection={<IconDownload size={16} />}
-                      >
-                        Скачать
-                      </Button>
-                    )}
-                    {doc.status === 'pending' && (
-                      <Button
-                        size="sm"
-                        color="blue"
-                        leftSection={<IconUpload size={16} />}
-                      >
-                        Загрузить
-                      </Button>
-                    )}
-                  </Group>
-                </Group>
-              </Card>
-            ))}
+            <Group>
+              <Button
+                leftSection={<IconUpload size={16} />}
+                onClick={() => setOpened(true)}
+              >
+                Загрузить документы
+              </Button>
+              <Button
+                variant="light"
+                leftSection={<IconDownload size={16} />}
+              >
+                Скачать шаблоны
+              </Button>
+              <Button
+                variant="light"
+                leftSection={<IconEye size={16} />}
+              >
+                Просмотреть заявку
+              </Button>
+            </Group>
           </Stack>
-        </Paper>
+        </Card>
 
-        {/* Video Instructions */}
-        <Paper className="p-6" shadow="sm">
-          <Text size="lg" fw={600} className="mb-4">
-            Видео-инструкции
-          </Text>
-          <Grid>
-            <Grid.Col span={{ base: 12, md: 6 }}>
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
-                <Stack gap="md">
-                  <Group>
-                    <IconPlayerPlay size={24} color="var(--mantine-color-blue-6)" />
-                    <Text size="md" fw={600}>
-                      Регистрация на Universitaly
-                    </Text>
-                  </Group>
-                  <Text size="sm" c="dimmed">
-                    Пошаговая инструкция по созданию аккаунта
-                  </Text>
-                  <Button color="blue" variant="outline" fullWidth>
-                    Смотреть видео
-                  </Button>
-                </Stack>
-              </Card>
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, md: 6 }}>
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
-                <Stack gap="md">
-                  <Group>
-                    <IconPlayerPlay size={24} color="var(--mantine-color-green-6)" />
-                    <Text size="md" fw={600}>
-                      Заполнение анкеты
-                    </Text>
-                  </Group>
-                  <Text size="sm" c="dimmed">
-                    Как правильно заполнить все поля анкеты
-                  </Text>
-                  <Button color="green" variant="outline" fullWidth>
-                    Смотреть видео
-                  </Button>
-                </Stack>
-              </Card>
-            </Grid.Col>
-          </Grid>
-        </Paper>
+        {/* Модальное окно загрузки документов */}
+        <Modal
+          opened={opened}
+          onClose={() => setOpened(false)}
+          title="Загрузка документов"
+          size="md"
+        >
+          <Stack gap="md">
+            <Text size="sm" c="dimmed">
+              Выберите файлы для загрузки в систему Universitaly
+            </Text>
+            <FileInput
+              label="Выберите файл"
+              placeholder="Нажмите для выбора файла"
+              value={selectedFile}
+              onChange={setSelectedFile}
+              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            />
+            <Group justify="flex-end" gap="sm">
+              <Button
+                variant="light"
+                onClick={() => setOpened(false)}
+              >
+                Отмена
+              </Button>
+              <Button
+                onClick={() => {
+                  // Логика загрузки файла
+                  console.log('Загружаем файл:', selectedFile);
+                  setOpened(false);
+                  setSelectedFile(null);
+                }}
+                disabled={!selectedFile}
+              >
+                Загрузить
+              </Button>
+            </Group>
+          </Stack>
+        </Modal>
       </Stack>
-
-      {/* Upload Modal */}
-      <Modal
-        opened={opened}
-        onClose={() => setOpened(false)}
-        title="Загрузить документ"
-        size="md"
-      >
-        <Stack gap="md">
-          <FileInput
-            label="Выберите файл"
-            placeholder="Нажмите для выбора файла"
-            value={selectedFile}
-            onChange={setSelectedFile}
-            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-          />
-          <Text size="sm" c="dimmed">
-            Поддерживаемые форматы: PDF, DOC, DOCX, JPG, PNG
-          </Text>
-          <Group>
-            <Button onClick={() => setOpened(false)}>
-              Загрузить
-            </Button>
-            <Button variant="outline" onClick={() => setOpened(false)}>
-              Отмена
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
     </Box>
   );
 };

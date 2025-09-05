@@ -29,6 +29,9 @@ import {
 } from '@tabler/icons-react';
 
 const TOLCSection = ({ progress }) => {
+  // Извлекаем значения из объекта progress
+  const tolcProgress = progress?.currentProgress?.tolc || 0;
+  const overallProgress = progress?.overallProgress || 0;
   const [opened, setOpened] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [targetLevel, setTargetLevel] = useState(0);
@@ -147,7 +150,7 @@ const TOLCSection = ({ progress }) => {
                 <Stack align="center" gap="sm">
                   <IconCalculator size={48} color="var(--mantine-color-blue-6)" />
                   <Text size="lg" fw={700} c="blue">
-                    {progress}%
+                    {tolcProgress}%
                   </Text>
                   <Text size="sm" c="dimmed" ta="center">
                     Общий прогресс подготовки

@@ -12,11 +12,13 @@ import DOVSection from './sections/DOVSection.jsx';
 import VisaSection from './sections/VisaSection.jsx';
 import SettingsSection from './sections/SettingsSection.jsx';
 
-const CentralContent = ({ activeSection, progress }) => {
+const CentralContent = ({ activeSection, overallProgress, currentProgress }) => {
   const getSectionComponent = () => {
+    const progress = { overallProgress, currentProgress };
+    
     switch (activeSection) {
       case 'main':
-        return <MainPage progress={progress} />;
+        return <MainPage />;
       case 'ielts':
         return <IELTSSection progress={progress} />;
       case 'tolc':
@@ -34,7 +36,7 @@ const CentralContent = ({ activeSection, progress }) => {
       case 'settings':
         return <SettingsSection progress={progress} />;
       default:
-        return <MainPage progress={progress} />;
+        return <MainPage />;
     }
   };
 

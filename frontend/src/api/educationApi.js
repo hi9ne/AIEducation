@@ -1,99 +1,261 @@
-import axios from 'axios';
+// API клиент для работы с бекендом образования
+import { refreshToken, isTokenExpired } from './tokenUtils';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = 'http://localhost:8000/api/education';
 
 class EducationAPI {
   constructor() {
-    this.api = axios.create({
-      baseURL: API_URL,
-      withCredentials: true,
-    });
-
-    this.api.interceptors.request.use(config => {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    });
-
-    this.api.interceptors.response.use(
-      response => response,
-      async error => {
-        const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
-          try {
-            const refreshToken = localStorage.getItem('refreshToken');
-            if (!refreshToken) {
-              throw new Error('Учетные данные не были предоставлены.');
-            }
-            const response = await axios.post(`${API_URL}/auth/token/refresh/`, {
-              refresh: refreshToken,
-            });
-            localStorage.setItem('accessToken', response.data.access);
-            originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
-            return this.api(originalRequest);
-          } catch (refreshError) {
-            console.error('Unable to refresh token:', refreshError);
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            // Не перенаправляем на логин, просто показываем ошибку
-            throw new Error('Учетные данные не были предоставлены.');
-          }
-        }
-        return Promise.reject(error);
-      }
-    );
+    this.baseURL = API_BASE_URL;
   }
 
-  // Auth
-  login = (username, password) => this.api.post('/auth/login/', { username, password });
-  register = (username, email, password) => this.api.post('/auth/register/', { username, email, password });
-  logout = () => this.api.post('/auth/logout/');
-  
-  // Profile
-  getProfile = () => this.api.get('/education/profiles/me/');
-  updateProfile = (data) => this.api.patch('/education/profiles/me/', data);
-  
-  // Universities
-  getUniversities = (filters = {}) => this.api.get('/education/universities/', { params: filters });
-  getUniversityDetails = (id) => this.api.get(`/education/universities/${id}/`);
-  
-  // Majors
-  getMajors = (filters = {}) => this.api.get('/education/majors/', { params: filters });
-  
-  // Applications
-  getApplications = () => this.api.get('/education/applications/');
-  createApplication = (data) => this.api.post('/education/applications/', data);
-  updateApplication = (id, data) => this.api.patch(`/education/applications/${id}/`, data);
-  
-  // Documents
-  getDocuments = () => this.api.get('/education/documents/');
-  uploadDocument = (data) => this.api.post('/education/documents/', data, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
-  
-  // AI
-  getAIRecommendations = () => this.api.get('/education/ai-recommendations/');
-  sendAIChatMessage = (message) => this.api.post('/education/ai-chat/', { message });
-  
-  // Notifications
-  getNotifications = () => this.api.get('/education/notifications/');
-  markNotificationAsRead = (id) => this.api.patch(`/education/notifications/${id}/`, { read: true });
-  
-  // Achievements
-  getAchievements = () => this.api.get('/education/achievements/');
-  
-  // Dashboard Stats
-  getDashboardStats = () => this.api.get('/education/dashboard/stats/');
-  
-  // Study Plan
-  getStudyPlan = () => this.api.get('/education/study-plans/me/');
-  createStudyPlanItem = (data) => this.api.post('/education/study-plan-items/', data);
-  updateStudyPlanItem = (id, data) => this.api.patch(`/education/study-plan-items/${id}/`, data);
-  deleteStudyPlanItem = (id) => this.api.delete(`/education/study-plan-items/${id}/`);
+  // Получение токена из localStorage
+  getAuthToken() {
+    return localStorage.getItem('accessToken');
+  }
+
+  // Базовый метод для HTTP запросов с автоматическим обновлением токена
+  async request(endpoint, options = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    let token = this.getAuthToken();
+
+    console.log('EducationAPI request:', url, 'token:', !!token);
+
+    // Проверяем, не истек ли токен
+    if (token && isTokenExpired(token)) {
+      try {
+        token = await refreshToken();
+      } catch (error) {
+        console.error('Failed to refresh token:', error);
+        // Перенаправляем на страницу входа
+        window.location.href = '/login';
+        return;
+      }
+    }
+
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers,
+      },
+      ...options,
+    };
+
+    try {
+      const response = await fetch(url, config);
+
+      console.log('EducationAPI response:', response.status, response.statusText);
+
+      if (response.status === 401) {
+        // Пытаемся обновить токен
+        try {
+          const newToken = await refreshToken();
+          // Повторяем запрос с новым токеном
+          const newConfig = {
+            ...config,
+            headers: {
+              ...config.headers,
+              Authorization: `Bearer ${newToken}`,
+            },
+          };
+          const retryResponse = await fetch(url, newConfig);
+          
+          if (retryResponse.status === 401) {
+            const errorData = await retryResponse.json().catch(() => ({}));
+            throw new Error(errorData.detail || 'Учетные данные не были предоставлены.');
+          }
+          
+          if (!retryResponse.ok) {
+            const errorData = await retryResponse.json().catch(() => ({}));
+            throw new Error(errorData.detail || `HTTP error! status: ${retryResponse.status}`);
+          }
+          
+          return await retryResponse.json();
+        } catch (refreshError) {
+          console.error('Token refresh failed:', refreshError);
+          window.location.href = '/login';
+          return;
+        }
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
+  }
+
+  // Университеты
+  async getUniversities(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/universities/${queryString ? '?' + queryString : ''}`);
+  }
+
+  async getUniversity(id) {
+    return this.request(`/universities/${id}/`);
+  }
+
+  // Специальности
+  async getMajors(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/majors/${queryString ? '?' + queryString : ''}`);
+  }
+
+  async getMajor(id) {
+    return this.request(`/majors/${id}/`);
+  }
+
+  // Курсы
+  async getCourses(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return this.request(`/courses/${queryString ? '?' + queryString : ''}`);
+  }
+
+  async getCourse(id) {
+    return this.request(`/courses/${id}/`);
+  }
+
+  // Записи на курсы
+  async getEnrollments() {
+    return this.request('/enrollments/');
+  }
+
+  async createEnrollment(data) {
+    return this.request('/enrollments/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateEnrollment(id, data) {
+    return this.request(`/enrollments/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteEnrollment(id) {
+    return this.request(`/enrollments/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Заявки
+  async getApplications() {
+    return this.request('/applications/');
+  }
+
+  async createApplication(data) {
+    return this.request('/applications/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateApplication(id, data) {
+    return this.request(`/applications/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteApplication(id) {
+    return this.request(`/applications/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Достижения
+  async getAchievements() {
+    return this.request('/achievements/');
+  }
+
+  async getUserAchievements() {
+    return this.request('/user-achievements/');
+  }
+
+  // AI рекомендации
+  async getAIRecommendations() {
+    return this.request('/ai-recommendations/');
+  }
+
+  async generateAIRecommendations() {
+    return this.request('/generate-ai-recommendations/', {
+      method: 'POST',
+    });
+  }
+
+  async updateAIRecommendation(id, data) {
+    return this.request(`/ai-recommendations/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Уведомления
+  async getNotifications() {
+    return this.request('/notifications/');
+  }
+
+  // Планы обучения
+  async getStudyPlans() {
+    return this.request('/study-plans/');
+  }
+
+  async createStudyPlan(data) {
+    return this.request('/study-plans/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateStudyPlan(id, data) {
+    return this.request(`/study-plans/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteStudyPlan(id) {
+    return this.request(`/study-plans/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Документы
+  async getDocuments() {
+    return this.request('/documents/');
+  }
+
+  async createDocument(data) {
+    return this.request('/documents/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateDocument(id, data) {
+    return this.request(`/documents/${id}/`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteDocument(id) {
+    return this.request(`/documents/${id}/`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Статистика дашборда
+  async getDashboardStats() {
+    return this.request('/dashboard/stats/');
+  }
 }
 
-const educationAPI = new EducationAPI();
-export default educationAPI;
+export default new EducationAPI();

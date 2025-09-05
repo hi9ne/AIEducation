@@ -140,7 +140,7 @@ export const authAPI = {
   refreshToken: (refreshToken) => api.post('/api/auth/token/refresh/', { refresh: refreshToken }),
   
   // Профиль
-  getProfile: () => api.get('/api/profile/'),
+  getProfile: () => api.get('/api/profile/profile/'),
   updateProfile: (data) => api.patch('/api/profile/update/', data),
   
   // Пароли

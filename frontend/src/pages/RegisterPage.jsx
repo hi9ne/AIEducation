@@ -9,17 +9,17 @@ function RegisterPage() {
   const { loading, error, success } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
-    username: "",
     email: "",
     first_name: "",
     last_name: "",
     password: "",
-    password2: "",
+    password_confirm: "",
+    username: "",
   });
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
-  const [showPassword2, setShowPassword2] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Очищаем ошибки при размонтировании
@@ -97,7 +97,7 @@ function RegisterPage() {
     if (!formData.first_name) newErrors.first_name = "Обязательное поле";
     if (!formData.last_name) newErrors.last_name = "Обязательное поле";
     if (!formData.password) newErrors.password = "Обязательное поле";
-    if (!formData.password2) newErrors.password2 = "Обязательное поле";
+    if (!formData.password_confirm) newErrors.password2 = "Обязательное поле";
     if (!agreedToTerms) newErrors.terms = "Необходимо согласие с условиями";
 
     // Запускаем валидацию для заполненных полей
@@ -144,7 +144,7 @@ function RegisterPage() {
       if (registerUser.fulfilled.match(resultAction)) {
         // Немедленный вход после успешной регистрации
         const loginAction = await dispatch(loginUser({
-          username: formData.username,
+          email: formData.email,
           password: formData.password,
         }));
         if (loginUser.fulfilled.match(loginAction)) {
@@ -333,11 +333,11 @@ function RegisterPage() {
             <div className="password-input-container">
               <input
                 id="password2"
-                name="password2"
-                type={showPassword2 ? "text" : "password"}
+                name="password_confirm"
+                type={showPasswordConfirm ? "text" : "password"}
                 className={`form-input ${errors.password2 ? 'error' : ''}`}
                 placeholder="Подтвердите ваш пароль"
-                value={formData.password2}
+                value={formData.password_confirm}
                 onChange={handleChange}
                 minLength={8}
                 required
@@ -345,10 +345,10 @@ function RegisterPage() {
               <button
                 type="button"
                 className="password-toggle"
-                onClick={() => setShowPassword2(!showPassword2)}
+                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
                 tabIndex="-1"
               >
-                {showPassword2 ? "🙈" : "👁️"}
+                {showPasswordConfirm ? "🙈" : "👁️"}
               </button>
             </div>
             {errors.password2 && (

@@ -33,6 +33,9 @@ import {
 } from '@tabler/icons-react';
 
 const VisaSection = ({ progress }) => {
+  // Извлекаем значения из объекта progress
+  const visaProgress = progress?.currentProgress?.visa || 0;
+  const overallProgress = progress?.overallProgress || 0;
   const [opened, setOpened] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -216,7 +219,7 @@ const VisaSection = ({ progress }) => {
                 <Stack align="center" gap="sm">
                   <IconPlane size={48} color="var(--mantine-color-blue-6)" />
                   <Text size="lg" fw={700} c="blue">
-                    {progress}%
+                    {visaProgress}%
                   </Text>
                   <Text size="sm" c="dimmed" ta="center">
                     Общий прогресс

@@ -9,20 +9,12 @@ export const loginUser = createAsyncThunk(
       const response = await authAPI.login(credentials);
       
       // Сохраняем токены
-      localStorage.setItem('accessToken', response.data.access);
-      localStorage.setItem('refreshToken', response.data.refresh);
+    localStorage.setItem('accessToken', response.data.tokens.access);
+    localStorage.setItem('refreshToken', response.data.tokens.refresh);
       
-      // Сохраняем базовую информацию о пользователе
-      const userInfo = {
-        id: response.data.user_id,
-        username: response.data.username,
-        email: response.data.email,
-        is_email_verified: response.data.is_email_verified,
-        date_joined: response.data.date_joined,
-        last_login: response.data.last_login
-      };
-      
-      localStorage.setItem('userInfo', JSON.stringify(userInfo));
+  // Сохраняем базовую информацию о пользователе
+  const userInfo = response.data.user;
+  localStorage.setItem('userInfo', JSON.stringify(userInfo));
       
       return response.data;
     } catch (error) {
