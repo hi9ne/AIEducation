@@ -1,0 +1,339 @@
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchDashboardStats } from '../../../store/educationSlice';
+import { useAuth } from '../../../hooks/useAuth';
+import {
+  Box,
+  Grid,
+  Card,
+  Text,
+  Group,
+  Badge,
+  Button,
+  Progress,
+  Stack,
+  ActionIcon,
+  ThemeIcon,
+  Skeleton,
+  Alert,
+} from '@mantine/core';
+import {
+  IconSchool,
+  IconBook,
+  IconCalendar,
+  IconTrophy,
+  IconRefresh,
+  IconAlertCircle,
+  IconTrendingUp,
+  IconUsers,
+  IconTarget,
+} from '@tabler/icons-react';
+import { motion } from 'framer-motion';
+
+export function MainPage() {
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useAuth();
+  const { dashboardStats, loading, error } = useSelector((state) => state.education);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Отладочная информация
+  console.log('MainPage - isAuthenticated:', isAuthenticated);
+  console.log('MainPage - loading:', loading);
+  console.log('MainPage - error:', error);
+  console.log('MainPage - dashboardStats:', dashboardStats);
+
+  useEffect(() => {
+    console.log('MainPage useEffect - isAuthenticated:', isAuthenticated);
+    if (isAuthenticated) {
+      console.log('Dispatching fetchDashboardStats');
+      dispatch(fetchDashboardStats());
+    } else {
+      console.log('User not authenticated, skipping fetchDashboardStats');
+    }
+  }, [dispatch, isAuthenticated]);
+
+  const handleRefresh = async () => {
+    if (isAuthenticated) {
+      setRefreshing(true);
+      await dispatch(fetchDashboardStats());
+      setRefreshing(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Box p="md">
+        <Stack gap="md">
+          <Skeleton height={200} radius="md" />
+          <Skeleton height={100} radius="md" />
+          <Skeleton height={150} radius="md" />
+        </Stack>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box p="md">
+        <Alert
+          icon={<IconAlertCircle size={16} />}
+          title="Ошибка загрузки данных"
+          color="red"
+        >
+          <Text size="sm">{error}</Text>
+        </Alert>
+      </Box>
+    );
+  }
+
+  const stats = dashboardStats || {
+    total_courses: 0,
+    completed_courses: 0,
+    upcoming_deadlines: 0,
+    achievements_unlocked: 0,
+    current_streak: 0,
+    total_points: 0,
+    applications_submitted: 0,
+    universities_favorited: 0,
+  };
+
+  const progressPercentage = stats.total_courses > 0 
+    ? Math.round((stats.completed_courses / stats.total_courses) * 100) 
+    : 0;
+
+  return (
+    <Box p="md">
+      <Stack gap="lg">
+        {/* Заголовок */}
+        <Group justify="space-between">
+          <Box>
+            <Text size="xl" fw={700} c="blue">
+              Добро пожаловать в AI Education!
+            </Text>
+            <Text size="sm" c="dimmed">
+              Ваш персональный помощник в образовании за рубежом
+            </Text>
+          </Box>
+          <Button
+            leftSection={<IconRefresh size={16} />}
+            onClick={handleRefresh}
+            loading={refreshing}
+            variant="light"
+          >
+            Обновить
+          </Button>
+        </Group>
+
+        {/* Основная статистика */}
+        <Grid>
+          <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
+                <Group justify="space-between" mb="md">
+                  <ThemeIcon size="xl" color="blue" variant="light">
+                    <IconSchool size={24} />
+                  </ThemeIcon>
+                  <Badge color="blue" variant="light">
+                    Всего курсов
+                  </Badge>
+                </Group>
+                <Text size="2xl" fw={700} c="blue">
+                  {stats.total_courses}
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Доступно для изучения
+                </Text>
+              </Card>
+            </motion.div>
+          </Grid.Col>
+
+          <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
+                <Group justify="space-between" mb="md">
+                  <ThemeIcon size="xl" color="green" variant="light">
+                    <IconBook size={24} />
+                  </ThemeIcon>
+                  <Badge color="green" variant="light">
+                    Завершено
+                  </Badge>
+                </Group>
+                <Text size="2xl" fw={700} c="green">
+                  {stats.completed_courses}
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Курсов пройдено
+                </Text>
+              </Card>
+            </motion.div>
+          </Grid.Col>
+
+          <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
+                <Group justify="space-between" mb="md">
+                  <ThemeIcon size="xl" color="orange" variant="light">
+                    <IconCalendar size={24} />
+                  </ThemeIcon>
+                  <Badge color="orange" variant="light">
+                    Дедлайны
+                  </Badge>
+                </Group>
+                <Text size="2xl" fw={700} c="orange">
+                  {stats.upcoming_deadlines}
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Предстоящих событий
+                </Text>
+              </Card>
+            </motion.div>
+          </Grid.Col>
+
+          <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
+                <Group justify="space-between" mb="md">
+                  <ThemeIcon size="xl" color="purple" variant="light">
+                    <IconTrophy size={24} />
+                  </ThemeIcon>
+                  <Badge color="purple" variant="light">
+                    Достижения
+                  </Badge>
+                </Group>
+                <Text size="2xl" fw={700} c="purple">
+                  {stats.achievements_unlocked}
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Значков получено
+                </Text>
+              </Card>
+            </motion.div>
+          </Grid.Col>
+        </Grid>
+
+        {/* Прогресс обучения */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Card shadow="sm" padding="lg" radius="md" withBorder>
+            <Group justify="space-between" mb="md">
+              <Text size="lg" fw={600}>
+                Прогресс обучения
+              </Text>
+              <Text size="sm" c="dimmed">
+                {progressPercentage}% завершено
+              </Text>
+            </Group>
+            <Progress
+              value={progressPercentage}
+              size="lg"
+              radius="md"
+              color="blue"
+              animated
+            />
+            <Group justify="space-between" mt="sm">
+              <Text size="sm" c="dimmed">
+                {stats.completed_courses} из {stats.total_courses} курсов
+              </Text>
+              <Text size="sm" fw={500} c="blue">
+                {stats.total_points} очков
+              </Text>
+            </Group>
+          </Card>
+        </motion.div>
+
+        {/* Дополнительная статистика */}
+        <Grid>
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
+                <Group justify="space-between" mb="md">
+                  <Text size="lg" fw={600}>
+                    Активность
+                  </Text>
+                  <ThemeIcon size="lg" color="green" variant="light">
+                    <IconTrendingUp size={20} />
+                  </ThemeIcon>
+                </Group>
+                <Stack gap="sm">
+                  <Group justify="space-between">
+                    <Text size="sm">Текущая серия</Text>
+                    <Text size="sm" fw={500} c="green">
+                      {stats.current_streak} дней
+                    </Text>
+                  </Group>
+                  <Group justify="space-between">
+                    <Text size="sm">Заявки подано</Text>
+                    <Text size="sm" fw={500} c="blue">
+                      {stats.applications_submitted}
+                    </Text>
+                  </Group>
+                  <Group justify="space-between">
+                    <Text size="sm">Университетов в избранном</Text>
+                    <Text size="sm" fw={500} c="purple">
+                      {stats.universities_favorited}
+                    </Text>
+                  </Group>
+                </Stack>
+              </Card>
+            </motion.div>
+          </Grid.Col>
+
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
+                <Group justify="space-between" mb="md">
+                  <Text size="lg" fw={600}>
+                    Быстрые действия
+                  </Text>
+                  <ThemeIcon size="lg" color="blue" variant="light">
+                    <IconTarget size={20} />
+                  </ThemeIcon>
+                </Group>
+                <Stack gap="sm">
+                  <Button variant="light" leftSection={<IconBook size={16} />}>
+                    Начать новый курс
+                  </Button>
+                  <Button variant="light" leftSection={<IconSchool size={16} />}>
+                    Найти университет
+                  </Button>
+                  <Button variant="light" leftSection={<IconCalendar size={16} />}>
+                    Создать план обучения
+                  </Button>
+                </Stack>
+              </Card>
+            </motion.div>
+          </Grid.Col>
+        </Grid>
+      </Stack>
+    </Box>
+  );
+}
+
+export default MainPage;

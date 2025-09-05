@@ -31,6 +31,9 @@ import {
 } from '@tabler/icons-react';
 
 const CodiceSection = ({ progress }) => {
+  // Извлекаем значения из объекта progress
+  const codiceProgress = progress?.currentProgress?.codice || 10;
+  const overallProgress = progress?.overallProgress || 0;
   const [opened, setOpened] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -177,7 +180,7 @@ const CodiceSection = ({ progress }) => {
                 <Stack align="center" gap="sm">
                   <IconCreditCard size={48} color="var(--mantine-color-blue-6)" />
                   <Text size="lg" fw={700} c="blue">
-                    {progress}%
+                    {codiceProgress}%
                   </Text>
                   <Text size="sm" c="dimmed" ta="center">
                     Общий прогресс

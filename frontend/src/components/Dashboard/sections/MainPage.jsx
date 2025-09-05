@@ -1,380 +1,352 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  Box, 
-  Stack, 
-  Text, 
-  Paper, 
-  Group, 
-  Badge, 
-  Button, 
-  Card,
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchDashboardStats } from '../../../store/educationSlice';
+import { useAuth } from '../../../hooks/useAuth';
+import {
+  Box,
   Grid,
+  Card,
+  Text,
+  Group,
+  Badge,
+  Button,
   Progress,
+  Stack,
+  ActionIcon,
+  ThemeIcon,
   Skeleton,
   Alert,
-  ActionIcon,
-  Divider,
-  ThemeIcon
 } from '@mantine/core';
-import { 
-  IconTrendingUp, 
-  IconUsers, 
-  IconCalendar, 
-  IconTarget,
-  IconTrophy,
-  IconClock,
-  IconCheck,
-  IconAlertCircle,
-  IconRefresh,
-  IconArrowRight,
-  IconBook,
+import {
   IconSchool,
-  IconCertificate,
-  IconBuilding
+  IconBook,
+  IconCalendar,
+  IconTrophy,
+  IconRefresh,
+  IconAlertCircle,
+  IconTrendingUp,
+  IconUsers,
+  IconTarget,
 } from '@tabler/icons-react';
 import { motion } from 'framer-motion';
 
-const MainPage = ({ progress }) => {
-  const [refreshing, setRefreshing] = useState(false);
+// Тестовые данные для дашборда
+const mockDashboardStats = {
+  total_courses: 3,
+  completed_courses: 0,
+  upcoming_deadlines: 0,
+  achievements_unlocked: 0,
+  current_streak: 7,
+  total_study_time: 45,
+  weekly_goal: 20,
+  weekly_progress: 12,
+  recommended_courses: [
+    {
+      id: 1,
+      title: "IELTS Preparation",
+      progress: 25,
+      difficulty: "Intermediate",
+      duration: "8 weeks"
+    },
+    {
+      id: 2,
+      title: "Italian Language Basics",
+      progress: 60,
+      difficulty: "Beginner",
+      duration: "12 weeks"
+    }
+  ],
+  recent_achievements: [
+    {
+      id: 1,
+      title: "First Week Complete",
+      description: "Completed your first week of study",
+      icon: "trophy",
+      unlocked_at: "2024-01-15"
+    }
+  ],
+  upcoming_events: [
+    {
+      id: 1,
+      title: "IELTS Test Registration",
+      date: "2024-02-15",
+      type: "deadline"
+    }
+  ]
+};
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    // Имитируем загрузку
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setRefreshing(false);
+const MainPage = () => {
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useAuth();
+  
+  const { dashboardStats, loading, error } = useSelector((state) => ({
+    dashboardStats: state.education.dashboardStats,
+    loading: state.education.loading,
+    error: state.education.error,
+  }));
+
+  // Используем тестовые данные, если нет данных из API
+  const displayStats = dashboardStats || mockDashboardStats;
+
+  // Отладочная информация
+  console.log('MainPage - isAuthenticated:', isAuthenticated);
+  console.log('MainPage - loading:', loading);
+  console.log('MainPage - error:', error);
+  console.log('MainPage - dashboardStats:', dashboardStats);
+  console.log('MainPage - displayStats:', displayStats);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('MainPage useEffect - isAuthenticated:', isAuthenticated);
+      console.log('Dispatching fetchDashboardStats');
+      dispatch(fetchDashboardStats());
+    }
+  }, [dispatch, isAuthenticated]);
+
+  const handleRefresh = () => {
+    if (isAuthenticated) {
+      dispatch(fetchDashboardStats());
+    }
   };
 
-  const isAuthenticated = localStorage.getItem('accessToken');
-
-  if (!isAuthenticated) {
+  if (loading.dashboardStats && !displayStats) {
     return (
-      <Box p="md">
-        <Alert
-          icon={<IconAlertCircle size={16} />}
-          title="Требуется авторизация"
-          color="blue"
-        >
-          <Text size="sm">
-            Для просмотра дашборда необходимо войти в систему.
-          </Text>
-        </Alert>
+      <Box>
+        <Grid>
+          {[1, 2, 3, 4].map((i) => (
+            <Grid.Col key={i} span={{ base: 12, md: 6, lg: 3 }}>
+              <Skeleton height={120} />
+            </Grid.Col>
+          ))}
+        </Grid>
       </Box>
     );
   }
 
-  // Моковые данные для демонстрации
-  const stats = {
-    totalApplications: 0,
-    completedSteps: 2,
-    totalSteps: 10,
-    upcomingDeadlines: [
-      { title: "Подача документов", description: "Срок подачи документов в университет", daysLeft: 15 },
-      { title: "IELTS экзамен", description: "Регистрация на экзамен", daysLeft: 30 }
-    ],
-    recentActivities: [
-      { title: "Профиль заполнен", description: "Основная информация добавлена", timestamp: "2 часа назад" },
-      { title: "Документы загружены", description: "Паспорт и справки", timestamp: "1 день назад" }
-    ],
-    achievements: [
-      { title: "Первый шаг", description: "Заполнен профиль" },
-      { title: "Документы", description: "Загружены документы" }
-    ]
-  };
-
-  const progressPercentage = stats.totalSteps > 0 
-    ? Math.round((stats.completedSteps / stats.totalSteps) * 100) 
-    : 0;
-
   return (
-    <Box p="md">
-      <Stack gap="lg">
-        {/* Заголовок и обновление */}
-        <Group justify="space-between" align="center">
-          <Box>
-            <Text size="xl" fw={700} c="blue">
-              Добро пожаловать в личный кабинет!
-            </Text>
-            <Text size="sm" c="dimmed">
-              Отслеживайте свой прогресс и управляйте заявками
-            </Text>
-          </Box>
-          <ActionIcon
-            variant="light"
-            color="blue"
-            size="lg"
-            onClick={handleRefresh}
-            loading={refreshing}
+    <Box>
+      {/* Заголовок с кнопкой обновления */}
+      <Group justify="space-between" mb="xl">
+        <Text size="xl" fw={600}>Добро пожаловать в личный кабинет!</Text>
+        <ActionIcon
+          variant="light"
+          size="lg"
+          onClick={handleRefresh}
+          loading={loading.dashboardStats}
+        >
+          <IconRefresh size={20} />
+        </ActionIcon>
+      </Group>
+
+      {/* Основная статистика */}
+      <Grid mb="xl">
+        <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
           >
-            <IconRefresh size={20} />
-          </ActionIcon>
-        </Group>
-
-        {/* Общий прогресс */}
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Group justify="space-between" mb="md">
-            <Text size="lg" fw={600}>
-              Общий прогресс
-            </Text>
-            <Badge color="blue" variant="light">
-              {progressPercentage}%
-            </Badge>
-          </Group>
-          
-          <Progress 
-            value={progressPercentage} 
-            size="lg" 
-            radius="md"
-            color="blue"
-            mb="md"
-          />
-          
-          <Group justify="space-between">
-            <Text size="sm" c="dimmed">
-              Выполнено: {stats.completedSteps} из {stats.totalSteps} шагов
-            </Text>
-            <Text size="sm" fw={500} c="blue">
-              {stats.totalSteps - stats.completedSteps} шагов осталось
-            </Text>
-          </Group>
-        </Card>
-
-        {/* Статистика */}
-        <Grid>
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
             <Card shadow="sm" padding="lg" radius="md" withBorder>
-              <Group>
-                <ThemeIcon color="blue" variant="light" size="xl" radius="md">
-                  <IconSchool size={24} />
+              <Group justify="space-between">
+                <div>
+                  <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
+                    Всего курсов
+                  </Text>
+                  <Text fw={700} size="xl">
+                    {displayStats?.total_courses || 0}
+                  </Text>
+                </div>
+                <ThemeIcon color="blue" size="xl" radius="md">
+                  <IconBook size={24} />
                 </ThemeIcon>
-                <Box>
-                  <Text size="lg" fw={700} c="blue">
-                    {stats.totalApplications}
-                  </Text>
-                  <Text size="sm" c="dimmed">
-                    Заявок подано
-                  </Text>
-                </Box>
               </Group>
             </Card>
-          </Grid.Col>
+          </motion.div>
+        </Grid.Col>
 
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+        <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
             <Card shadow="sm" padding="lg" radius="md" withBorder>
-              <Group>
-                <ThemeIcon color="green" variant="light" size="xl" radius="md">
-                  <IconCheck size={24} />
-                </ThemeIcon>
-                <Box>
-                  <Text size="lg" fw={700} c="green">
-                    {stats.completedSteps}
+              <Group justify="space-between">
+                <div>
+                  <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
+                    Завершено
                   </Text>
-                  <Text size="sm" c="dimmed">
-                    Шагов выполнено
+                  <Text fw={700} size="xl">
+                    {displayStats?.completed_courses || 0}
                   </Text>
-                </Box>
-              </Group>
-            </Card>
-          </Grid.Col>
-
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-            <Card shadow="sm" padding="lg" radius="md" withBorder>
-              <Group>
-                <ThemeIcon color="orange" variant="light" size="xl" radius="md">
+                </div>
+                <ThemeIcon color="green" size="xl" radius="md">
                   <IconTrophy size={24} />
                 </ThemeIcon>
-                <Box>
-                  <Text size="lg" fw={700} c="orange">
-                    {stats.achievements?.length || 0}
-                  </Text>
-                  <Text size="sm" c="dimmed">
-                    Достижений получено
-                  </Text>
-                </Box>
               </Group>
             </Card>
-          </Grid.Col>
+          </motion.div>
+        </Grid.Col>
 
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+        <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
             <Card shadow="sm" padding="lg" radius="md" withBorder>
-              <Group>
-                <ThemeIcon color="red" variant="light" size="xl" radius="md">
-                  <IconClock size={24} />
+              <Group justify="space-between">
+                <div>
+                  <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
+                    Достижения
+                  </Text>
+                  <Text fw={700} size="xl">
+                    {displayStats?.achievements_unlocked || 0}
+                  </Text>
+                </div>
+                <ThemeIcon color="yellow" size="xl" radius="md">
+                  <IconTrophy size={24} />
                 </ThemeIcon>
-                <Box>
-                  <Text size="lg" fw={700} c="red">
-                    {stats.upcomingDeadlines?.length || 0}
-                  </Text>
-                  <Text size="sm" c="dimmed">
-                    Ближайших дедлайнов
-                  </Text>
-                </Box>
               </Group>
             </Card>
-          </Grid.Col>
-        </Grid>
+          </motion.div>
+        </Grid.Col>
 
-        {/* Ближайшие дедлайны */}
-        {stats.upcomingDeadlines && stats.upcomingDeadlines.length > 0 && (
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Text size="lg" fw={600} mb="md">
-              Ближайшие дедлайны
+        <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Group justify="space-between">
+                <div>
+                  <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
+                    Серия дней
+                  </Text>
+                  <Text fw={700} size="xl">
+                    {displayStats?.current_streak || 0}
+                  </Text>
+                </div>
+                <ThemeIcon color="red" size="xl" radius="md">
+                  <IconTrendingUp size={24} />
+                </ThemeIcon>
+              </Group>
+            </Card>
+          </motion.div>
+        </Grid.Col>
+      </Grid>
+
+      {/* Прогресс недели */}
+      <Card shadow="sm" padding="lg" radius="md" withBorder mb="xl">
+        <Text fw={600} size="lg" mb="md">Прогресс этой недели</Text>
+        <Stack gap="md">
+          <Group justify="space-between">
+            <Text size="sm" c="dimmed">
+              {displayStats?.weekly_progress || 0} из {displayStats?.weekly_goal || 20} часов
             </Text>
-            <Stack gap="sm">
-              {stats.upcomingDeadlines.slice(0, 3).map((deadline, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Paper p="md" radius="md" style={{ backgroundColor: 'var(--mantine-color-red-0)' }}>
+            <Text size="sm" fw={500}>
+              {Math.round(((displayStats?.weekly_progress || 0) / (displayStats?.weekly_goal || 20)) * 100)}%
+            </Text>
+          </Group>
+          <Progress
+            value={((displayStats?.weekly_progress || 0) / (displayStats?.weekly_goal || 20)) * 100}
+            size="lg"
+            radius="xl"
+            color="blue"
+          />
+        </Stack>
+      </Card>
+
+      {/* Рекомендуемые курсы */}
+      <Card shadow="sm" padding="lg" radius="md" withBorder mb="xl">
+        <Group justify="space-between" mb="md">
+          <Text fw={600} size="lg">Рекомендуемые курсы</Text>
+          <Button variant="light" size="sm">
+            Посмотреть все
+          </Button>
+        </Group>
+        <Grid>
+          {displayStats?.recommended_courses?.map((course, index) => (
+            <Grid.Col key={course.id} span={{ base: 12, md: 6 }}>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * index }}
+              >
+                <Card shadow="sm" padding="md" radius="md" withBorder>
+                  <Group justify="space-between" mb="sm">
+                    <Text fw={500}>{course.title}</Text>
+                    <Badge color="blue" variant="light">
+                      {course.difficulty}
+                    </Badge>
+                  </Group>
+                  <Text size="sm" c="dimmed" mb="sm">
+                    {course.duration}
+                  </Text>
+                  <Stack gap="xs">
                     <Group justify="space-between">
-                      <Box>
-                        <Text fw={500} size="sm">
-                          {deadline.title}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          {deadline.description}
-                        </Text>
-                      </Box>
-                      <Badge color="red" variant="light">
-                        {deadline.daysLeft} дней
-                      </Badge>
+                      <Text size="sm">Прогресс</Text>
+                      <Text size="sm" fw={500}>{course.progress}%</Text>
                     </Group>
-                  </Paper>
-                </motion.div>
-              ))}
-            </Stack>
-          </Card>
-        )}
+                    <Progress value={course.progress} size="sm" radius="xl" />
+                  </Stack>
+                </Card>
+              </motion.div>
+            </Grid.Col>
+          ))}
+        </Grid>
+      </Card>
 
-        {/* Последние активности */}
-        {stats.recentActivities && stats.recentActivities.length > 0 && (
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Text size="lg" fw={600} mb="md">
-              Последние активности
-            </Text>
-            <Stack gap="sm">
-              {stats.recentActivities.slice(0, 5).map((activity, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Paper p="md" radius="md" style={{ backgroundColor: 'var(--mantine-color-gray-0)' }}>
-                    <Group>
-                      <ThemeIcon color="blue" variant="light" size="sm" radius="md">
-                        <IconCheck size={16} />
-                      </ThemeIcon>
-                      <Box style={{ flex: 1 }}>
-                        <Text size="sm" fw={500}>
-                          {activity.title}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          {activity.description}
-                        </Text>
-                      </Box>
-                      <Text size="xs" c="dimmed">
-                        {activity.timestamp}
-                      </Text>
-                    </Group>
-                  </Paper>
-                </motion.div>
-              ))}
-            </Stack>
-          </Card>
-        )}
+      {/* Последние достижения */}
+      <Card shadow="sm" padding="lg" radius="md" withBorder mb="xl">
+        <Text fw={600} size="lg" mb="md">Последние достижения</Text>
+        <Stack gap="md">
+          {displayStats?.recent_achievements?.map((achievement, index) => (
+            <motion.div
+              key={achievement.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 * index }}
+            >
+              <Group>
+                <ThemeIcon color="yellow" size="lg" radius="md">
+                  <IconTrophy size={20} />
+                </ThemeIcon>
+                <div>
+                  <Text fw={500}>{achievement.title}</Text>
+                  <Text size="sm" c="dimmed">{achievement.description}</Text>
+                </div>
+              </Group>
+            </motion.div>
+          ))}
+        </Stack>
+      </Card>
 
-        {/* Достижения */}
-        {stats.achievements && stats.achievements.length > 0 && (
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Text size="lg" fw={600} mb="md">
-              Последние достижения
-            </Text>
-            <Grid>
-              {stats.achievements.slice(0, 4).map((achievement, index) => (
-                <Grid.Col key={index} span={{ base: 12, sm: 6, md: 3 }}>
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card shadow="sm" padding="md" radius="md" withBorder>
-                      <Group>
-                        <ThemeIcon color="yellow" variant="light" size="lg" radius="md">
-                          <IconTrophy size={20} />
-                        </ThemeIcon>
-                        <Box>
-                          <Text size="sm" fw={500}>
-                            {achievement.title}
-                          </Text>
-                          <Text size="xs" c="dimmed">
-                            {achievement.description}
-                          </Text>
-                        </Box>
-                      </Group>
-                    </Card>
-                  </motion.div>
-                </Grid.Col>
-              ))}
-            </Grid>
-          </Card>
-        )}
-
-        {/* Быстрые действия */}
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
-          <Text size="lg" fw={600} mb="md">
-            Быстрые действия
-          </Text>
-          <Grid>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Button
-                variant="light"
-                color="blue"
-                fullWidth
-                leftSection={<IconBook size={16} />}
-                rightSection={<IconArrowRight size={16} />}
-              >
-                Подать заявку
-              </Button>
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Button
-                variant="light"
-                color="green"
-                fullWidth
-                leftSection={<IconCertificate size={16} />}
-                rightSection={<IconArrowRight size={16} />}
-              >
-                Загрузить документы
-              </Button>
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Button
-                variant="light"
-                color="orange"
-                fullWidth
-                leftSection={<IconBuilding size={16} />}
-                rightSection={<IconArrowRight size={16} />}
-              >
-                Найти университеты
-              </Button>
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Button
-                variant="light"
-                color="purple"
-                fullWidth
-                leftSection={<IconTarget size={16} />}
-                rightSection={<IconArrowRight size={16} />}
-              >
-                План обучения
-              </Button>
-            </Grid.Col>
-          </Grid>
-        </Card>
-      </Stack>
+      {/* Предстоящие события */}
+      <Card shadow="sm" padding="lg" radius="md" withBorder>
+        <Text fw={600} size="lg" mb="md">Предстоящие события</Text>
+        <Stack gap="md">
+          {displayStats?.upcoming_events?.map((event, index) => (
+            <motion.div
+              key={event.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 * index }}
+            >
+              <Group>
+                <ThemeIcon color="red" size="lg" radius="md">
+                  <IconCalendar size={20} />
+                </ThemeIcon>
+                <div>
+                  <Text fw={500}>{event.title}</Text>
+                  <Text size="sm" c="dimmed">{event.date}</Text>
+                </div>
+              </Group>
+            </motion.div>
+          ))}
+        </Stack>
+      </Card>
     </Box>
   );
 };

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import logo from '../../public/images/iedulogo.png';
 
 const HeaderComponent = () => {
   const navigate = useNavigate();
@@ -21,7 +20,7 @@ const HeaderComponent = () => {
         {/* Логотип */}
         <div className="main-header__logo">
           <img 
-            src={logo} 
+            src="/images/iedulogo.png" 
             alt="AI Education" 
             className="logo_img"
             onClick={() => navigate('/')}

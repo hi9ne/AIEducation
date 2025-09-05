@@ -31,6 +31,9 @@ import {
 } from '@tabler/icons-react';
 
 const DOVSection = ({ progress }) => {
+  // Извлекаем значения из объекта progress
+  const dovProgress = progress?.currentProgress?.dov || 5;
+  const overallProgress = progress?.overallProgress || 0;
   const [opened, setOpened] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -190,7 +193,7 @@ const DOVSection = ({ progress }) => {
                 <Stack align="center" gap="sm">
                   <IconFileText size={48} color="var(--mantine-color-blue-6)" />
                   <Text size="lg" fw={700} c="blue">
-                    {progress}%
+                    {dovProgress}%
                   </Text>
                   <Text size="sm" c="dimmed" ta="center">
                     Общий прогресс
