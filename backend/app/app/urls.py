@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView
 from hack.views import (
     RegisterView, LoginView, LogoutView, ProfileView,
@@ -55,6 +55,9 @@ urlpatterns = [
     
     # Статистика (для администраторов)
     path('api/admin/stats/', user_stats_view, name='admin-stats'),
+    
+    # Education API
+    path('api/education/', include('hack.education_urls')),
     
     # Backward compatibility (старые маршруты)
     path('api/login/', LoginView.as_view(), name='login-old'),

@@ -124,7 +124,7 @@ class RegisterView(generics.CreateAPIView):
     def send_welcome_email(self, user):
         """Отправка приветственного письма"""
         context = {
-            'username': user.username,
+            'first_name': user.first_name or user.username,
             'year': timezone.now().year,
             'site_name': 'AIEducation'
         }
@@ -179,7 +179,7 @@ class PasswordResetRequestView(generics.CreateAPIView):
         try:
             context = {
                 'code': code,
-                'username': user.username,
+                'first_name': user.first_name or user.username,
                 'year': timezone.now().year,
                 'valid_minutes': 30
             }
@@ -364,7 +364,7 @@ class ChangePasswordView(generics.GenericAPIView):
     def send_password_change_notification(self, user):
         """Уведомление об изменении пароля"""
         context = {
-            'username': user.username,
+            'first_name': user.first_name or user.username,
             'timestamp': timezone.now().strftime('%d.%m.%Y %H:%M'),
             'year': timezone.now().year
         }
@@ -421,7 +421,7 @@ class EmailVerifyRequestView(APIView):
         # Отправляем письмо
         try:
             context = {
-                'username': user.username,
+                'first_name': user.first_name or user.username,
                 'verify_link': verify_link,
                 'year': timezone.now().year,
                 'site_name': 'AIEducation'

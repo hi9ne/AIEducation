@@ -3,7 +3,7 @@ import { registerUser, loginUser, fetchProfile, clearError, clearSuccess } from 
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
-export function RegisterPage() {
+function RegisterPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error, success } = useSelector((state) => state.auth);
@@ -35,18 +35,6 @@ export function RegisterPage() {
     const newErrors = { ...errors };
 
     switch (name) {
-      case 'username':
-        if (value.length < 3) {
-          newErrors.username = "Минимум 3 символа";
-        } else if (value.length > 30) {
-          newErrors.username = "Максимум 30 символов";
-        } else if (!/^[a-zA-Z0-9_.-]+$/.test(value)) {
-          newErrors.username = "Только буквы, цифры, точки, дефисы и подчеркивания";
-        } else {
-          delete newErrors.username;
-        }
-        break;
-
       case 'email':
         if (!/^\S+@\S+\.\S+$/.test(value)) {
           newErrors.email = "Неверный формат email";
@@ -105,7 +93,6 @@ export function RegisterPage() {
     const newErrors = {};
 
     // Проверяем все обязательные поля
-    if (!formData.username) newErrors.username = "Обязательное поле";
     if (!formData.email) newErrors.email = "Обязательное поле";
     if (!formData.first_name) newErrors.first_name = "Обязательное поле";
     if (!formData.last_name) newErrors.last_name = "Обязательное поле";
@@ -150,7 +137,9 @@ export function RegisterPage() {
     }
 
     try {
-      const resultAction = await dispatch(registerUser(formData));
+      // Формируем username из email
+      const payload = { ...formData, username: formData.email };
+      const resultAction = await dispatch(registerUser(payload));
       
       if (registerUser.fulfilled.match(resultAction)) {
         // Немедленный вход после успешной регистрации
@@ -224,26 +213,6 @@ export function RegisterPage() {
         )}
 
         <form className="auth-form" onSubmit={handleSubmit}>
-          {/* Имя пользователя */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="username">
-              Имя пользователя *
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              className={`form-input ${errors.username ? 'error' : ''}`}
-              placeholder="Ваше имя пользователя"
-              value={formData.username}
-              onChange={handleChange}
-              required
-            />
-            {errors.username && (
-              <div className="form-error">{errors.username}</div>
-            )}
-          </div>
-
           {/* Email */}
           <div className="form-group">
             <label className="form-label" htmlFor="email">
@@ -429,3 +398,4 @@ export function RegisterPage() {
     </div>
   );
 }
+export default RegisterPage;

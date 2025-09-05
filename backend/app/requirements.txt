@@ -6,3 +6,13 @@ python-dotenv
 psycopg2-binary
 gunicorn
 requests
+Pillow
+django-filter
+django-extensions
+celery
+redis
+openai
+pandas
+numpy
+python-dateutil
+pytz

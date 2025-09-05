@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, fetchProfile, clearError, clearSuccess } from '../store/authSlice';
 
-export function LoginPage() {
+function LoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -208,3 +208,4 @@ export function LoginPage() {
     </div>
   );
 }
+export default LoginPage;

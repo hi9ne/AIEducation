@@ -1,123 +1,48 @@
-
-import HeroSection from './components/Home/HeroSection';
-import EducationVariants from './components/Home/EducationVariants';
-import AboutCompany from './components/Home/AboutCompany';
-import FacultyList from './components/Home/FacultyList';
-import ReviewsSection from './components/Home/ReviewsSection';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { ResetPasswordPage } from './pages/ResetPasswordPage';
-import { ConfirmResetPage } from './pages/ConfirmResetPage';
-import { ProfilePage } from './pages/ProfilePage';
-import { PaymentPage } from './pages/PaymentPage';
-import { OfferPage } from './pages/OfferPage';
-import { PrivacyPage } from './pages/PrivacyPage';
-import { ContactsPage } from './pages/ContactsPage';
-import { InstagramPage } from './pages/InstagramPage';
-import { WhatsAppPage } from './pages/WhatsAppPage';
-import { AddressPage } from './pages/AddressPage';
-import { fetchProfile } from './store/authSlice';
-import logo from '../public/images/iedulogo.png';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Notifications } from '@mantine/notifications';
+import { ModalsProvider } from '@mantine/modals';
+import { useAuth } from './hooks/useAuth';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
+import ProfilePage from './pages/ProfilePage';
+import HeaderComponent from './components/Header';
 import './App.css';
 
-
-function PrivateRoute({ children }) {
-  const isAuthenticated = localStorage.getItem('accessToken');
-  return isAuthenticated ? children : <Navigate to="/login" />;
-}
-
-function SubscribedRoute({ children }) {
-  const user = useSelector(state => state.auth.user);
-  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
-  if (!isAuthenticated) return <Navigate to="/login" />;
-  if (!user?.subscription?.is_active) return <Navigate to="/profile" />;
-  return children;
-}
-
-function PublicRoute({ children }) {
-  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
-  return isAuthenticated ? <Navigate to="/" /> : children;
-}
-
-function Home() {
-  const navigate = useNavigate();
-  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
-  // const user = useSelector(state => state.auth.user);
-
-  // Логика кнопок регистрации и профиля оставлена без изменений
-  return (
-    <div className="main-page">
-      <header className="main-header">
-        <div className="main-header__container">
-          <div className="main-header__logo">
-            <img className='logo_img' src={logo} alt="" />
-          </div>
-          <nav className="main-header__nav">
-            <ul>
-              <li><a href="/about">О нас</a></li>
-              <li><a href="/services">Услуги</a></li>
-              <li><a href="/steps">Этапы поступления</a></li>
-              <li><a href="/price">Цены</a></li>
-              <li><a href="/contacts">Контакты</a></li>
-            </ul>
-            {isAuthenticated ? (
-              <button
-                className="profile-button"
-                onClick={() => navigate('/profile')}
-              >
-                <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M4 20c0-4 8-4 8-4s8 0 8 4" />
-                </svg>
-              </button>
-            ) : (
-              <button className="login-button" onClick={() => navigate('/login')}>
-                <span>Login</span>
-              </button>
-            )}
-          </nav>
-        </div>
-      </header>
-      <HeroSection />
-      <AboutCompany />
-      <EducationVariants />
-      <FacultyList />
-      <ReviewsSection />
-    </div>
-  );
-}
-
 function App() {
-  const dispatch = useDispatch();
-  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      dispatch(fetchProfile());
-    }
-  }, [dispatch, isAuthenticated]);
+  const { isAuthenticated } = useAuth();
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-        <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
-        <Route path="/reset-password" element={<PublicRoute><ResetPasswordPage /></PublicRoute>} />
-        <Route path="/confirm-reset" element={<PublicRoute><ConfirmResetPage /></PublicRoute>} />
-        <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
-        <Route path="/payment" element={<PrivateRoute><PaymentPage /></PrivateRoute>} />
-        <Route path="/instagram" element={<SubscribedRoute><InstagramPage /></SubscribedRoute>} />
-        <Route path="/whatsapp" element={<SubscribedRoute><WhatsAppPage /></SubscribedRoute>} />
-        <Route path="/address" element={<SubscribedRoute><AddressPage /></SubscribedRoute>} />
-        <Route path="/offer" element={<OfferPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/contacts" element={<ContactsPage />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <div className="App">
+        <Notifications />
+        <ModalsProvider>
+          <HeaderComponent />
+          <Routes>
+            <Route 
+              path="/login" 
+              element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" replace />} 
+            />
+            <Route 
+              path="/register" 
+              element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/login" replace />} 
+            />
+            <Route 
+              path="/dashboard/*" 
+              element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" replace />} 
+            />
+            <Route 
+              path="/profile" 
+              element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" replace />} 
+            />
+            <Route 
+              path="/" 
+              element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} 
+            />
+          </Routes>
+        </ModalsProvider>
+      </div>
     </Router>
   );
 }

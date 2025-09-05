@@ -3,7 +3,7 @@ import { logoutUser, fetchProfile, updateProfile, changePassword, requestEmailVe
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
-export function ProfilePage() {
+function ProfilePage() {
   const user = useSelector(state => state.auth.user);
   const { error, success, profileUpdating, passwordChanging, emailVerificationSent } = useSelector(state => state.auth);
   const dispatch = useDispatch();
@@ -487,3 +487,4 @@ export function ProfilePage() {
     </div>
   );
 }
+export default ProfilePage;
