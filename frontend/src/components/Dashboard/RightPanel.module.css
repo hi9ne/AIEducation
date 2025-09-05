@@ -1,0 +1,390 @@
+
+.rightPanel {
+  width: 100%;
+  height: 100vh;
+  overflow-y: auto;
+  position: relative;
+  z-index: 1000;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: #90cdf4 #f0f9ff;
+}
+
+.rightPanel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rightPanel::-webkit-scrollbar-track {
+  background: #f0f9ff;
+  border-radius: 4px;
+}
+
+.rightPanel::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #90cdf4, #3182ce);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.rightPanel::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #3182ce, #2c5aa0);
+}
+
+.aiAssistantCard {
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+  border: 1px solid #90cdf4;
+  transition: all 0.3s ease;
+}
+
+.aiAssistantCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.messageInput {
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.messageInput:focus {
+  border-color: #3182ce;
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.1);
+}
+
+.aiResponse {
+  background: linear-gradient(135deg, #ebf8ff 0%, #f0f9ff 100%);
+  border-left: 4px solid #3182ce;
+  padding: 1rem;
+  margin-top: 1rem;
+  border-radius: 8px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.recommendationCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.recommendationCard:hover {
+  background: #f7fafc;
+  transform: scale(1.01);
+}
+
+.notificationItem {
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.notificationItem:hover {
+  background-color: #f7fafc;
+}
+
+.unreadNotification {
+  background-color: #ebf8ff;
+  border-left: 4px solid #3182ce;
+}
+
+.achievementCard {
+  background: linear-gradient(135deg, #fffff0 0%, #ffffff 100%);
+  border: 1px solid #fbd38d;
+}
+
+.statsCard {
+  background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+}
+
+.statsItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.statsItem:hover {
+  background-color: #f7fafc;
+}
+
+/* Header Styles */
+.headerCard {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.gradientText {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Tabs Styles */
+.tabsContainer {
+  margin-top: 1rem;
+}
+
+.tabsList {
+  background: white;
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+/* Quick Actions */
+.quickActionsCard {
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+  border: 1px solid #90cdf4;
+  transition: all 0.3s ease;
+}
+
+.quickActionsCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.quickActionChip {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.quickActionChip:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Chat Styles */
+.chatCard {
+  background: white;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.chatCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.chatMessages {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.message {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.message:hover {
+  transform: translateX(4px);
+}
+
+.userMessage {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-left: 4px solid #3b82f6;
+  margin-left: 2rem;
+}
+
+.aiMessage {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-left: 4px solid #22c55e;
+  margin-right: 2rem;
+}
+
+.typingIndicator {
+  animation: fadeIn 0.3s ease;
+}
+
+.messageInput {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.messageInput:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+.sendButton {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.sendButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Recommendations */
+.recommendationsCard {
+  background: linear-gradient(135deg, #fef3c7 0%, #ffffff 100%);
+  border: 1px solid #f59e0b;
+  transition: all 0.3s ease;
+}
+
+.recommendationsCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.recommendationItem {
+  background: white;
+  border: 1px solid #f3f4f6;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.recommendationItem:hover {
+  background: #f9fafb;
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Stats */
+.statsCard {
+  background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
+  border: 1px solid #10b981;
+  transition: all 0.3s ease;
+}
+
+.statsCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+/* Notifications */
+.notificationsCard {
+  background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+  border: 1px solid #ef4444;
+  transition: all 0.3s ease;
+}
+
+.notificationsCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.notificationItem {
+  background: white;
+  border: 1px solid #f3f4f6;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.notificationItem:hover {
+  background: #f9fafb;
+  transform: scale(1.01);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.unreadNotification {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-left: 4px solid #3b82f6;
+  animation: pulse 2s infinite;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .rightPanel {
+    padding: 1rem;
+  }
+  
+  .userMessage {
+    margin-left: 1rem;
+  }
+  
+  .aiMessage {
+    margin-right: 1rem;
+  }
+  
+  .quickActionChip {
+    font-size: 0.75rem;
+  }
+}
+
+/* Dark Mode Support */
+[data-mantine-color-scheme="dark"] .rightPanel {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+[data-mantine-color-scheme="dark"] .headerCard {
+  background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%);
+}
+
+[data-mantine-color-scheme="dark"] .chatMessages {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+[data-mantine-color-scheme="dark"] .messageInput {
+  background: #374151;
+  border-color: #4b5563;
+  color: white;
+}
+
+[data-mantine-color-scheme="dark"] .messageInput:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}

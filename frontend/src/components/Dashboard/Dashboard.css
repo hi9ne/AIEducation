@@ -41,10 +41,13 @@
 
 /* Right Panel Styles */
 .right-panel {
-  background-color: var(--mantine-color-dark-8);
+  background-color: white !important;
   border-left: 1px solid var(--mantine-color-gray-3);
-  height: 100vh;
+  height: auto !important;
+  min-height: 100vh !important;
   overflow-y: auto;
+  display: block !important;
+  visibility: visible !important;
 }
 
 /* Progress Bar Styles */

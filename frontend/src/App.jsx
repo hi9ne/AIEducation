@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Notifications } from '@mantine/notifications';
 import { ModalsProvider } from '@mantine/modals';
 import { useAuth } from './hooks/useAuth';
+import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -21,12 +22,16 @@ function App() {
           <HeaderComponent />
           <Routes>
             <Route 
+              path="/" 
+              element={<HomePage />} 
+            />
+            <Route 
               path="/login" 
               element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" replace />} 
             />
             <Route 
               path="/register" 
-              element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/login" replace />} 
+              element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/dashboard" replace />} 
             />
             <Route 
               path="/dashboard/*" 
@@ -35,10 +40,6 @@ function App() {
             <Route 
               path="/profile" 
               element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" replace />} 
-            />
-            <Route 
-              path="/" 
-              element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} 
             />
           </Routes>
         </ModalsProvider>

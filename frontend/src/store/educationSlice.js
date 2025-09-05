@@ -145,7 +145,32 @@ const educationSlice = createSlice({
       })
       .addCase(fetchAchievements.fulfilled, (state, action) => {
         state.loading.achievements = false;
-        state.achievements = action.payload;
+        // If we got data from the API, use it; otherwise, use mock data
+        if (action.payload && action.payload.length > 0) {
+          state.achievements = action.payload;
+        } else {
+          // Mock data for achievements if API returns empty
+          state.achievements = [
+            {
+              id: 1,
+              name: 'Первые шаги',
+              description: 'Пройдите первый урок в системе',
+              points: 50
+            },
+            {
+              id: 2,
+              name: 'Неделя знаний',
+              description: 'Занимайтесь 7 дней подряд',
+              points: 100
+            },
+            {
+              id: 3,
+              name: 'Мастер теории',
+              description: 'Пройдите все теоретические материалы курса',
+              points: 150
+            }
+          ];
+        }
       })
       .addCase(fetchAchievements.rejected, (state, action) => {
         state.loading.achievements = false;
@@ -160,7 +185,35 @@ const educationSlice = createSlice({
       })
       .addCase(fetchAIRecommendations.fulfilled, (state, action) => {
         state.loading.aiRecommendations = false;
-        state.aiRecommendations = action.payload;
+        // If we got data from the API, use it; otherwise, use mock data
+        if (action.payload && action.payload.length > 0) {
+          state.aiRecommendations = action.payload;
+        } else {
+          // Mock data for AI recommendations if API returns empty
+          state.aiRecommendations = [
+            {
+              id: 1,
+              title: 'Улучшите свои навыки программирования',
+              content: 'Основываясь на вашем прогрессе, рекомендуем пройти курс по алгоритмам и структурам данных.',
+              category: 'Обучение',
+              priority: 'Высокий'
+            },
+            {
+              id: 2,
+              title: 'Пройдите тест на уровень английского',
+              content: 'Ваш прогресс по английскому языку показывает хорошие результаты. Пройдите тест, чтобы подтвердить уровень.',
+              category: 'Тестирование',
+              priority: 'Средний'
+            },
+            {
+              id: 3,
+              title: 'Завершите курсовую работу',
+              content: 'До дедлайна по курсовой работе осталось 7 дней. Рекомендуем начать работу сейчас.',
+              category: 'Дедлайны',
+              priority: 'Срочно'
+            }
+          ];
+        }
       })
       .addCase(fetchAIRecommendations.rejected, (state, action) => {
         state.loading.aiRecommendations = false;
