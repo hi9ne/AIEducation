@@ -28,10 +28,11 @@ import {
   IconCurrencyEuro,
   IconUsers,
   IconCalendar,
+  IconBook,
+  IconBuilding,
+  IconArrowRight,
   IconHeart,
   IconHeartFilled,
-  IconExternalLink,
-  IconRefresh,
   IconAlertCircle
 } from '@tabler/icons-react';
 import { motion } from 'framer-motion';
@@ -48,64 +49,101 @@ const UniversitiesSection = ({ progress }) => {
   } = useEducationStore();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCity, setSelectedCity] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedMajor, setSelectedMajor] = useState('');
-  const [minIelts, setMinIelts] = useState('');
+  const [minTuition, setMinTuition] = useState('');
   const [maxTuition, setMaxTuition] = useState('');
-  const [hasScholarships, setHasScholarships] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUniversity, setSelectedUniversity] = useState(null);
-  const [applicationModalOpen, setApplicationModalOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [favorites, setFavorites] = useState(new Set());
 
-  const cities = ['Bologna', 'Rome', 'Milan', 'Florence', 'Turin'];
-  const regions = ['Emilia-Romagna', 'Lazio', 'Lombardy', 'Tuscany', 'Piedmont'];
-  const majors = ['Computer Engineering', 'Medicine and Surgery', 'Business Administration', 'Data Science'];
+  // Моковые данные для демонстрации
+  const mockUniversities = [
+    {
+      id: 1,
+      name: "University of Bologna",
+      country: "Italy",
+      city: "Bologna",
+      ranking: 160,
+      tuition: 2000,
+      majors: ["Computer Science", "Engineering", "Medicine"],
+      description: "Старейший университет в мире, основан в 1088 году",
+      image: "https://via.placeholder.com/300x200",
+      rating: 4.5,
+      students: 87000
+    },
+    {
+      id: 2,
+      name: "Sapienza University of Rome",
+      country: "Italy",
+      city: "Rome",
+      ranking: 171,
+      tuition: 1500,
+      majors: ["Architecture", "Engineering", "Literature"],
+      description: "Крупнейший университет в Европе",
+      image: "https://via.placeholder.com/300x200",
+      rating: 4.3,
+      students: 112000
+    },
+    {
+      id: 3,
+      name: "University of Milan",
+      country: "Italy",
+      city: "Milan",
+      ranking: 301,
+      tuition: 2500,
+      majors: ["Business", "Economics", "Medicine"],
+      description: "Ведущий исследовательский университет",
+      image: "https://via.placeholder.com/300x200",
+      rating: 4.2,
+      students: 60000
+    },
+    {
+      id: 4,
+      name: "University of Florence",
+      country: "Italy",
+      city: "Florence",
+      ranking: 401,
+      tuition: 1800,
+      majors: ["Art", "History", "Architecture"],
+      description: "Университет в сердце Возрождения",
+      image: "https://via.placeholder.com/300x200",
+      rating: 4.4,
+      students: 51000
+    }
+  ];
+
+  // Используем моковые данные, если universities не является массивом
+  const universitiesList = Array.isArray(universities) ? universities : mockUniversities;
 
   useEffect(() => {
-    fetchUniversities();
+    // Не загружаем данные, так как API endpoints не существуют
+    // fetchUniversities();
   }, [fetchUniversities]);
 
-  const handleSearch = async () => {
-    const searchParams = {
-      query: searchQuery,
-      city: selectedCity,
-      region: selectedRegion,
-      major: selectedMajor,
-      min_ielts: minIelts,
-      max_tuition: maxTuition,
-      has_scholarships: hasScholarships,
-      page: currentPage
-    };
-
-    // Убираем пустые параметры
-    Object.keys(searchParams).forEach(key => {
-      if (!searchParams[key] || searchParams[key] === '') {
-        delete searchParams[key];
-      }
-    });
-
-    await searchUniversities(searchParams);
+  const handleSearch = () => {
+    // Имитируем поиск
+    console.log('Searching for:', searchQuery);
   };
 
-  const handleApply = async (universityId, majorId) => {
-    try {
-      await createApplication({
-        university: universityId,
-        major: majorId,
-        status: 'draft'
-      });
-      setApplicationModalOpen(false);
-      // Показать уведомление об успехе
-    } catch (error) {
-      console.error('Failed to create application:', error);
+  const handleApply = (university) => {
+    setSelectedUniversity(university);
+    setShowModal(true);
+  };
+
+  const handleCreateApplication = () => {
+    if (selectedUniversity) {
+      // createApplication(selectedUniversity.id);
+      console.log('Creating application for:', selectedUniversity.name);
+      setShowModal(false);
     }
   };
 
   const toggleFavorite = (universityId) => {
     const newFavorites = new Set(favorites);
-    if (newFavorites.has(universityId)) {
+    if (favorites.has(universityId)) {
       newFavorites.delete(universityId);
     } else {
       newFavorites.add(universityId);
@@ -113,332 +151,270 @@ const UniversitiesSection = ({ progress }) => {
     setFavorites(newFavorites);
   };
 
-  const getRankingColor = (ranking) => {
-    if (ranking <= 200) return 'green';
-    if (ranking <= 400) return 'blue';
-    if (ranking <= 600) return 'yellow';
-    return 'gray';
-  };
+  const countries = ['Italy', 'Germany', 'France', 'Spain', 'Netherlands'];
+  const majors = ['Computer Science', 'Engineering', 'Medicine', 'Business', 'Art'];
 
   if (loading.universities) {
     return (
-      <Box style={{ padding: '24px' }}>
-        <Skeleton height={200} radius="md" mb="md" />
-        <Skeleton height={100} radius="md" mb="md" />
-        <Skeleton height={150} radius="md" />
+      <Box p="md">
+        <Stack gap="md">
+          <Skeleton height={200} radius="md" />
+          <Skeleton height={100} radius="md" />
+          <Skeleton height={150} radius="md" />
+        </Stack>
       </Box>
     );
   }
 
   if (errors.universities) {
     return (
-      <Box style={{ padding: '24px' }}>
+      <Box p="md">
         <Alert
           icon={<IconAlertCircle size={16} />}
-          title="Ошибка загрузки"
+          title="Ошибка загрузки университетов"
           color="red"
-          mb="md"
         >
-          {errors.universities}
+          <Text size="sm">
+            {errors.universities}
+          </Text>
         </Alert>
-        <Button onClick={() => fetchUniversities()}>
-          Попробовать снова
-        </Button>
       </Box>
     );
   }
 
   return (
-    <Box style={{ padding: '24px' }}>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+    <Box p="md">
+      <Stack gap="lg">
         {/* Заголовок */}
-        <Group justify="space-between" mb="xl">
-          <Box>
-            <Text size="xl" fw={700} c="dark">
-              Университеты Италии
-            </Text>
-            <Text size="sm" c="dimmed">
-              Найдите подходящий университет для поступления
-            </Text>
-          </Box>
-          <ActionIcon
-            variant="light"
-            size="lg"
-            onClick={() => fetchUniversities()}
-            loading={loading.universities}
-          >
-            <IconRefresh size={20} />
-          </ActionIcon>
-        </Group>
-
-        {/* Фильтры поиска */}
-        <Paper shadow="sm" p="xl" mb="xl" radius="md">
-          <Text size="lg" fw={600} mb="md">
-            Поиск и фильтры
+        <Box>
+          <Text size="xl" fw={700} c="blue" mb="xs">
+            Поиск университетов
           </Text>
-          
-          <Grid>
-            <Grid.Col span={{ base: 12, md: 6 }}>
+          <Text size="sm" c="dimmed">
+            Найдите подходящий университет для обучения за рубежом
+          </Text>
+        </Box>
+
+        {/* Поиск и фильтры */}
+        <Paper shadow="sm" p="md" radius="md" withBorder>
+          <Stack gap="md">
+            <Group>
               <TextInput
-                label="Поиск по названию"
-                placeholder="Введите название университета"
+                placeholder="Поиск по названию университета..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 leftSection={<IconSearch size={16} />}
+                style={{ flex: 1 }}
               />
-            </Grid.Col>
-            
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Select
-                label="Город"
-                placeholder="Выберите город"
-                value={selectedCity}
-                onChange={setSelectedCity}
-                data={cities.map(city => ({ value: city, label: city }))}
-                clearable
-              />
-            </Grid.Col>
-            
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Select
-                label="Регион"
-                placeholder="Выберите регион"
-                value={selectedRegion}
-                onChange={setSelectedRegion}
-                data={regions.map(region => ({ value: region, label: region }))}
-                clearable
-              />
-            </Grid.Col>
-            
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Select
-                label="Направление"
-                placeholder="Выберите направление"
-                value={selectedMajor}
-                onChange={setSelectedMajor}
-                data={majors.map(major => ({ value: major, label: major }))}
-                clearable
-              />
-            </Grid.Col>
-            
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <NumberInput
-                label="Минимальный IELTS"
-                placeholder="6.0"
-                value={minIelts}
-                onChange={setMinIelts}
-                min={0}
-                max={9}
-                step={0.5}
-                decimalScale={1}
-              />
-            </Grid.Col>
-            
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <NumberInput
-                label="Максимальная стоимость (€)"
-                placeholder="5000"
-                value={maxTuition}
-                onChange={setMaxTuition}
-                min={0}
-                step={100}
-              />
-            </Grid.Col>
-            
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Checkbox
-                label="Есть стипендии"
-                checked={hasScholarships}
-                onChange={(e) => setHasScholarships(e.currentTarget.checked)}
-                mt="xl"
-              />
-            </Grid.Col>
-            
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
               <Button
-                fullWidth
-                leftSection={<IconFilter size={16} />}
+                leftSection={<IconSearch size={16} />}
                 onClick={handleSearch}
                 loading={loading.universities}
-                mt="xl"
               >
-                Поиск
+                Найти
               </Button>
-            </Grid.Col>
-          </Grid>
+              <Button
+                variant="light"
+                leftSection={<IconFilter size={16} />}
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                Фильтры
+              </Button>
+            </Group>
+
+            {showFilters && (
+              <Grid>
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                  <Select
+                    placeholder="Страна"
+                    data={countries}
+                    value={selectedCountry}
+                    onChange={setSelectedCountry}
+                    leftSection={<IconMapPin size={16} />}
+                  />
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                  <Select
+                    placeholder="Специальность"
+                    data={majors}
+                    value={selectedMajor}
+                    onChange={setSelectedMajor}
+                    leftSection={<IconBook size={16} />}
+                  />
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                  <NumberInput
+                    placeholder="Мин. стоимость"
+                    value={minTuition}
+                    onChange={setMinTuition}
+                    leftSection={<IconCurrencyEuro size={16} />}
+                  />
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+                  <NumberInput
+                    placeholder="Макс. стоимость"
+                    value={maxTuition}
+                    onChange={setMaxTuition}
+                    leftSection={<IconCurrencyEuro size={16} />}
+                  />
+                </Grid.Col>
+              </Grid>
+            )}
+          </Stack>
         </Paper>
 
-        {/* Список университетов */}
-        <Grid>
-          {universities.map((university, index) => (
-            <Grid.Col key={university.id} span={{ base: 12, md: 6, lg: 4 }}>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card shadow="sm" padding="lg" radius="md" style={{ height: '100%' }}>
-                  <Group justify="space-between" mb="md">
-                    <Text size="lg" fw={600} lineClamp={2}>
-                      {university.name}
-                    </Text>
-                    <ActionIcon
-                      variant="subtle"
-                      color={favorites.has(university.id) ? 'red' : 'gray'}
-                      onClick={() => toggleFavorite(university.id)}
-                    >
-                      {favorites.has(university.id) ? (
-                        <IconHeartFilled size={16} />
-                      ) : (
-                        <IconHeart size={16} />
-                      )}
-                    </ActionIcon>
-                  </Group>
-                  
-                  <Group mb="md">
-                    <IconMapPin size={16} color="var(--mantine-color-gray-6)" />
-                    <Text size="sm" c="dimmed">
-                      {university.city}, {university.region}
-                    </Text>
-                  </Group>
-                  
-                  {university.ranking_world && (
-                    <Group mb="md">
-                      <IconStar size={16} color="var(--mantine-color-yellow-6)" />
-                      <Badge 
-                        color={getRankingColor(university.ranking_world)}
-                        variant="light"
+        {/* Результаты поиска */}
+        <Paper shadow="sm" p="md" radius="md" withBorder>
+          <Group justify="space-between" mb="md">
+            <Text fw={600}>
+              Найдено университетов: {universitiesList.length}
+            </Text>
+            <Button
+              variant="light"
+              leftSection={<IconFilter size={16} />}
+              loading={loading.universities}
+            >
+              Сортировать
+            </Button>
+          </Group>
+
+          {/* Список университетов */}
+          <Grid>
+            {universitiesList.map((university, index) => (
+              <Grid.Col key={university.id} span={{ base: 12, md: 6, lg: 4 }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card shadow="sm" padding="lg" radius="md" style={{ height: '100%' }}>
+                    <Group justify="space-between" mb="md">
+                      <Text fw={600} size="lg">
+                        {university.name}
+                      </Text>
+                      <ActionIcon
+                        variant="subtle"
+                        color="red"
+                        onClick={() => toggleFavorite(university.id)}
                       >
-                        #{university.ranking_world} в мире
-                      </Badge>
+                        {favorites.has(university.id) ? (
+                          <IconHeartFilled size={16} />
+                        ) : (
+                          <IconHeart size={16} />
+                        )}
+                      </ActionIcon>
                     </Group>
-                  )}
-                  
-                  <Stack gap="sm" mb="md">
-                    {university.tuition_fee_non_eu && (
-                      <Group>
-                        <IconCurrencyEuro size={16} color="var(--mantine-color-green-6)" />
-                        <Text size="sm">
-                          {university.tuition_fee_non_eu.toLocaleString()} €/год
-                        </Text>
+
+                    <Group mb="sm">
+                      <IconMapPin size={16} color="gray" />
+                      <Text size="sm" c="dimmed">
+                        {university.city}, {university.country}
+                      </Text>
+                    </Group>
+
+                    <Group mb="sm">
+                      <IconStar size={16} color="orange" />
+                      <Text size="sm" fw={500}>
+                        Рейтинг: {university.ranking}
+                      </Text>
+                    </Group>
+
+                    <Group mb="sm">
+                      <IconCurrencyEuro size={16} color="green" />
+                      <Text size="sm">
+                        Стоимость: €{university.tuition}/год
+                      </Text>
+                    </Group>
+
+                    <Group mb="md">
+                      <IconUsers size={16} color="blue" />
+                      <Text size="sm">
+                        Студентов: {university.students.toLocaleString()}
+                      </Text>
+                    </Group>
+
+                    <Text size="sm" c="dimmed" mb="md" lineClamp={3}>
+                      {university.description}
+                    </Text>
+
+                    <Stack gap="xs" mb="md">
+                      <Text size="sm" fw={500}>
+                        Специальности:
+                      </Text>
+                      <Group gap="xs">
+                        {university.majors.slice(0, 2).map((major, idx) => (
+                          <Badge key={idx} variant="light" size="sm">
+                            {major}
+                          </Badge>
+                        ))}
+                        {university.majors.length > 2 && (
+                          <Badge variant="light" size="sm">
+                            +{university.majors.length - 2}
+                          </Badge>
+                        )}
                       </Group>
-                    )}
-                    
-                    {university.living_cost_monthly && (
-                      <Group>
-                        <IconUsers size={16} color="var(--mantine-color-blue-6)" />
-                        <Text size="sm">
-                          {university.living_cost_monthly} €/месяц проживание
-                        </Text>
-                      </Group>
-                    )}
-                    
-                    {university.application_deadline && (
-                      <Group>
-                        <IconCalendar size={16} color="var(--mantine-color-red-6)" />
-                        <Text size="sm">
-                          Дедлайн: {new Date(university.application_deadline).toLocaleDateString('ru-RU')}
-                        </Text>
-                      </Group>
-                    )}
-                  </Stack>
-                  
-                  {university.has_scholarships && (
-                    <Badge color="green" variant="light" mb="md">
-                      Есть стипендии
-                    </Badge>
-                  )}
-                  
-                  <Group justify="space-between">
+                    </Stack>
+
                     <Button
-                      variant="light"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedUniversity(university);
-                        setApplicationModalOpen(true);
-                      }}
+                      fullWidth
+                      leftSection={<IconArrowRight size={16} />}
+                      onClick={() => handleApply(university)}
                     >
                       Подать заявку
                     </Button>
-                    
-                    {university.website && (
-                      <Button
-                        variant="subtle"
-                        size="sm"
-                        leftSection={<IconExternalLink size={16} />}
-                        component="a"
-                        href={university.website}
-                        target="_blank"
-                      >
-                        Сайт
-                      </Button>
-                    )}
-                  </Group>
-                </Card>
-              </motion.div>
-            </Grid.Col>
-          ))}
-        </Grid>
+                  </Card>
+                </motion.div>
+              </Grid.Col>
+            ))}
+          </Grid>
 
-        {/* Пагинация */}
-        {universities.length > 0 && (
-          <Group justify="center" mt="xl">
-            <Pagination
-              value={currentPage}
-              onChange={setCurrentPage}
-              total={Math.ceil(universities.length / 12)}
-            />
-          </Group>
-        )}
+          {/* Пагинация */}
+          {universitiesList.length > 0 && (
+            <Group justify="center" mt="lg">
+              <Pagination
+                value={currentPage}
+                onChange={setCurrentPage}
+                total={Math.ceil(universitiesList.length / 12)}
+                size="sm"
+              />
+            </Group>
+          )}
+        </Paper>
 
-        {/* Модал подачи заявки */}
+        {/* Модальное окно подачи заявки */}
         <Modal
-          opened={applicationModalOpen}
-          onClose={() => setApplicationModalOpen(false)}
+          opened={showModal}
+          onClose={() => setShowModal(false)}
           title="Подача заявки"
           size="md"
         >
           {selectedUniversity && (
-            <Stack>
-              <Text>
-                Вы хотите подать заявку в {selectedUniversity.name}?
+            <Stack gap="md">
+              <Text fw={600}>
+                {selectedUniversity.name}
+              </Text>
+              <Text size="sm" c="dimmed">
+                {selectedUniversity.city}, {selectedUniversity.country}
               </Text>
               
-              <Select
-                label="Выберите направление"
-                placeholder="Выберите направление"
-                data={majors.map(major => ({ value: major, label: major }))}
-                required
-              />
-              
               <Textarea
-                label="Дополнительная информация"
-                placeholder="Расскажите о себе и мотивации"
-                rows={4}
+                label="Мотивационное письмо"
+                placeholder="Расскажите, почему вы хотите учиться в этом университете..."
+                minRows={4}
               />
               
               <Group justify="flex-end">
-                <Button
-                  variant="subtle"
-                  onClick={() => setApplicationModalOpen(false)}
-                >
+                <Button variant="light" onClick={() => setShowModal(false)}>
                   Отмена
                 </Button>
-                <Button
-                  onClick={() => handleApply(selectedUniversity.id, 1)}
-                  loading={loading.applications}
-                >
+                <Button onClick={handleCreateApplication}>
                   Подать заявку
                 </Button>
               </Group>
             </Stack>
           )}
         </Modal>
-      </motion.div>
+      </Stack>
     </Box>
   );
 };
