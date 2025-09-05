@@ -7,5 +7,14 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
+    hmr: {
+      port: 5173,
+    },
+    watch: {
+      usePolling: true,
+    },
+  },
+  optimizeDeps: {
+    include: ['@tabler/icons-react'],
   },
 });

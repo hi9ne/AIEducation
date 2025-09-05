@@ -2,6 +2,50 @@ import { useState, useEffect } from "react";
 import { registerUser, loginUser, fetchProfile, clearError, clearSuccess } from "../store/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  Box,
+  Container,
+  Paper,
+  Text,
+  TextInput,
+  PasswordInput,
+  Button,
+  Checkbox,
+  Group,
+  Stack,
+  Title,
+  Divider,
+  Alert,
+  Anchor,
+  Center,
+  ThemeIcon,
+  BackgroundImage,
+  Overlay,
+  ActionIcon,
+  Progress,
+  Grid,
+  Stepper,
+  Badge
+} from '@mantine/core';
+import {
+  IconArrowLeft,
+  IconEye,
+  IconEyeOff,
+  IconMail,
+  IconLock,
+  IconUser,
+  IconCheck,
+  IconAlertCircle,
+  IconBrandGoogle,
+  IconBrandGithub,
+  IconRocket,
+  IconShield,
+  IconStar,
+  IconChecklist,
+  IconUserPlus
+} from '@tabler/icons-react';
+import { motion } from 'framer-motion';
+import './RegisterPage.css';
 
 function RegisterPage() {
   const dispatch = useDispatch();
@@ -21,9 +65,12 @@ function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
   // Очищаем ошибки при размонтировании
   useEffect(() => {
+    setIsVisible(true);
     return () => {
       dispatch(clearError());
       dispatch(clearSuccess());
@@ -185,217 +232,443 @@ function RegisterPage() {
 
   const passwordStrength = getPasswordStrength(formData.password);
 
+  const steps = [
+    { label: 'Личные данные', icon: IconUser },
+    { label: 'Безопасность', icon: IconLock },
+    { label: 'Подтверждение', icon: IconCheck }
+  ];
+
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="back-button-container">
-          <button
-            className="back-button"
-            onClick={() => navigate("/")}
-            type="button"
+    <Box className="register-page">
+      <BackgroundImage
+        src="/images/bg-hero.jpg"
+        className="register-background"
+      >
+        <Overlay gradient="linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%)" />
+        
+        <Container size="xl" className="register-container">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 50 }}
+            transition={{ duration: 0.6 }}
+            className="register-content"
           >
-            ← Назад
-          </button>
-        </div>
+            <Paper className="register-card" p="xl" radius="xl" shadow="xl">
+              {/* Header */}
+              <Stack spacing="md" mb="xl">
+                <Group position="apart" align="center">
+                  <ActionIcon
+                    variant="light"
+                    size="lg"
+                    onClick={() => navigate('/')}
+                    className="back-button"
+                  >
+                    <IconArrowLeft size={20} />
+                  </ActionIcon>
+                  <Group spacing="xs">
+                    <ThemeIcon size="lg" variant="gradient" gradient={{ from: 'blue', to: 'purple' }}>
+                      <IconUserPlus size={20} />
+                    </ThemeIcon>
+                    <Text size="lg" weight={700}>
+                      AI Education
+                    </Text>
+                  </Group>
+                </Group>
 
-        <h1 className="auth-title">Создать аккаунт</h1>
-        <p className="auth-subtitle">
-          Уже есть аккаунт?{" "}
-          <Link to="/login" className="auth-link">
-            Войти
-          </Link>
-        </p>
+                <Box>
+                  <Title order={1} size="2.5rem" weight={800} className="register-title">
+                    Создать аккаунт
+                  </Title>
+                  <Text size="lg" color="dimmed" className="register-subtitle">
+                    Присоединяйтесь к тысячам студентов, которые уже получили образование в Италии
+                  </Text>
+                </Box>
 
-        {success && (
-          <div className="form-success">
-            {success}
-          </div>
-        )}
+                {/* Progress Stepper */}
+                <Stepper
+                  active={currentStep}
+                  onStepClick={setCurrentStep}
+                  breakpoint="sm"
+                  className="register-stepper"
+                >
+                  {steps.map((step, index) => (
+                    <Stepper.Step
+                      key={index}
+                      label={step.label}
+                      icon={<step.icon size={18} />}
+                    />
+                  ))}
+                </Stepper>
+              </Stack>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
-          {/* Email */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="email">
-              Email *
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              className={`form-input ${errors.email ? 'error' : ''}`}
-              placeholder="your@email.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-            {errors.email && (
-              <div className="form-error">{errors.email}</div>
-            )}
-          </div>
-
-          {/* Имя и Фамилия */}
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label" htmlFor="first_name">
-                Имя *
-              </label>
-              <input
-                id="first_name"
-                name="first_name"
-                type="text"
-                className={`form-input ${errors.first_name ? 'error' : ''}`}
-                placeholder="Имя"
-                value={formData.first_name}
-                onChange={handleChange}
-                required
-              />
-              {errors.first_name && (
-                <div className="form-error">{errors.first_name}</div>
+              {/* Alerts */}
+              {success && (
+                <Alert
+                  icon={<IconCheck size={16} />}
+                  title="Успех"
+                  color="green"
+                  mb="md"
+                  radius="md"
+                >
+                  {success}
+                </Alert>
               )}
-            </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="last_name">
-                Фамилия *
-              </label>
-              <input
-                id="last_name"
-                name="last_name"
-                type="text"
-                className={`form-input ${errors.last_name ? 'error' : ''}`}
-                placeholder="Фамилия"
-                value={formData.last_name}
-                onChange={handleChange}
-                required
-              />
-              {errors.last_name && (
-                <div className="form-error">{errors.last_name}</div>
-              )}
-            </div>
-          </div>
+              {/* Form */}
+              <form onSubmit={handleSubmit}>
+                <Stack spacing="lg">
+                  {/* Step 1: Personal Info */}
+                  {currentStep === 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Stack spacing="lg">
+                        <Text size="lg" weight={600} className="step-title">
+                          Личная информация
+                        </Text>
+                        
+                        <TextInput
+                          label="Email"
+                          placeholder="your@email.com"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          leftIcon={<IconMail size={20} />}
+                          size="lg"
+                          radius="md"
+                          required
+                          error={errors.email}
+                          className="form-input"
+                        />
 
-          {/* Пароль */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="password">
-              Пароль *
-            </label>
-            <div className="password-input-container">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                className={`form-input ${errors.password ? 'error' : ''}`}
-                placeholder="Ваш пароль"
-                value={formData.password}
-                onChange={handleChange}
-                minLength={8}
-                required
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex="-1"
-              >
-                {showPassword ? "🙈" : "👁️"}
-              </button>
-            </div>
-            
-            {formData.password && (
-              <div className="password-strength">
-                <div className="strength-bar">
-                  <div 
-                    className="strength-fill" 
-                    style={{ 
-                      width: `${(passwordStrength.level === 'weak' ? 25 : 
-                               passwordStrength.level === 'fair' ? 50 : 
-                               passwordStrength.level === 'good' ? 75 : 100)}%`,
-                      backgroundColor: passwordStrength.color 
-                    }}
-                  ></div>
-                </div>
-                <span style={{ color: passwordStrength.color }}>
-                  {passwordStrength.text}
-                </span>
-              </div>
-            )}
-            
-            {errors.password && (
-              <div className="form-error">{errors.password}</div>
-            )}
-          </div>
+                        <Grid gutter="md">
+                          <Grid.Col span={6}>
+                            <TextInput
+                              label="Имя"
+                              placeholder="Ваше имя"
+                              value={formData.first_name}
+                              onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                              leftIcon={<IconUser size={20} />}
+                              size="lg"
+                              radius="md"
+                              required
+                              error={errors.first_name}
+                              className="form-input"
+                            />
+                          </Grid.Col>
+                          <Grid.Col span={6}>
+                            <TextInput
+                              label="Фамилия"
+                              placeholder="Ваша фамилия"
+                              value={formData.last_name}
+                              onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                              leftIcon={<IconUser size={20} />}
+                              size="lg"
+                              radius="md"
+                              required
+                              error={errors.last_name}
+                              className="form-input"
+                            />
+                          </Grid.Col>
+                        </Grid>
 
-          {/* Подтверждение пароля */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="password2">
-              Подтвердите пароль *
-            </label>
-            <div className="password-input-container">
-              <input
-                id="password2"
-                name="password_confirm"
-                type={showPasswordConfirm ? "text" : "password"}
-                className={`form-input ${errors.password2 ? 'error' : ''}`}
-                placeholder="Подтвердите ваш пароль"
-                value={formData.password_confirm}
-                onChange={handleChange}
-                minLength={8}
-                required
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPasswordConfirm(!showPasswordConfirm)}
-                tabIndex="-1"
-              >
-                {showPasswordConfirm ? "🙈" : "👁️"}
-              </button>
-            </div>
-            {errors.password2 && (
-              <div className="form-error">{errors.password2}</div>
-            )}
-          </div>
+                        <Button
+                          size="lg"
+                          fullWidth
+                          onClick={() => setCurrentStep(1)}
+                          className="next-button"
+                          disabled={!formData.email || !formData.first_name || !formData.last_name}
+                        >
+                          Продолжить
+                        </Button>
+                      </Stack>
+                    </motion.div>
+                  )}
 
-          {/* Согласие с условиями */}
-          <div className="form-group">
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={agreedToTerms}
-                onChange={(e) => setAgreedToTerms(e.target.checked)}
-                required
-              />
-              <span className="checkmark"></span>
-              Я согласен с{" "}
-              <Link to="/offer" target="_blank" className="auth-link">
-                условиями использования
-              </Link>{" "}
-              и{" "}
-              <Link to="/privacy" target="_blank" className="auth-link">
-                политикой конфиденциальности
-              </Link>
-            </label>
-            {errors.terms && (
-              <div className="form-error">{errors.terms}</div>
-            )}
-          </div>
+                  {/* Step 2: Security */}
+                  {currentStep === 1 && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Stack spacing="lg">
+                        <Group position="apart" align="center">
+                          <Text size="lg" weight={600} className="step-title">
+                            Безопасность
+                          </Text>
+                          <Button
+                            variant="subtle"
+                            size="sm"
+                            onClick={() => setCurrentStep(0)}
+                          >
+                            Назад
+                          </Button>
+                        </Group>
 
-          {error && (
-            <div className="form-error">
-              {typeof error === 'string' ? error : error.error || 'Ошибка регистрации'}
-            </div>
-          )}
+                        <PasswordInput
+                          label="Пароль"
+                          placeholder="Создайте надежный пароль"
+                          value={formData.password}
+                          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                          leftIcon={<IconLock size={20} />}
+                          size="lg"
+                          radius="md"
+                          required
+                          error={errors.password}
+                          className="form-input"
+                          visibilityToggleIcon={({ reveal, size }) => (
+                            reveal ? <IconEyeOff size={size} /> : <IconEye size={size} />
+                          )}
+                        />
 
-          <button 
-            className="auth-button" 
-            type="submit" 
-            disabled={loading || !agreedToTerms}
-          >
-            {loading ? "Регистрация..." : "Зарегистрироваться"}
-          </button>
-        </form>
-      </div>
-    </div>
+                        {formData.password && (
+                          <Box>
+                            <Group position="apart" mb="xs">
+                              <Text size="sm" weight={500}>
+                                Надежность пароля
+                              </Text>
+                              <Badge
+                                color={
+                                  passwordStrength.level === 'weak' ? 'red' :
+                                  passwordStrength.level === 'fair' ? 'yellow' :
+                                  passwordStrength.level === 'good' ? 'blue' : 'green'
+                                }
+                                variant="light"
+                              >
+                                {passwordStrength.text}
+                              </Badge>
+                            </Group>
+                            <Progress
+                              value={
+                                passwordStrength.level === 'weak' ? 25 :
+                                passwordStrength.level === 'fair' ? 50 :
+                                passwordStrength.level === 'good' ? 75 : 100
+                              }
+                              color={
+                                passwordStrength.level === 'weak' ? 'red' :
+                                passwordStrength.level === 'fair' ? 'yellow' :
+                                passwordStrength.level === 'good' ? 'blue' : 'green'
+                              }
+                              size="sm"
+                              radius="md"
+                            />
+                          </Box>
+                        )}
+
+                        <PasswordInput
+                          label="Подтвердите пароль"
+                          placeholder="Повторите ваш пароль"
+                          value={formData.password_confirm}
+                          onChange={(e) => setFormData({ ...formData, password_confirm: e.target.value })}
+                          leftIcon={<IconLock size={20} />}
+                          size="lg"
+                          radius="md"
+                          required
+                          error={errors.password2}
+                          className="form-input"
+                          visibilityToggleIcon={({ reveal, size }) => (
+                            reveal ? <IconEyeOff size={size} /> : <IconEye size={size} />
+                          )}
+                        />
+
+                        <Button
+                          size="lg"
+                          fullWidth
+                          onClick={() => setCurrentStep(2)}
+                          className="next-button"
+                          disabled={!formData.password || !formData.password_confirm || errors.password || errors.password2}
+                        >
+                          Продолжить
+                        </Button>
+                      </Stack>
+                    </motion.div>
+                  )}
+
+                  {/* Step 3: Confirmation */}
+                  {currentStep === 2 && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Stack spacing="lg">
+                        <Group position="apart" align="center">
+                          <Text size="lg" weight={600} className="step-title">
+                            Подтверждение
+                          </Text>
+                          <Button
+                            variant="subtle"
+                            size="sm"
+                            onClick={() => setCurrentStep(1)}
+                          >
+                            Назад
+                          </Button>
+                        </Group>
+
+                        <Paper p="md" radius="md" withBorder className="summary-card">
+                          <Stack spacing="sm">
+                            <Text weight={600}>Сводка регистрации:</Text>
+                            <Group position="apart">
+                              <Text size="sm" color="dimmed">Email:</Text>
+                              <Text size="sm">{formData.email}</Text>
+                            </Group>
+                            <Group position="apart">
+                              <Text size="sm" color="dimmed">Имя:</Text>
+                              <Text size="sm">{formData.first_name} {formData.last_name}</Text>
+                            </Group>
+                            <Group position="apart">
+                              <Text size="sm" color="dimmed">Пароль:</Text>
+                              <Text size="sm">••••••••</Text>
+                            </Group>
+                          </Stack>
+                        </Paper>
+
+                        <Checkbox
+                          label={
+                            <Text size="sm">
+                              Я согласен с{' '}
+                              <Anchor href="/offer" target="_blank" size="sm">
+                                условиями использования
+                              </Anchor>{' '}
+                              и{' '}
+                              <Anchor href="/privacy" target="_blank" size="sm">
+                                политикой конфиденциальности
+                              </Anchor>
+                            </Text>
+                          }
+                          checked={agreedToTerms}
+                          onChange={(e) => setAgreedToTerms(e.currentTarget.checked)}
+                          size="md"
+                          error={errors.terms}
+                        />
+
+                        {error && (
+                          <Alert
+                            icon={<IconAlertCircle size={16} />}
+                            title="Ошибка регистрации"
+                            color="red"
+                            radius="md"
+                          >
+                            {typeof error === 'string' ? error : error.error || 'Произошла ошибка при регистрации'}
+                          </Alert>
+                        )}
+
+                        <Button
+                          type="submit"
+                          size="xl"
+                          fullWidth
+                          loading={loading}
+                          disabled={!agreedToTerms}
+                          className="register-button"
+                          radius="md"
+                        >
+                          {loading ? 'Регистрация...' : 'Создать аккаунт'}
+                        </Button>
+                      </Stack>
+                    </motion.div>
+                  )}
+
+                  <Divider label="или" labelPosition="center" />
+
+                  <Stack spacing="sm">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      fullWidth
+                      leftIcon={<IconBrandGoogle size={20} />}
+                      className="social-button"
+                      radius="md"
+                    >
+                      Зарегистрироваться через Google
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      fullWidth
+                      leftIcon={<IconBrandGithub size={20} />}
+                      className="social-button"
+                      radius="md"
+                    >
+                      Зарегистрироваться через GitHub
+                    </Button>
+                  </Stack>
+
+                  <Center>
+                    <Group spacing="xs">
+                      <Text size="sm" color="dimmed">
+                        Уже есть аккаунт?
+                      </Text>
+                      <Anchor
+                        size="sm"
+                        weight={600}
+                        onClick={() => navigate('/login')}
+                        className="login-link"
+                      >
+                        Войти
+                      </Anchor>
+                    </Group>
+                  </Center>
+                </Stack>
+              </form>
+            </Paper>
+
+            {/* Features */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : 50 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="register-features"
+            >
+              <Stack spacing="lg">
+                <Title order={3} size="xl" weight={700} className="features-title">
+                  Преимущества регистрации
+                </Title>
+                
+                <Stack spacing="md">
+                  <Group spacing="md">
+                    <ThemeIcon size="lg" color="blue" variant="light">
+                      <IconChecklist size={20} />
+                    </ThemeIcon>
+                    <Box>
+                      <Text weight={600}>Персональный план</Text>
+                      <Text size="sm" color="dimmed">
+                        Индивидуальная стратегия поступления
+                      </Text>
+                    </Box>
+                  </Group>
+
+                  <Group spacing="md">
+                    <ThemeIcon size="lg" color="green" variant="light">
+                      <IconShield size={20} />
+                    </ThemeIcon>
+                    <Box>
+                      <Text weight={600}>Безопасность</Text>
+                      <Text size="sm" color="dimmed">
+                        Защита персональных данных
+                      </Text>
+                    </Box>
+                  </Group>
+
+                  <Group spacing="md">
+                    <ThemeIcon size="lg" color="purple" variant="light">
+                      <IconStar size={20} />
+                    </ThemeIcon>
+                    <Box>
+                      <Text weight={600}>Экспертная поддержка</Text>
+                      <Text size="sm" color="dimmed">
+                        24/7 помощь специалистов
+                      </Text>
+                    </Box>
+                  </Group>
+                </Stack>
+              </Stack>
+            </motion.div>
+          </motion.div>
+        </Container>
+      </BackgroundImage>
+    </Box>
   );
 }
 export default RegisterPage;
