@@ -100,20 +100,29 @@ function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Submitting login form...', formData.email);
     
     if (!formData.email || !formData.password) {
+      console.log('Email or password is empty');
       return;
     }
 
     try {
+      console.log('Dispatching loginUser...');
       const result = await dispatch(loginUser(formData));
+      console.log('Login result:', result);
+      
       if (loginUser.fulfilled.match(result)) {
+        console.log('Login successful, fetching profile...');
         // Загружаем полный профиль
         await dispatch(fetchProfile());
         
         // Перенаправляем на главную или на страницу, с которой пришел пользователь
         const returnUrl = searchParams.get('returnUrl') || '/';
+        console.log('Redirecting to:', returnUrl);
         navigate(returnUrl);
+      } else {
+        console.log('Login not fulfilled:', result);
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -132,7 +141,6 @@ function LoginPage() {
         src="/images/bg-hero.jpg"
         className="login-background"
       >
-        <Overlay gradient="linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%)" />
         
         <Container size="xl" className="login-container">
           <motion.div

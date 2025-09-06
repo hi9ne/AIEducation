@@ -47,6 +47,26 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         read_only_fields = ('user', 'enrolled_at')
 
 
+class DashboardStatsSerializer(serializers.Serializer):
+    overall_progress = serializers.FloatField()
+    ielts_completed = serializers.BooleanField()
+    dov_completed = serializers.BooleanField()
+    universities_selected = serializers.BooleanField()
+    universitaly_registration = serializers.BooleanField()
+    visa_obtained = serializers.BooleanField()
+    total_courses = serializers.IntegerField()
+    completed_courses = serializers.IntegerField()
+    upcoming_deadlines = serializers.IntegerField()
+    achievements_unlocked = serializers.IntegerField()
+    current_streak = serializers.IntegerField()
+    total_study_time = serializers.IntegerField()
+    weekly_goal = serializers.IntegerField()
+    weekly_progress = serializers.IntegerField()
+    recommended_courses = CourseSerializer(many=True)
+    total_points = serializers.IntegerField()
+    applications_submitted = serializers.IntegerField(default=0)
+
+
 class ApplicationSerializer(serializers.ModelSerializer):
     university = UniversitySerializer(read_only=True)
     major = MajorSerializer(read_only=True)

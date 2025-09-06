@@ -2,9 +2,14 @@ import axios from 'axios';
 
 // Auto-detect environment and set API URL
 const getApiUrl = () => {
-  // Check if we're in development (localhost)
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:8000';
+  // Check if we're in development (localhost or local network)
+  if (window.location.hostname === 'localhost' || 
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.startsWith('172.') ||
+      window.location.hostname.startsWith('192.168.') ||
+      window.location.hostname.startsWith('10.')) {
+    // Use the same hostname as the frontend for backend in development
+    return `http://${window.location.hostname}:8000`;
   }
   
   // Check if we're in production (Railway)
@@ -24,7 +29,8 @@ const api = axios.create({
   timeout: 10000, // 10 секунд timeout
   headers: {
     'Content-Type': 'application/json',
-  }
+  },
+  withCredentials: true
 });
 
 // Request interceptor

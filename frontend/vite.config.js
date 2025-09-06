@@ -6,9 +6,11 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    port: 5173,
+    port: 5174,
+    host: '0.0.0.0',
     hmr: {
-      port: 5173,
+      port: 5174,
+      host: 'localhost',
     },
     watch: {
       usePolling: true,
@@ -16,5 +18,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['@tabler/icons-react'],
+    force: true,
   },
 });

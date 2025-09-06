@@ -8,7 +8,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
-import HeaderComponent from './components/Header';
+import HeaderComponent from './components/Home/Header';
 import './App.css';
 
 function App() {

@@ -90,6 +90,7 @@ const RightPanel = () => {
 
   // Local state
   const [aiMessage, setAiMessage] = useState('');
+  const [aiResponse, setAiResponse] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
