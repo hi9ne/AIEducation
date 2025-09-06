@@ -29,17 +29,88 @@ import {
   IconTarget,
 } from '@tabler/icons-react';
 import { motion } from 'framer-motion';
+import CircularProgress from '../../Animations/CircularProgress';
 
-// Тестовые данные для дашборда
-const mockDashboardStats = {
-  total_courses: 3,
-  completed_courses: 0,
+const ProgressSection = ({ stats }) => {
+  const calculateStatusText = (progress) => {
+    if (progress === 100) return "Completed";
+    if (progress > 0) return "In progress";
+    return "Not started";
+  };
+
+  return (
+    <Card withBorder p="lg" radius="md">
+      <Stack spacing="md">
+        <Group position="apart">
+          <Text size="xl" weight={500}>Account</Text>
+          <Badge color="green">
+            {calculateStatusText(stats?.overall_progress || 0)}
+          </Badge>
+        </Group>
+
+        <Group position="center" p="md">
+          <CircularProgress 
+            value={stats?.overall_progress || 0} 
+            size={140}
+            strokeWidth={12}
+            color="#37B34A"
+          />
+        </Group>
+
+        <Box>
+          <Text size="md" weight={500} mb="md">Current Status</Text>
+          <Stack spacing="xs">
+            <Group position="apart">
+              <Text size="sm">IELTS</Text>
+              <Badge color={stats?.ielts_completed ? "green" : "gray"}>
+                {stats?.ielts_completed ? "Completed" : "Not started"}
+              </Badge>
+            </Group>
+            <Group position="apart">
+              <Text size="sm">DOV</Text>
+              <Badge color={stats?.dov_completed ? "green" : "gray"}>
+                {stats?.dov_completed ? "Completed" : "Not started"}
+              </Badge>
+            </Group>
+            <Group position="apart">
+              <Text size="sm">University Selection</Text>
+              <Badge color={stats?.universities_selected ? "green" : "gray"}>
+                {stats?.universities_selected ? "Completed" : "Not started"}
+              </Badge>
+            </Group>
+            <Group position="apart">
+              <Text size="sm">Universitaly Registration</Text>
+              <Badge color={stats?.universitaly_registration ? "green" : "gray"}>
+                {stats?.universitaly_registration ? "Completed" : "Not started"}
+              </Badge>
+            </Group>
+            <Group position="apart">
+              <Text size="sm">Visa Status</Text>
+              <Badge color={stats?.visa_obtained ? "green" : "gray"}>
+                {stats?.visa_obtained ? "Obtained" : "Not started"}
+              </Badge>
+            </Group>
+          </Stack>
+        </Box>
+      </Stack>
+    </Card>
+  );
+};
+
+// Dashboard stats initial state
+const initialDashboardStats = {
+  overall_progress: 0,
+  ielts_completed: false,
+  dov_completed: false,
+  universities_selected: false,
+  universitaly_registration: false,
+  visa_obtained: false,
   upcoming_deadlines: 0,
   achievements_unlocked: 0,
-  current_streak: 7,
-  total_study_time: 45,
-  weekly_goal: 20,
-  weekly_progress: 12,
+  current_streak: 0,
+  total_study_time: 0,
+  weekly_goal: 0,
+  weekly_progress: 0,
   recommended_courses: [
     {
       id: 1,
@@ -85,10 +156,10 @@ const MainPage = () => {
     error: state.education.error,
   }));
 
-  // Используем тестовые данные, если нет данных из API
-  const displayStats = dashboardStats || mockDashboardStats;
+  // Use API data or initial state if no data available
+  const displayStats = dashboardStats || initialDashboardStats;
 
-  // Отладочная информация
+  // Debug information
   console.log('MainPage - isAuthenticated:', isAuthenticated);
   console.log('MainPage - loading:', loading);
   console.log('MainPage - error:', error);
@@ -109,6 +180,7 @@ const MainPage = () => {
     }
   };
 
+  // Show loading state
   if (loading.dashboardStats && !displayStats) {
     return (
       <Box>
@@ -123,9 +195,18 @@ const MainPage = () => {
     );
   }
 
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <Alert color="red" title="Error" mb="xl">
+        {error}
+      </Alert>
+    );
+  }
+
   return (
     <Box>
-      {/* Заголовок с кнопкой обновления */}
+      {/* Header with refresh button */}
       <Group justify="space-between" mb="xl">
         <Text size="xl" fw={600}>Добро пожаловать в личный кабинет!</Text>
         <ActionIcon
@@ -138,7 +219,14 @@ const MainPage = () => {
         </ActionIcon>
       </Group>
 
-      {/* Основная статистика */}
+      {/* Progress Section */}
+      <Grid mb="xl">
+        <Grid.Col span={12}>
+          <ProgressSection stats={displayStats} />
+        </Grid.Col>
+      </Grid>
+
+      {/* Main Statistics */}
       <Grid mb="xl">
         <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
           <motion.div

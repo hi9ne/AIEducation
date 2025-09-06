@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Boldonse&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Rubik+Wet+Paint&family=Sixtyfour+Convergence&family=Zen+Dots&display=swap');
 .parallax_edc_var {
-  background-image: url('../../../public/images/parallax_edc.jpg');
+  background-image: url('../../images/parallax_edc.jpg');
   height: 100vh;
   background-attachment: fixed;
   display: flex;

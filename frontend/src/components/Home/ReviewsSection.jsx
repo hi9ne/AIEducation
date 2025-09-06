@@ -17,7 +17,7 @@ const reviews = [
 ];
 
 const ReviewsSection = () => (
-  <section className="reviews-section">
+  <section id="reviews" className="reviews-section">
     <h2 className="reviews-title">ЧТО О НАС ГОВОРЯТ НАШИ КЛИЕНТЫ</h2>
     <div className="reviews-list">
       {reviews.map((r, i) => (

@@ -244,8 +244,6 @@ function RegisterPage() {
         src="/images/bg-hero.jpg"
         className="register-background"
       >
-        <Overlay gradient="linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%)" />
-        
         <Container size="xl" className="register-container">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -334,7 +332,7 @@ function RegisterPage() {
                           placeholder="your@email.com"
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          leftIcon={<IconMail size={20} />}
+                          leftSection={<IconMail size={20} />}
                           size="lg"
                           radius="md"
                           required
@@ -349,7 +347,7 @@ function RegisterPage() {
                               placeholder="Ваше имя"
                               value={formData.first_name}
                               onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
-                              leftIcon={<IconUser size={20} />}
+                              leftSection={<IconUser size={20} />}
                               size="lg"
                               radius="md"
                               required
@@ -363,7 +361,7 @@ function RegisterPage() {
                               placeholder="Ваша фамилия"
                               value={formData.last_name}
                               onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
-                              leftIcon={<IconUser size={20} />}
+                              leftSection={<IconUser size={20} />}
                               size="lg"
                               radius="md"
                               required
@@ -412,7 +410,7 @@ function RegisterPage() {
                           placeholder="Создайте надежный пароль"
                           value={formData.password}
                           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                          leftIcon={<IconLock size={20} />}
+                          leftSection={<IconLock size={20} />}
                           size="lg"
                           radius="md"
                           required
@@ -462,7 +460,7 @@ function RegisterPage() {
                           placeholder="Повторите ваш пароль"
                           value={formData.password_confirm}
                           onChange={(e) => setFormData({ ...formData, password_confirm: e.target.value })}
-                          leftIcon={<IconLock size={20} />}
+                          leftSection={<IconLock size={20} />}
                           size="lg"
                           radius="md"
                           required
@@ -577,7 +575,7 @@ function RegisterPage() {
                       variant="outline"
                       size="lg"
                       fullWidth
-                      leftIcon={<IconBrandGoogle size={20} />}
+                      leftSection={<IconBrandGoogle size={20} />}
                       className="social-button"
                       radius="md"
                     >
@@ -587,7 +585,7 @@ function RegisterPage() {
                       variant="outline"
                       size="lg"
                       fullWidth
-                      leftIcon={<IconBrandGithub size={20} />}
+                      leftSection={<IconBrandGithub size={20} />}
                       className="social-button"
                       radius="md"
                     >

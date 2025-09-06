@@ -8,8 +8,10 @@ import {
   Button,
   Avatar,
   Badge,
-  Divider
+  Divider,
 } from '@mantine/core';
+import styles from './LeftNavigation.module.css';
+import StudentCard from './StudentCard';
 import { 
   IconHome, 
   IconBook, 
@@ -26,7 +28,17 @@ import {
   IconHelp
 } from '@tabler/icons-react';
 
-const LeftNavigation = ({ activeSection, onSectionChange }) => {
+const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
+  const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
+  
+  const studentData = {
+    name: user?.first_name + ' ' + user?.last_name || 'Студент',
+    id: user?.id ? `AS-${new Date().getFullYear()}-${String(user.id).padStart(6, '0')}` : 'AS-2025-000000',
+    department: 'Подготовка к поступлению',
+    program: 'Италия - Высшее образование',
+    photo: user?.photo || null
+  };
+  
   const navigationItems = [
     {
       id: 'main',
@@ -124,7 +136,12 @@ const LeftNavigation = ({ activeSection, onSectionChange }) => {
     <Box style={{ height: '100%', backgroundColor: 'var(--mantine-color-gray-0)' }}>
       <Stack gap="xs" style={{ padding: '16px' }}>
         {/* User Profile */}
-        <Paper style={{ padding: '16px', marginBottom: '16px' }} shadow="sm" radius="md">
+        <Paper 
+          className={styles.profileButton}
+          shadow="sm" 
+          radius="md"
+          onClick={() => setIsProfileModalOpen(true)}
+        >
           <Group>
             <Avatar size="md" color="blue" radius="xl">
               АС
@@ -142,6 +159,25 @@ const LeftNavigation = ({ activeSection, onSectionChange }) => {
             </Badge>
           </Group>
         </Paper>
+
+        {/* Profile Modal */}
+        {isProfileModalOpen && (
+          <Box
+            className={styles.modalOverlay}
+            onClick={() => setIsProfileModalOpen(false)}
+          >
+            <Box 
+              className={styles.modalContent}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <StudentCard
+                student={studentData}
+                isOpen={isProfileModalOpen}
+                onClose={() => setIsProfileModalOpen(false)}
+              />
+            </Box>
+          </Box>
+        )}
 
         {/* Navigation Items */}
         <Stack gap="xs">

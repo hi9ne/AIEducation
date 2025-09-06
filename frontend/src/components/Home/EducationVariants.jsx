@@ -217,7 +217,7 @@ const EducationVariants = () => {
   }, []);
 
   return (
-    <section className="parallax_edc_var">
+    <section id="education" className="parallax_edc_var">
       <div className="parallax_edc_var .mask"></div>
       <div className="education-variants-container">
         <div className="education-variants-header">

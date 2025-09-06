@@ -28,6 +28,31 @@ class University(models.Model):
         verbose_name_plural = "Universities"
 
 
+class StudentProgress(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='progress')
+    ielts_completed = models.BooleanField(default=False)
+    dov_completed = models.BooleanField(default=False)
+    universities_selected = models.BooleanField(default=False)
+    universitaly_registration = models.BooleanField(default=False)
+    visa_obtained = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def calculate_progress(self):
+        total_steps = 5  # Total number of steps
+        completed_steps = sum([
+            self.ielts_completed,
+            self.dov_completed,
+            self.universities_selected,
+            self.universitaly_registration,
+            self.visa_obtained
+        ])
+        return (completed_steps / total_steps) * 100
+
+    def __str__(self):
+        return f"Progress for {self.user.username}"
+
+
 class Major(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
