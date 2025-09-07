@@ -199,9 +199,12 @@ def dashboard_stats(request):
         progress = StudentProgress.objects.get(user=user)
     except StudentProgress.DoesNotExist:
         progress = StudentProgress.objects.create(user=user)
+    except Exception as e:
+        print(f"Error getting student progress: {e}")
+        progress = None
     
     # Calculate overall progress
-    overall_progress = progress.calculate_progress()
+    overall_progress = progress.calculate_progress() if progress else 0
     
     # Course statistics
     total_courses = Course.objects.filter(is_active=True).count()

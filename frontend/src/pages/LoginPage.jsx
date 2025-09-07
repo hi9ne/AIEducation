@@ -117,10 +117,8 @@ function LoginPage() {
         // Загружаем полный профиль
         await dispatch(fetchProfile());
         
-        // Перенаправляем на главную или на страницу, с которой пришел пользователь
-        const returnUrl = searchParams.get('returnUrl') || '/';
-        console.log('Redirecting to:', returnUrl);
-        navigate(returnUrl);
+        // Всегда перенаправляем в личный кабинет после успешного входа
+        navigate('/app/dashboard');
       } else {
         console.log('Login not fulfilled:', result);
       }
@@ -226,7 +224,7 @@ function LoginPage() {
                     placeholder="Введите ваш email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    leftIcon={<IconMail size={20} />}
+                    leftSection={<IconMail size={20} />}
                     size="lg"
                     radius="md"
                     required
@@ -239,7 +237,7 @@ function LoginPage() {
                     placeholder="Введите ваш пароль"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    leftIcon={<IconLock size={20} />}
+                    leftSection={<IconLock size={20} />}
                     size="lg"
                     radius="md"
                     required

@@ -3,15 +3,12 @@ import {
   Box, 
   Stack, 
   Text, 
-  Paper, 
   Group, 
   Button,
   Avatar,
   Badge,
-  Divider,
+  Divider
 } from '@mantine/core';
-import styles from './LeftNavigation.module.css';
-import StudentCard from './StudentCard';
 import { 
   IconHome, 
   IconBook, 
@@ -22,23 +19,11 @@ import {
   IconFile, 
   IconPlane, 
   IconSettings,
-  IconChevronRight,
-  IconUser,
   IconBell,
   IconHelp
 } from '@tabler/icons-react';
 
 const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
-  const [isProfileModalOpen, setIsProfileModalOpen] = React.useState(false);
-  
-  const studentData = {
-    name: user?.first_name + ' ' + user?.last_name || 'Студент',
-    id: user?.id ? `AS-${new Date().getFullYear()}-${String(user.id).padStart(6, '0')}` : 'AS-2025-000000',
-    department: 'Подготовка к поступлению',
-    program: 'Италия - Высшее образование',
-    photo: user?.photo || null
-  };
-  
   const navigationItems = [
     {
       id: 'main',
@@ -136,19 +121,25 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
     <Box style={{ height: '100%', backgroundColor: 'var(--mantine-color-gray-0)' }}>
       <Stack gap="xs" style={{ padding: '16px' }}>
         {/* User Profile */}
-        <Paper 
-          className={styles.profileButton}
-          shadow="sm" 
-          radius="md"
-          onClick={() => setIsProfileModalOpen(true)}
+        <Box 
+          py="md" 
+          style={{ 
+            pointerEvents: 'none',
+            userSelect: 'none'
+          }}
         >
           <Group>
-            <Avatar size="md" color="blue" radius="xl">
-              АС
+            <Avatar 
+              size="md" 
+              color="blue" 
+              radius="xl"
+              src={user?.photo}
+            >
+              {user?.first_name?.[0]}{user?.last_name?.[0]}
             </Avatar>
             <Box style={{ flex: 1 }}>
               <Text size="sm" fw={600} c="dark">
-                Аскар Студент
+                {user?.first_name} {user?.last_name}
               </Text>
               <Text size="xs" c="dimmed">
                 Студент
@@ -158,26 +149,7 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
               Активен
             </Badge>
           </Group>
-        </Paper>
-
-        {/* Profile Modal */}
-        {isProfileModalOpen && (
-          <Box
-            className={styles.modalOverlay}
-            onClick={() => setIsProfileModalOpen(false)}
-          >
-            <Box 
-              className={styles.modalContent}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <StudentCard
-                student={studentData}
-                isOpen={isProfileModalOpen}
-                onClose={() => setIsProfileModalOpen(false)}
-              />
-            </Box>
-          </Box>
-        )}
+        </Box>
 
         {/* Navigation Items */}
         <Stack gap="xs">

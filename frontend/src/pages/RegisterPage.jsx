@@ -196,7 +196,7 @@ function RegisterPage() {
         }));
         if (loginUser.fulfilled.match(loginAction)) {
           await dispatch(fetchProfile());
-          navigate("/profile");
+          navigate("/app/dashboard");
         } else {
           navigate("/login?registered=true");
         }
