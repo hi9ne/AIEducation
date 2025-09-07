@@ -1,3 +1,4 @@
+import { useSelector } from 'react-redux';
 import React, { useState } from 'react';
 import { 
   Box, 
@@ -31,8 +32,8 @@ import {
 } from '@tabler/icons-react';
 
 const DOVSection = ({ progress }) => {
-  // Извлекаем значения из объекта progress
-  const dovProgress = progress?.currentProgress?.dov || 5;
+  const { user } = useSelector((state) => state.auth);
+  // Рассчитываем прогресс на основе реальных данных
   const overallProgress = progress?.overallProgress || 0;
   const [opened, setOpened] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -42,7 +43,7 @@ const DOVSection = ({ progress }) => {
       id: 1,
       title: 'Подготовка документов',
       description: 'Сбор всех необходимых документов',
-      completed: true,
+      completed: user?.profile?.dov_step_1_completed || false,
       required: true,
       documents: ['Аттестат', 'IELTS', 'Мотивационное письмо', 'Рекомендации']
     },
@@ -72,50 +73,45 @@ const DOVSection = ({ progress }) => {
     }
   ];
 
+  // Рассчитываем прогресс на основе реальных данных
+  const completedSteps = steps.filter(step => step.completed).length;
+  const dovProgress = Math.round((completedSteps / steps.length) * 100);
   const documents = [
     {
       id: 1,
       name: 'Аттестат о среднем образовании',
-      status: 'uploaded',
+      status: user?.profile?.dov_document_1_uploaded ? 'uploaded' : 'pending',
       required: true,
-      size: '2.3 MB',
-      uploadedAt: '2024-01-15',
+      size: user?.profile?.dov_document_1_size || null,
+      uploadedAt: user?.profile?.dov_document_1_uploaded_at || null,
       needsApostille: true
     },
     {
       id: 2,
       name: 'IELTS сертификат',
-      status: 'uploaded',
+      status: user?.profile?.dov_document_2_uploaded ? 'uploaded' : 'pending',
       required: true,
-      size: '1.8 MB',
-      uploadedAt: '2024-01-20',
-      needsApostille: false
-    },
-    {
-      id: 3,
-      name: 'Мотивационное письмо',
-      status: 'pending',
-      required: true,
-      size: null,
-      uploadedAt: null,
+      size: user?.profile?.dov_document_2_size || null,
+      uploadedAt: user?.profile?.dov_document_2_uploaded_at || null,
+      uploadedAt: user?.profile?.dov_document_3_uploaded_at || null,
       needsApostille: false
     },
     {
       id: 4,
       name: 'Рекомендательные письма',
-      status: 'pending',
+      status: user?.profile?.dov_document_4_uploaded ? 'uploaded' : 'pending',
       required: true,
-      size: null,
-      uploadedAt: null,
+      size: user?.profile?.dov_document_4_size || null,
+      uploadedAt: user?.profile?.dov_document_4_uploaded_at || null,
       needsApostille: true
     },
     {
       id: 5,
       name: 'Перевод аттестата на итальянский',
-      status: 'pending',
+      status: user?.profile?.dov_document_5_uploaded ? 'uploaded' : 'pending',
       required: true,
-      size: null,
-      uploadedAt: null,
+      size: user?.profile?.dov_document_5_size || null,
+      uploadedAt: user?.profile?.dov_document_5_uploaded_at || null,
       needsApostille: false
     }
   ];
@@ -138,7 +134,6 @@ const DOVSection = ({ progress }) => {
     }
   };
 
-  const completedSteps = steps.filter(step => step.completed).length;
   const totalSteps = steps.filter(step => step.required).length;
 
   return (

@@ -35,6 +35,9 @@ import {
 
 const VisaSection = ({ progress }) => {
   const { user } = useSelector((state) => state.auth);
+  // Рассчитываем прогресс на основе реальных данных
+  const completedSteps = steps.filter(step => step.completed).length;
+  const visaProgress = Math.round((completedSteps / steps.length) * 100);
   const overallProgress = progress?.overallProgress || 0;
   const [opened, setOpened] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -73,10 +76,6 @@ const VisaSection = ({ progress }) => {
       documents: ['Виза']
     }
   ];
-
-  // Рассчитываем прогресс на основе реальных данных
-  const completedSteps = steps.filter(step => step.completed).length;
-  const visaProgress = Math.round((completedSteps / steps.length) * 100);
 
   const documents = [
     {
