@@ -5,8 +5,12 @@
     <link rel="icon" type="image/png" href="/images/iedulogo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#667eea" />
+    <!-- Отключение кэширования -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
+    <!-- Basic Meta Tags -->
     <meta name="description" content="Помогаем получить высшее образование в лучших университетах Италии. AI Education - ваш путь к успешному поступлению." />
     <meta name="keywords" content="образование, Италия, университет, поступление, AI, обучение" />
     <meta name="author" content="AI Education" />
@@ -25,51 +29,10 @@
     <meta name="twitter:description" content="Помогаем получить высшее образование в лучших университетах Италии" />
     <meta name="twitter:image" content="/images/iedulogo.png" />
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json" />
-    
-    <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="/images/iedulogo.png" />
-    <link rel="apple-touch-icon" sizes="152x152" href="/images/iedulogo.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/images/iedulogo.png" />
-    <link rel="apple-touch-icon" sizes="167x167" href="/images/iedulogo.png" />
-    
-    <!-- Apple Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="AI Education" />
-    
-    <!-- Microsoft Meta Tags -->
-    <meta name="msapplication-TileColor" content="#667eea" />
-    <meta name="msapplication-config" content="/browserconfig.xml" />
-    
-    <!-- Preload Critical Resources -->
-    <link rel="preload" href="/images/iedulogo.png" as="image" type="image/png" fetchpriority="high" />
-    
-    <!-- DNS Prefetch -->
-    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
-    
     <title>AI Education - Образование в Италии</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    
-    <!-- Service Worker Registration -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registered: ', registration);
-            })
-            .catch((registrationError) => {
-              console.log('SW registration failed: ', registrationError);
-            });
-        });
-      }
-    </script>
   </body>
 </html>

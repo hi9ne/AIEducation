@@ -25,7 +25,7 @@ function App() {
             <Route element={<PublicLayout />}>
               <Route 
                 path="/" 
-                element={!isAuthenticated ? <HomePage /> : <Navigate to="/app/dashboard" replace />} 
+                element={<HomePage />} 
               />
               <Route 
                 path="/login" 
