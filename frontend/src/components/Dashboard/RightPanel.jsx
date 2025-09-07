@@ -199,7 +199,7 @@ const RightPanel = () => {
 
               <Group position="apart">
                 <Button
-                  leftIcon={<IconSend size={16} />}
+                  leftSection={<IconSend size={16} />}
                   onClick={handleSendMessage}
                   disabled={!aiMessage.trim() || isTyping}
                   size="sm"

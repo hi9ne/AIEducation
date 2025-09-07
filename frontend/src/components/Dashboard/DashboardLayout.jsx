@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, ScrollArea, Text, Button } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchProfile } from '../../store/authSlice';
 import LeftNavigation from './LeftNavigation';
 import CentralContent from './CentralContent';
 import RightPanel from './RightPanel';
@@ -14,6 +16,12 @@ const DashboardLayout = () => {
   const [opened, { toggle }] = useDisclosure(false);
   const { currentProgress, overallProgress } = useDashboardStore();
   const [showMobileRightPanel, setShowMobileRightPanel] = useState(false);
+  const user = useSelector(state => state.auth.user);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchProfile());
+  }, [dispatch]);
 
   return (
     <Box style={{ minHeight: '100vh', width: '100%', overflow: 'hidden', position: 'relative' }}>
@@ -25,6 +33,7 @@ const DashboardLayout = () => {
             onSectionChange={setActiveSection}
             isOpened={opened}
             onToggle={toggle}
+            user={user}
           />
           {/* Mobile toggle for right panel */}
           <div style={{ 
