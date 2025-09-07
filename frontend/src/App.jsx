@@ -2,12 +2,13 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Notifications } from '@mantine/notifications';
 import { ModalsProvider } from '@mantine/modals';
-import { useAuth } from './hooks/useAuth';
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import ProfilePage from './pages/ProfilePage';
+import { useAuth } from './shared/hooks/useAuth';
+import HomePage from './landing/pages/HomePage';
+import LoginPage from './landing/pages/LoginPage';
+import RegisterPage from './landing/pages/RegisterPage';
+import DashboardPage from './dashboard/pages/DashboardPage';
+import ProfilePage from './dashboard/pages/ProfilePage';
+import UserProfileForm from './dashboard/components/Onboarding/UserProfileForm';
 import PublicLayout from './layouts/PublicLayout';
 import PrivateLayout from './layouts/PrivateLayout';
 import './App.css';
@@ -33,12 +34,16 @@ function App() {
               />
               <Route 
                 path="/register" 
-                element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/app/dashboard" replace />} 
+                element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/app/onboarding" replace />} 
               />
             </Route>
 
             {/* Protected routes under /app prefix */}
             <Route path="/app" element={<PrivateLayout />}>
+              <Route 
+                path="onboarding" 
+                element={<UserProfileForm />} 
+              />
               <Route 
                 path="dashboard" 
                 element={<DashboardPage />} 
@@ -48,6 +53,9 @@ function App() {
                 element={<ProfilePage />} 
               />
             </Route>
+
+            {/* Redirects */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </ModalsProvider>
       </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../shared/hooks/useAuth';
 
 const PrivateLayout = () => {
   const { isAuthenticated } = useAuth();

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { registerUser, loginUser, fetchProfile, clearError, clearSuccess } from "../store/authSlice";
+import { registerUser, loginUser, fetchProfile, clearError, clearSuccess } from "../../store/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -196,7 +196,7 @@ function RegisterPage() {
         }));
         if (loginUser.fulfilled.match(loginAction)) {
           await dispatch(fetchProfile());
-          navigate("/app/dashboard");
+          navigate("/app/onboarding");
         } else {
           navigate("/login?registered=true");
         }

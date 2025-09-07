@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import educationApi from '../api/educationApi';
+import educationApi from './shared/api/educationApi';
 
 const useEducationStore = create((set, get) => ({
   // Состояние

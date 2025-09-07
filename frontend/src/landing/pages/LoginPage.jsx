@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser, fetchProfile, clearError, clearSuccess } from '../store/authSlice';
+import { loginUser, fetchProfile, clearError, clearSuccess } from '../../store/authSlice';
 import {
   Box,
   Container,

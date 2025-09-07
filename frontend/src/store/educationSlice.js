@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import educationApi from '../api/educationApi';
+import educationApi from '../shared/api/educationApi';
 
 // Async thunks
 export const fetchDashboardStats = createAsyncThunk(

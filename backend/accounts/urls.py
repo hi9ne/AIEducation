@@ -8,6 +8,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('token/refresh/', views.refresh_token, name='refresh_token'),
     path('profile/update/', views.update_profile, name='update_profile'),
+    path('profile/update-complete/', views.update_user_profile, name='update_user_profile'),
     path('user-profile/', views.user_profile, name='user_profile'),
     path('change-password/', views.change_password, name='change_password'),
     path('request-password-reset/', views.request_password_reset, name='request_password_reset'),
