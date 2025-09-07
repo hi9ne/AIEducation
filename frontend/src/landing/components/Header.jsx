@@ -6,12 +6,7 @@ const HeaderComponent = () => {
   const location = useLocation();
   const isAuthenticated = localStorage.getItem('accessToken');
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('userInfo');
-    navigate('/');
-  };
+
 
   const handleDashboardClick = () => {
     navigate('/app/dashboard');
@@ -177,12 +172,6 @@ const HeaderComponent = () => {
                 onClick={handleDashboardClick}
               >
                 <span>Войти в личный кабинет</span>
-              </button>
-              <button 
-                className="logout-button"
-                onClick={handleLogout}
-              >
-                <span>Выйти</span>
               </button>
             </div>
           ) : (

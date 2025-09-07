@@ -121,7 +121,7 @@ body {
   width: 100%;
 }
 
-.profile-button, .login-button {
+.profile-button, .login-button, .dashboard-button, .logout-button {
   background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
   color: #fff;
   font-weight: 600;
@@ -139,13 +139,13 @@ body {
   overflow: hidden;
 }
 
-.profile-button span, .login-button span {
+.profile-button span, .login-button span, .dashboard-button span, .logout-button span {
   position: relative;
   z-index: 2;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.profile-button::before, .login-button::before {
+.profile-button::before, .login-button::before, .dashboard-button::before, .logout-button::before {
   content: '';
   position: absolute;
   top: 0;
@@ -156,7 +156,7 @@ body {
   transition: left 0.5s ease;
 }
 
-.profile-button:hover::before, .login-button:hover::before {
+.profile-button:hover::before, .login-button:hover::before, .dashboard-button:hover::before, .logout-button:hover::before {
   left: 100%;
 }
 
@@ -166,9 +166,26 @@ body {
   position: relative;
 }
 
-.profile-button:hover span, .login-button:hover span {
+.profile-button:hover span, .login-button:hover span, .dashboard-button:hover span, .logout-button:hover span {
   transform: scale(1.05);
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
+/* Стили для контейнера кнопок авторизации */
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Стили для кнопки личного кабинета */
+.dashboard-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.dashboard-button:hover {
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
 
