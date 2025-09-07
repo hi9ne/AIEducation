@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import notificationsApi from '../api/notificationsApi';
+import notificationsApi from '../shared/api/notificationsApi';
 
 // Async thunks
 export const fetchNotifications = createAsyncThunk(

@@ -103,14 +103,238 @@ export const fetchProfile = createAsyncThunk(
 );
 
 export const updateProfile = createAsyncThunk(
-  'auth/updateProfile',
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
   async (profileData, { rejectWithValue, dispatch }) => {
     try {
       const response = await authAPI.updateProfileComplete(profileData);
-      
-      // Обновляем полный профиль после изменения
       dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+  'auth/updateProfile',
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+  async (profileData, { rejectWithValue, dispatch }) => {
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+    try {
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+      const response = await authAPI.updateProfile(profileData);
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
       
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+      // Обновляем полный профиль после изменения
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+      dispatch(fetchProfile());
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+      
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+      return response.data;
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+    } catch (error) {
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+      const errorMessage = apiHelpers.handleError(error);
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+    }
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+  }
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+);
+
+export const updateProfileComplete = createAsyncThunk(
+  "auth/updateProfileComplete",
+  async (profileData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      dispatch(fetchProfile());
       return response.data;
     } catch (error) {
       const errorMessage = apiHelpers.handleError(error);
@@ -338,8 +562,64 @@ const authSlice = createSlice({
         state.success = 'Профиль успешно обновлен';
       })
       .addCase(updateProfile.rejected, (state, action) => {
+
+      // Update Profile Complete
+      .addCase(updateProfileComplete.pending, (state) => {
+        state.profileUpdating = true;
+        state.error = null;
+      })
+      .addCase(updateProfileComplete.fulfilled, (state) => {
         state.profileUpdating = false;
+        state.success = "Профиль успешно обновлен";
+      })
+      .addCase(updateProfileComplete.rejected, (state, action) => {
+        state.profileUpdating = false;
+        state.error = action.payload?.error || "Ошибка при обновлении профиля";
+      })
+        state.profileUpdating = false;
+
+      // Update Profile Complete
+      .addCase(updateProfileComplete.pending, (state) => {
+        state.profileUpdating = true;
+        state.error = null;
+      })
+      .addCase(updateProfileComplete.fulfilled, (state) => {
+        state.profileUpdating = false;
+        state.success = "Профиль успешно обновлен";
+      })
+      .addCase(updateProfileComplete.rejected, (state, action) => {
+        state.profileUpdating = false;
+        state.error = action.payload?.error || "Ошибка при обновлении профиля";
+      })
         state.error = action.payload?.error || 'Ошибка при обновлении профиля';
+
+      // Update Profile Complete
+      .addCase(updateProfileComplete.pending, (state) => {
+        state.profileUpdating = true;
+        state.error = null;
+      })
+      .addCase(updateProfileComplete.fulfilled, (state) => {
+        state.profileUpdating = false;
+        state.success = "Профиль успешно обновлен";
+      })
+      .addCase(updateProfileComplete.rejected, (state, action) => {
+        state.profileUpdating = false;
+        state.error = action.payload?.error || "Ошибка при обновлении профиля";
+      })
+      })
+
+      // Update Profile Complete
+      .addCase(updateProfileComplete.pending, (state) => {
+        state.profileUpdating = true;
+        state.error = null;
+      })
+      .addCase(updateProfileComplete.fulfilled, (state) => {
+        state.profileUpdating = false;
+        state.success = "Профиль успешно обновлен";
+      })
+      .addCase(updateProfileComplete.rejected, (state, action) => {
+        state.profileUpdating = false;
+        state.error = action.payload?.error || "Ошибка при обновлении профиля";
       })
       
       // Change Password

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import notificationsApi from '../api/notificationsApi';
+import notificationsApi from './shared/api/notificationsApi';
 
 const useNotificationsStore = create((set, get) => ({
   // Состояние

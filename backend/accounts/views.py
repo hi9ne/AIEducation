@@ -74,13 +74,12 @@ def login(request):
         refresh = RefreshToken.for_user(user)
         
         return Response({
-            'message': 'Успешный вход в систему',
             'user': UserSerializer(user).data,
             'tokens': {
                 'access': str(refresh.access_token),
                 'refresh': str(refresh)
             }
-        }, status=status.HTTP_200_OK)
+        })
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -89,10 +88,11 @@ def login(request):
 @permission_classes([permissions.IsAuthenticated])
 def logout(request):
     try:
-        refresh_token = request.data["refresh"]
-        token = RefreshToken(refresh_token)
-        token.blacklist()
-        return Response({'message': 'Успешный выход из системы'}, status=status.HTTP_200_OK)
+        refresh_token = request.data.get('refresh')
+        if refresh_token:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        return Response({'message': 'Успешный выход'})
     except Exception as e:
         return Response({'error': 'Неверный токен'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -100,11 +100,24 @@ def logout(request):
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def profile(request):
-    serializer = UserSerializer(request.user)
-    return Response(serializer.data)
+    """
+    Возвращает полные данные пользователя с профилем
+    """
+    try:
+        # Получаем или создаем профиль пользователя
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
+        
+        # Сериализуем пользователя с профилем
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response(
+            {'error': f'Ошибка при получении профиля: {str(e)}'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
-@api_view(['PUT'])
+@api_view(['PUT', 'PATCH'])
 @permission_classes([permissions.IsAuthenticated])
 def update_profile(request):
     serializer = UserSerializer(request.user, data=request.data, partial=True)
@@ -248,3 +261,63 @@ def refresh_token(request):
     except Exception as e:
         return Response({'error': 'Неверный refresh token'}, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['PATCH'])
+@permission_classes([permissions.IsAuthenticated])
+def update_user_profile(request):
+    """
+    Обновляет профиль пользователя и связанные данные профиля
+    """
+    try:
+        user = request.user
+        data = request.data
+        
+        # Разделяем данные пользователя и профиля
+        user_data = {}
+        profile_data = {}
+        
+        # Поля пользователя
+        user_fields = ['phone', 'date_of_birth', 'country', 'city', 'avatar']
+        for field in user_fields:
+            if field in data:
+                user_data[field] = data[field]
+        
+        # Поля профиля
+        profile_fields = [
+            'bio', 'interests', 'goals', 'language_levels', 
+            'education_background', 'work_experience', 
+            'preferred_countries', 'budget_range', 'study_duration'
+        ]
+        for field in profile_fields:
+            if field in data:
+                profile_data[field] = data[field]
+        
+        # Обновляем пользователя
+        if user_data:
+            user_serializer = UserSerializer(user, data=user_data, partial=True)
+            if user_serializer.is_valid():
+                user_serializer.save()
+            else:
+                return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Обновляем профиль
+        if profile_data:
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            profile_serializer = UserProfileSerializer(profile, data=profile_data, partial=True)
+            if profile_serializer.is_valid():
+                profile_serializer.save()
+            else:
+                return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Возвращаем обновленные данные пользователя
+        user_serializer = UserSerializer(user)
+        return Response({
+            'message': 'Профиль успешно обновлен',
+            'user': user_serializer.data
+        })
+        
+    except Exception as e:
+        return Response(
+            {'error': f'Ошибка при обновлении профиля: {str(e)}'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

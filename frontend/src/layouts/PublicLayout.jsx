@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import HeaderComponent from '../components/Home/Header';
+import HeaderComponent from '../landing/components/Home/Header';
 
 const PublicLayout = () => {
   return (

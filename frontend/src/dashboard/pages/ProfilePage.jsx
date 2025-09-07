@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { logoutUser, fetchProfile, updateProfile, changePassword, requestEmailVerification, clearError, clearSuccess, verifyEmail } from '../store/authSlice';
+import { logoutUser, fetchProfile, updateProfile, changePassword, requestEmailVerification, clearError, clearSuccess, verifyEmail } from '../../store/authSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
