@@ -11,7 +11,7 @@ const faculties = [
 ];
 
 const FacultyList = () => (
-  <section className="faculty-list-section">
+  <section id="faculty" className="faculty-list-section">
     <h2 className="faculty-list-title">ВЫБЕРИТЕ ПОДХОДЯЩИЙ ФАКУЛЬТЕТ</h2>
     <div className="faculty-list-cards">
       {faculties.map((f, i) => (

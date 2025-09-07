@@ -3,11 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Notifications } from '@mantine/notifications';
 import { ModalsProvider } from '@mantine/modals';
 import { useAuth } from './hooks/useAuth';
+import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
-import HeaderComponent from './components/Header';
+import PublicLayout from './layouts/PublicLayout';
+import PrivateLayout from './layouts/PrivateLayout';
 import './App.css';
 
 function App() {
@@ -18,28 +20,34 @@ function App() {
       <div className="App">
         <Notifications />
         <ModalsProvider>
-          <HeaderComponent />
           <Routes>
-            <Route 
-              path="/login" 
-              element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" replace />} 
-            />
-            <Route 
-              path="/register" 
-              element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/login" replace />} 
-            />
-            <Route 
-              path="/dashboard/*" 
-              element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" replace />} 
-            />
-            <Route 
-              path="/profile" 
-              element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" replace />} 
-            />
-            <Route 
-              path="/" 
-              element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} 
-            />
+            {/* Public routes */}
+            <Route element={<PublicLayout />}>
+              <Route 
+                path="/" 
+                element={!isAuthenticated ? <HomePage /> : <Navigate to="/app/dashboard" replace />} 
+              />
+              <Route 
+                path="/login" 
+                element={!isAuthenticated ? <LoginPage /> : <Navigate to="/app/dashboard" replace />} 
+              />
+              <Route 
+                path="/register" 
+                element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/app/dashboard" replace />} 
+              />
+            </Route>
+
+            {/* Protected routes under /app prefix */}
+            <Route path="/app" element={<PrivateLayout />}>
+              <Route 
+                path="dashboard" 
+                element={<DashboardPage />} 
+              />
+              <Route 
+                path="profile" 
+                element={<ProfilePage />} 
+              />
+            </Route>
           </Routes>
         </ModalsProvider>
       </div>

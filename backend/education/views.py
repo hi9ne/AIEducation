@@ -1,13 +1,15 @@
 from rest_framework import generics, status, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from django.db.models import Q, Count, Sum
+from django.db.models import Q, Count, Sum, F
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models.functions import Coalesce
 
 from .models import (
     University, Major, Course, Enrollment, Application, Achievement,
-    UserAchievement, AIRecommendation, StudyPlan, StudyPlanItem, Document
+    UserAchievement, AIRecommendation, StudyPlan, StudyPlanItem, Document,
+    StudentProgress
 )
 from .serializers import (
     UniversitySerializer, MajorSerializer, CourseSerializer, EnrollmentSerializer,
@@ -192,45 +194,71 @@ class DocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
 def dashboard_stats(request):
     user = request.user
     
-    # Статистика курсов
+    # Get or create student progress
+    try:
+        progress = StudentProgress.objects.get(user=user)
+    except StudentProgress.DoesNotExist:
+        progress = StudentProgress.objects.create(user=user)
+    except Exception as e:
+        print(f"Error getting student progress: {e}")
+        progress = None
+    
+    # Calculate overall progress
+    overall_progress = progress.calculate_progress() if progress else 0
+    
+    # Course statistics
     total_courses = Course.objects.filter(is_active=True).count()
     completed_courses = Enrollment.objects.filter(
         user=user, is_completed=True
     ).count()
     
-    # Предстоящие дедлайны (из планов обучения)
+    # Upcoming deadlines (from study plans)
     upcoming_deadlines = StudyPlanItem.objects.filter(
         study_plan__user=user,
         is_completed=False,
         due_date__gte=timezone.now().date()
     ).count()
     
-    # Достижения
+    # Achievements
     achievements_unlocked = UserAchievement.objects.filter(user=user).count()
     
-    # Текущая серия (дни подряд)
-    current_streak = 7  # Моковое значение
+    # Current streak
+    current_streak = 7  # Mock value
     
-    # Общие очки
-    total_points = UserAchievement.objects.filter(user=user).aggregate(
-        total=Sum('achievement__points')
-    )['total'] or 0
+    # Study time statistics (mock values for now)
+    total_study_time = 45
+    weekly_goal = 20
+    weekly_progress = 12
     
-    # Заявки
+    # Get recommended courses
+    recommended_courses = Course.objects.filter(is_active=True)[:3]
+    
+    # Calculate total points with proper null handling
+    total_points = UserAchievement.objects.filter(user=user).annotate(
+        points=Coalesce(F('achievement__points'), 0)
+    ).aggregate(total=Sum('points'))['total'] or 0
+    
+    # Get number of submitted applications
     applications_submitted = Application.objects.filter(user=user).count()
     
-    # Избранные университеты (моковое значение)
-    universities_favorited = 3
-    
     stats = {
+        'overall_progress': overall_progress,
+        'ielts_completed': progress.ielts_completed,
+        'dov_completed': progress.dov_completed,
+        'universities_selected': progress.universities_selected,
+        'universitaly_registration': progress.universitaly_registration,
+        'visa_obtained': progress.visa_obtained,
         'total_courses': total_courses,
         'completed_courses': completed_courses,
         'upcoming_deadlines': upcoming_deadlines,
         'achievements_unlocked': achievements_unlocked,
         'current_streak': current_streak,
+        'total_study_time': total_study_time,
+        'weekly_goal': weekly_goal,
+        'weekly_progress': weekly_progress,
+        'recommended_courses': recommended_courses,
         'total_points': total_points,
-        'applications_submitted': applications_submitted,
-        'universities_favorited': universities_favorited,
+        'applications_submitted': applications_submitted
     }
     
     serializer = DashboardStatsSerializer(stats)

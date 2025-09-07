@@ -36,7 +36,7 @@
   position: relative;
 }
 .parallax {
-    background-image: url('../../../public/images/bg-first-page.jpg');
+    background-image: url('../../images/bg-first-page.jpg');
     height: 80vh;
     background-attachment: fixed;
     display: flex;

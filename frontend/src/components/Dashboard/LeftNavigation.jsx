@@ -3,7 +3,6 @@ import {
   Box, 
   Stack, 
   Text, 
-  Paper, 
   Group, 
   Button,
   Avatar,
@@ -20,13 +19,11 @@ import {
   IconFile, 
   IconPlane, 
   IconSettings,
-  IconChevronRight,
-  IconUser,
   IconBell,
   IconHelp
 } from '@tabler/icons-react';
 
-const LeftNavigation = ({ activeSection, onSectionChange }) => {
+const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
   const navigationItems = [
     {
       id: 'main',
@@ -124,14 +121,25 @@ const LeftNavigation = ({ activeSection, onSectionChange }) => {
     <Box style={{ height: '100%', backgroundColor: 'var(--mantine-color-gray-0)' }}>
       <Stack gap="xs" style={{ padding: '16px' }}>
         {/* User Profile */}
-        <Paper style={{ padding: '16px', marginBottom: '16px' }} shadow="sm" radius="md">
+        <Box 
+          py="md" 
+          style={{ 
+            pointerEvents: 'none',
+            userSelect: 'none'
+          }}
+        >
           <Group>
-            <Avatar size="md" color="blue" radius="xl">
-              АС
+            <Avatar 
+              size="md" 
+              color="blue" 
+              radius="xl"
+              src={user?.photo}
+            >
+              {user?.first_name?.[0]}{user?.last_name?.[0]}
             </Avatar>
             <Box style={{ flex: 1 }}>
               <Text size="sm" fw={600} c="dark">
-                Аскар Студент
+                {user?.first_name} {user?.last_name}
               </Text>
               <Text size="xs" c="dimmed">
                 Студент
@@ -141,7 +149,7 @@ const LeftNavigation = ({ activeSection, onSectionChange }) => {
               Активен
             </Badge>
           </Group>
-        </Paper>
+        </Box>
 
         {/* Navigation Items */}
         <Stack gap="xs">

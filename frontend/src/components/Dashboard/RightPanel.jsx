@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   fetchAIRecommendations,
   fetchAchievements,
-  fetchDashboardStats,
+  fetchDashboardStats
 } from '../../store/educationSlice';
-import { fetchNotifications } from '../../store/notificationsSlice';
+import { 
+  fetchNotifications, 
+  markNotificationAsRead 
+} from '../../store/notificationsSlice';
 import { useAuth } from '../../hooks/useAuth';
+import styles from './RightPanel.module.css';
 import {
   Box,
   Stack,
@@ -19,141 +23,188 @@ import {
   ActionIcon,
   Avatar,
   ScrollArea,
-  Divider,
   ThemeIcon,
   Skeleton,
   Alert,
+  Paper,
+  Divider,
+  Chip,
+  Tooltip,
+  Progress,
+  RingProgress,
+  Center,
+  Loader,
+  Collapse,
+  Tabs,
+  List,
+  Timeline,
+  Indicator
 } from '@mantine/core';
 import {
   IconBulb,
   IconBell,
-  IconTrophy,
-  IconSend,
-  IconX,
   IconCheck,
+  IconSend,
   IconAlertCircle,
-  IconStar,
-  IconHeart,
+  IconTrophy,
   IconTrendingUp,
+  IconRobot,
+  IconSparkles,
+  IconMessageCircle,
+  IconBrain,
+  IconTarget,
+  IconClock,
+  IconStar,
+  IconChevronDown,
+  IconChevronUp,
+  IconRefresh,
+  IconSettings,
+  IconX,
+  IconPlus,
+  IconMinus,
+  IconEye,
+  IconEyeOff
 } from '@tabler/icons-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const RightPanel = () => {
   const dispatch = useDispatch();
   const { isAuthenticated } = useAuth();
-  const { aiRecommendations, achievements, dashboardStats, loading, error } = useSelector(
-    (state) => state.education
-  );
+  const messagesEndRef = useRef(null);
   
-  const {
-    notifications,
-    unreadCount,
-    loading: notificationsLoading,
-    error: notificationsError,
-    // fetchNotifications,
-    // markAsRead,
-    // markAllAsRead,
-  } = useSelector((state) => state.notifications);
+  // Redux state
+  const { 
+    aiRecommendations = [], 
+    achievements = [], 
+    dashboardStats = {}, 
+    loading: loadingEdu, 
+    error: errorEdu 
+  } = useSelector(state => state.education);
   
+  const { 
+    notifications = [], 
+    unreadCount = 0, 
+    loading: loadingNotif, 
+    error: errorNotif 
+  } = useSelector(state => state.notifications);
+
+  // Local state
   const [aiMessage, setAiMessage] = useState('');
   const [aiResponse, setAiResponse] = useState('');
+  const [chatHistory, setChatHistory] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [activeTab, setActiveTab] = useState('chat');
+  const [expandedSections, setExpandedSections] = useState({
+    recommendations: true,
+    notifications: true,
+    stats: true
+  });
+  const [quickActions] = useState([
+    { id: 'analyze', label: 'Анализ прогресса', icon: IconTarget, color: 'blue' },
+    { id: 'suggest', label: 'Рекомендации', icon: IconBulb, color: 'green' },
+    { id: 'motivate', label: 'Мотивация', icon: IconTrophy, color: 'orange' },
+    { id: 'plan', label: 'План обучения', icon: IconClock, color: 'purple' }
+  ]);
 
+  // Load data on mount
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchAIRecommendations());
-    dispatch(fetchNotifications());
+      dispatch(fetchNotifications());
       dispatch(fetchAchievements());
       dispatch(fetchDashboardStats());
-      fetchNotifications();
     }
-  }, [dispatch, isAuthenticated, fetchNotifications]);
+  }, [dispatch, isAuthenticated]);
 
+  // AI message handling
   const handleSendMessage = async () => {
     if (!aiMessage.trim()) return;
     
-    // Имитация отправки сообщения AI
-    setAiResponse('Спасибо за ваш вопрос! Я анализирую ваши данные и подготовлю персонализированные рекомендации...');
+    setIsTyping(true);
+    setAiResponse('');
+    
+    // Simulate typing effect
+    const response = 'Анализирую ваши данные и готовлю персонализированные рекомендации...';
+    let currentText = '';
+    
+    for (const char of response) {
+      await new Promise(resolve => setTimeout(resolve, 30));
+      currentText += char;
+      setAiResponse(currentText);
+    }
+    
+    setIsTyping(false);
     setAiMessage('');
   };
 
-  const handleMarkAsRead = async (notificationId) => {
-    try {
-      await markAsRead(notificationId);
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
+  // Notification handlers
+  const handleMarkAsRead = (id) => {
+    dispatch(markNotificationAsRead(id));
   };
 
-  const handleMarkAllAsRead = async () => {
-    try {
-      await markAllAsRead();
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-    }
+  const handleMarkAllAsRead = () => {
+    notifications
+      .filter(n => !n.is_read)
+      .forEach(n => dispatch(markNotificationAsRead(n.id)));
   };
 
-  if (loading || notificationsLoading) {
-    return (
-      <Box p="md">
-        <Stack gap="md">
-          <Skeleton height={200} radius="md" />
-          <Skeleton height={150} radius="md" />
-          <Skeleton height={100} radius="md" />
-        </Stack>
-      </Box>
-    );
-  }
-
-  if (error || notificationsError) {
-    return (
-      <Box p="md">
-        <Alert
-          icon={<IconAlertCircle size={16} />}
-          title="Ошибка загрузки данных"
-          color="red"
-        >
-          <Text size="sm">{error || notificationsError}</Text>
-        </Alert>
-      </Box>
-    );
-  }
+  const isLoading = loadingEdu || loadingNotif;
+  const hasError = errorEdu || errorNotif;
 
   return (
-    <Box p="md">
-      <Stack gap="lg">
-        {/* AI Помощник */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Group justify="space-between" mb="md">
-              <Text size="lg" fw={600}>
-                AI Помощник
-              </Text>
-              <ThemeIcon size="lg" color="blue" variant="light">
+    <Box className={styles.rightPanel}>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Text size="xl" fw={700} mb="xl" className={styles.gradientText}>
+          AI Ассистент
+        </Text>
+
+        {hasError && (
+          <Alert 
+            icon={<IconAlertCircle size={16} />} 
+            title="Ошибка" 
+            color="red"
+            radius="md"
+            mb="md"
+          >
+            Произошла ошибка при загрузке данных. Пожалуйста, попробуйте позже.
+          </Alert>
+        )}
+
+        <Stack spacing="lg">
+          {/* AI Assistant Card */}
+          <Card shadow="sm" p="lg" radius="md" withBorder>
+            <Group position="apart" mb="md">
+              <Text size="lg" fw={600}>AI Помощник</Text>
+              <ThemeIcon 
+                size="lg" 
+                variant="gradient" 
+                gradient={{ from: 'blue', to: 'cyan' }}
+              >
                 <IconBulb size={20} />
               </ThemeIcon>
             </Group>
-            
-            <Stack gap="md">
+
+            <Stack spacing="md">
               <Textarea
-                placeholder="Задайте вопрос AI помощнику..."
                 value={aiMessage}
                 onChange={(e) => setAiMessage(e.target.value)}
+                placeholder="Задайте вопрос AI помощнику..."
                 minRows={2}
                 maxRows={4}
               />
-              
-              <Group justify="space-between">
+
+              <Group position="apart">
                 <Button
                   leftSection={<IconSend size={16} />}
                   onClick={handleSendMessage}
-                  disabled={!aiMessage.trim()}
+                  disabled={!aiMessage.trim() || isTyping}
                   size="sm"
                 >
-                  Отправить
+                  {isTyping ? 'Печатает...' : 'Отправить'}
                 </Button>
                 <Button
                   variant="light"
@@ -163,244 +214,187 @@ const RightPanel = () => {
                   Очистить
                 </Button>
               </Group>
-              
+
               {aiResponse && (
                 <Box
                   p="md"
-                  style={{
-                    backgroundColor: 'var(--mantine-color-blue-0)',
-                    borderRadius: 'var(--mantine-radius-md)',
-                    border: '1px solid var(--mantine-color-blue-2)',
-                  }}
+                  sx={(theme) => ({
+                    backgroundColor: theme.colors.blue[0],
+                    borderRadius: theme.radius.md,
+                    border: `1px solid ${theme.colors.blue[2]}`
+                  })}
                 >
                   <Text size="sm">{aiResponse}</Text>
                 </Box>
               )}
             </Stack>
           </Card>
-        </motion.div>
 
-        {/* AI Рекомендации */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Group justify="space-between" mb="md">
-              <Text size="lg" fw={600}>
-                AI Рекомендации
-              </Text>
-              <Badge color="blue" variant="light">
-                {aiRecommendations?.length || 0}
-              </Badge>
+          {/* AI Recommendations Card */}
+          <Card shadow="sm" p="lg" radius="md" withBorder>
+            <Group position="apart" mb="md">
+              <Text size="lg" fw={600}>AI Рекомендации</Text>
+              <Badge>{aiRecommendations.length}</Badge>
             </Group>
-            
-            <ScrollArea h={200}>
-              <Stack gap="sm">
-                {aiRecommendations?.slice(0, 3).map((recommendation, index) => (
-                  <motion.div
-                    key={recommendation.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index }}
-                  >
-                    <Box
-                      p="sm"
-                      style={{
-                        backgroundColor: 'var(--mantine-color-gray-0)',
-                        borderRadius: 'var(--mantine-radius-sm)',
-                        border: '1px solid var(--mantine-color-gray-2)',
-                      }}
-                    >
-                      <Text size="sm" fw={500} mb="xs">
-                        {recommendation.title}
-                      </Text>
-                      <Text size="xs" c="dimmed" lineClamp={2}>
-                        {recommendation.content}
-                      </Text>
-                      <Group justify="space-between" mt="xs">
-                        <Badge size="xs" color="blue" variant="light">
-                          {recommendation.category}
-                        </Badge>
-                        <Text size="xs" c="dimmed">
-                          Приоритет: {recommendation.priority}
-                        </Text>
-                      </Group>
-                    </Box>
-                  </motion.div>
-                ))}
-              </Stack>
-            </ScrollArea>
-          </Card>
-        </motion.div>
 
-        {/* Уведомления */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Group justify="space-between" mb="md">
-              <Text size="lg" fw={600}>
-                Уведомления
-              </Text>
-              <Group gap="xs">
-                <Badge color="red" variant="light">
-                  {unreadCount || 0}
-                </Badge>
-                <ActionIcon
-                  size="sm"
-                  variant="light"
+            {isLoading ? (
+              <Stack spacing="sm">
+                <Skeleton height={50} radius="sm" />
+                <Skeleton height={50} radius="sm" />
+                <Skeleton height={50} radius="sm" />
+              </Stack>
+            ) : (
+              <ScrollArea h={200} offsetScrollbars>
+                <Stack spacing="sm">
+                  {!aiRecommendations.length ? (
+                    <Text c="dimmed" ta="center" size="sm">
+                      Нет доступных рекомендаций
+                    </Text>
+                  ) : (
+                    aiRecommendations.map((rec, index) => (
+                      <motion.div
+                        key={rec.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Box
+                          p="sm"
+                          sx={(theme) => ({
+                            backgroundColor: theme.colors.gray[0],
+                            borderRadius: theme.radius.sm,
+                            border: `1px solid ${theme.colors.gray[2]}`
+                          })}
+                        >
+                          <Text size="sm" fw={500} mb="xs">{rec.title}</Text>
+                          <Text size="xs" c="dimmed" lineClamp={2}>
+                            {rec.content}
+                          </Text>
+                        </Box>
+                      </motion.div>
+                    ))
+                  )}
+                </Stack>
+              </ScrollArea>
+            )}
+          </Card>
+
+          {/* Notifications Card */}
+          <Card shadow="sm" p="lg" radius="md" withBorder>
+            <Group position="apart" mb="md">
+              <Text size="lg" fw={600}>Уведомления</Text>
+              <Group spacing="xs">
+                <Badge color="red">{unreadCount}</Badge>
+                <ActionIcon 
+                  size="sm" 
+                  variant="light" 
                   onClick={handleMarkAllAsRead}
                 >
                   <IconCheck size={14} />
                 </ActionIcon>
               </Group>
             </Group>
-            
-            <ScrollArea h={200}>
-              <Stack gap="sm">
-                {notifications?.slice(0, 5).map((notification, index) => (
-                  <motion.div
-                    key={notification.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index }}
-                  >
-                    <Group
-                      p="sm"
-                      style={{
-                        backgroundColor: notification.is_read 
-                          ? 'transparent' 
-                          : 'var(--mantine-color-blue-0)',
-                        borderRadius: 'var(--mantine-radius-sm)',
-                        border: notification.is_read 
-                          ? '1px solid var(--mantine-color-gray-2)'
-                          : '1px solid var(--mantine-color-blue-2)',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => handleMarkAsRead(notification.id)}
-                    >
-                      <Avatar size="sm" color="blue">
-                        <IconBell size={14} />
-                      </Avatar>
-                      <Box style={{ flex: 1 }}>
-                        <Text size="sm" fw={500}>
-                          {notification.title}
-                        </Text>
-                        <Text size="xs" c="dimmed" lineClamp={1}>
-                          {notification.message}
-                        </Text>
-                      </Box>
-                      {!notification.is_read && (
-                        <Badge size="xs" color="red" variant="filled">
-                          Новое
-                        </Badge>
-                      )}
-                    </Group>
-                  </motion.div>
-                ))}
-              </Stack>
-            </ScrollArea>
-          </Card>
-        </motion.div>
 
-        {/* Достижения */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-        >
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Group justify="space-between" mb="md">
-              <Text size="lg" fw={600}>
-                Достижения
-              </Text>
-              <ThemeIcon size="lg" color="yellow" variant="light">
-                <IconTrophy size={20} />
-              </ThemeIcon>
-            </Group>
-            
-            <ScrollArea h={200}>
-              <Stack gap="sm">
-                {achievements?.slice(0, 5).map((achievement, index) => (
-                  <motion.div
-                    key={achievement.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index }}
-                  >
-                    <Group
-                      p="sm"
-                      style={{
-                        backgroundColor: 'var(--mantine-color-yellow-0)',
-                        borderRadius: 'var(--mantine-radius-sm)',
-                        border: '1px solid var(--mantine-color-yellow-2)',
-                      }}
-                    >
-                      <Avatar size="sm" color="yellow">
-                        <IconTrophy size={14} />
-                      </Avatar>
-                      <Box style={{ flex: 1 }}>
-                        <Text size="sm" fw={500}>
-                          {achievement.name}
-                        </Text>
-                        <Text size="xs" c="dimmed" lineClamp={1}>
-                          {achievement.description}
-                        </Text>
-                      </Box>
-                      <Badge size="xs" color="yellow" variant="light">
-                        {achievement.points} очков
-                      </Badge>
-                    </Group>
-                  </motion.div>
-                ))}
+            {isLoading ? (
+              <Stack spacing="sm">
+                <Skeleton height={50} radius="sm" />
+                <Skeleton height={50} radius="sm" />
+                <Skeleton height={50} radius="sm" />
               </Stack>
-            </ScrollArea>
+            ) : (
+              <ScrollArea h={200} offsetScrollbars>
+                <Stack spacing="sm">
+                  {!notifications.length ? (
+                    <Text c="dimmed" ta="center" size="sm">
+                      Нет новых уведомлений
+                    </Text>
+                  ) : (
+                    notifications.map((notification, index) => (
+                      <motion.div
+                        key={notification.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <Group
+                          p="sm"
+                          sx={(theme) => ({
+                            backgroundColor: notification.is_read 
+                              ? 'transparent' 
+                              : theme.colors.blue[0],
+                            borderRadius: theme.radius.sm,
+                            border: `1px solid ${notification.is_read 
+                              ? theme.colors.gray[2]
+                              : theme.colors.blue[2]}`,
+                            cursor: 'pointer'
+                          })}
+                          onClick={() => handleMarkAsRead(notification.id)}
+                        >
+                          <Avatar size="sm" color="blue">
+                            <IconBell size={14} />
+                          </Avatar>
+                          <Box sx={{ flex: 1 }}>
+                            <Text size="sm" fw={500}>
+                              {notification.title}
+                            </Text>
+                            <Text size="xs" c="dimmed" lineClamp={1}>
+                              {notification.message}
+                            </Text>
+                          </Box>
+                          {!notification.is_read && (
+                            <Badge size="xs" color="red">
+                              Новое
+                            </Badge>
+                          )}
+                        </Group>
+                      </motion.div>
+                    ))
+                  )}
+                </Stack>
+              </ScrollArea>
+            )}
           </Card>
-        </motion.div>
 
-        {/* Статистика */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Group justify="space-between" mb="md">
-              <Text size="lg" fw={600}>
-                Статистика
-              </Text>
+          {/* Stats Card */}
+          <Card shadow="sm" p="lg" radius="md" withBorder>
+            <Group position="apart" mb="md">
+              <Text size="lg" fw={600}>Статистика</Text>
               <ThemeIcon size="lg" color="green" variant="light">
                 <IconTrendingUp size={20} />
               </ThemeIcon>
             </Group>
-            
-            <Stack gap="sm">
-              <Group justify="space-between">
-                <Text size="sm">Всего очков</Text>
-                <Text size="sm" fw={500} c="green">
-                  {dashboardStats?.total_points || 0}
-                </Text>
-              </Group>
-              <Group justify="space-between">
-                <Text size="sm">Достижений</Text>
-                <Text size="sm" fw={500} c="blue">
-                  {dashboardStats?.achievements_unlocked || 0}
-                </Text>
-              </Group>
-              <Group justify="space-between">
-                <Text size="sm">Серия</Text>
-                <Text size="sm" fw={500} c="orange">
-                  {dashboardStats?.current_streak || 0} дней
-                </Text>
-              </Group>
-            </Stack>
+
+            {isLoading ? (
+              <Stack spacing="sm">
+                <Skeleton height={20} radius="sm" />
+                <Skeleton height={20} radius="sm" />
+                <Skeleton height={20} radius="sm" />
+              </Stack>
+            ) : (
+              <Stack spacing="sm">
+                <Group position="apart">
+                  <Text size="sm">Всего очков</Text>
+                  <Text size="sm" fw={500} c="green">
+                    {dashboardStats.total_points || 0}
+                  </Text>
+                </Group>
+                <Group position="apart">
+                  <Text size="sm">Достижений</Text>
+                  <Text size="sm" fw={500} c="blue">
+                    {dashboardStats.achievements_unlocked || 0}
+                  </Text>
+                </Group>
+                <Group position="apart">
+                  <Text size="sm">Серия</Text>
+                  <Text size="sm" fw={500} c="orange">
+                    {dashboardStats.current_streak || 0} дней
+                  </Text>
+                </Group>
+              </Stack>
+            )}
           </Card>
-        </motion.div>
-      </Stack>
+        </Stack>
+      </motion.div>
     </Box>
   );
 };

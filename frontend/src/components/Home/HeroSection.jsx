@@ -1,6 +1,6 @@
 import React from "react";
 import "./HeroSection.css";
-import italy_flag from '../../../public/images/italy-flag.png';
+import italy_flag from '../../images/italy-flag.png';
 
 
 const HeroSection = () => (
