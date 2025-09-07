@@ -17,10 +17,11 @@ import {
   Modal,
   TextInput,
   FileInput,
-  Alert
+  Alert,
+  Divider
 } from '@mantine/core';
 import { 
-  IconCreditCard, 
+  IconPlane, 
   IconPlayerPlay, 
   IconDownload, 
   IconUpload,
@@ -28,12 +29,15 @@ import {
   IconClock,
   IconAlertCircle,
   IconEye,
-  IconExternalLink
+  IconExternalLink,
+  IconCalendar
 } from '@tabler/icons-react';
 
-const CodiceSection = ({ progress }) => {
+const VisaSection = ({ progress }) => {
   const { user } = useSelector((state) => state.auth);
   // Рассчитываем прогресс на основе реальных данных
+  const completedSteps = steps.filter(step => step.completed).length;
+  const visaProgress = Math.round((completedSteps / steps.length) * 100);
   const overallProgress = progress?.overallProgress || 0;
   const [opened, setOpened] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -41,74 +45,86 @@ const CodiceSection = ({ progress }) => {
   const steps = [
     {
       id: 1,
-      title: 'Получение справки о доходах',
-      description: 'Справка с работы или из налоговой',
-      completed: user?.profile?.codice_step_1_completed || false,
+      title: 'Запись на подачу документов',
+      description: 'Запись в итальянское консульство',
+      completed: user?.profile?.visa_step_1_completed || false,
       required: true,
-      documents: ['Справка о доходах', 'Справка с работы']
+      documents: ['Запись в консульство']
     },
     {
       id: 2,
-      title: 'Заполнение заявления',
-      description: 'Заполнение формы на получение Codice Fiscale',
-      completed: user?.profile?.codice_step_1_completed || false,
+      title: 'Подготовка документов',
+      description: 'Сбор всех необходимых документов для визы',
+      completed: false,
       required: true,
-      documents: ['Заявление', 'Копия паспорта', 'Справка о доходах']
+      documents: ['Паспорт', 'DOV', 'Codice Fiscale', 'Справка о доходах', 'Страховка']
     },
     {
       id: 3,
       title: 'Подача документов',
-      description: 'Подача в итальянское консульство',
+      description: 'Подача документов в консульство',
       completed: false,
       required: true,
-      documents: ['Все документы', 'Оплата пошлины']
+      documents: ['Все документы', 'Заявление', 'Оплата пошлины']
     },
     {
       id: 4,
-      title: 'Получение Codice Fiscale',
-      description: 'Получение готового документа',
+      title: 'Ожидание решения',
+      description: 'Рассмотрение заявления консульством',
       completed: false,
       required: true,
-      documents: ['Codice Fiscale']
+      documents: []
+    },
+    {
+      id: 5,
+      title: 'Получение визы',
+      description: 'Получение готовой визы',
+      completed: false,
+      required: true,
+      documents: ['Визовая наклейка']
     }
   ];
 
-  // Рассчитываем прогресс на основе реальных данных
-  const completedSteps = steps.filter(step => step.completed).length;
-  const codiceProgress = Math.round((completedSteps / steps.length) * 100);
   const documents = [
     {
       id: 1,
-      name: 'Справка о доходах',
-      status: user?.profile?.codice_document_1_uploaded ? 'uploaded' : 'pending',
+      name: 'Загранпаспорт',
+      status: user?.profile?.visa_document_1_uploaded ? 'uploaded' : 'pending',
       required: true,
-      size: user?.profile?.codice_document_1_size || null,
-      uploadedAt: user?.profile?.codice_document_1_uploaded_at || null
+      size: user?.profile?.visa_document_1_size || null,
+      uploadedAt: user?.profile?.visa_document_1_uploaded_at || null,
+      validUntil: user?.profile?.visa_document_1_valid_until || null
     },
     {
       id: 2,
-      name: 'Копия паспорта',
-      status: user?.profile?.codice_document_2_uploaded ? 'uploaded' : 'pending',
+      name: 'DOV (Dichiarazione di Valore)',
+      status: user?.profile?.visa_document_2_uploaded ? 'uploaded' : 'pending',
       required: true,
-      size: user?.profile?.codice_document_2_size || null,
-      uploadedAt: user?.profile?.codice_document_2_uploaded_at || null
-    },
-    {
-      id: 3,
-      name: 'Заявление на Codice Fiscale',
-      status: user?.profile?.codice_document_3_uploaded ? 'uploaded' : 'pending',
-      size: user?.profile?.codice_document_3_size || null,
-      uploadedAt: user?.profile?.codice_document_3_uploaded_at || null
+      size: user?.profile?.visa_document_2_size || null,
+      uploadedAt: user?.profile?.visa_document_2_uploaded_at || null,
+      uploadedAt: user?.profile?.visa_document_3_uploaded_at || null,
+      validUntil: user?.profile?.visa_document_3_valid_until || null
     },
     {
       id: 4,
-      name: 'Квитанция об оплате',
-      status: user?.profile?.codice_document_4_uploaded ? 'uploaded' : 'pending',
+      name: 'Справка о доходах родителей',
+      status: user?.profile?.visa_document_4_uploaded ? 'uploaded' : 'pending',
       required: true,
-      size: user?.profile?.codice_document_4_size || null,
-      uploadedAt: user?.profile?.codice_document_4_uploaded_at || null
+      size: user?.profile?.visa_document_4_size || null,
+      uploadedAt: user?.profile?.visa_document_4_uploaded_at || null,
+      validUntil: user?.profile?.visa_document_4_valid_until || null
+    },
+    {
+      id: 5,
+      name: 'Страховка на год',
+      status: user?.profile?.visa_document_5_uploaded ? 'uploaded' : 'pending',
+      required: true,
+      size: user?.profile?.visa_document_5_size || null,
+      uploadedAt: user?.profile?.visa_document_5_uploaded_at || null,
+      validUntil: user?.profile?.visa_document_5_valid_until || null
     }
   ];
+    {
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -130,16 +146,23 @@ const CodiceSection = ({ progress }) => {
 
   const totalSteps = steps.filter(step => step.required).length;
 
+  const visaTimeline = [
+    { date: '2024-01-15', title: 'Запись в консульство', status: 'completed' },
+    { date: '2024-02-15', title: 'Подача документов', status: 'upcoming' },
+    { date: '2024-03-15', title: 'Получение визы', status: 'pending' },
+    { date: '2024-09-01', title: 'Выезд в Италию', status: 'future' }
+  ];
+
   return (
     <Box className="p-6">
       <Stack gap="xl">
         {/* Header */}
         <Box>
           <Text size="xl" fw={700} c="dark">
-            Codice Fiscale
+            Визовая поддержка
           </Text>
           <Text size="md" c="dimmed">
-            Получение итальянского налогового кода
+            Получение студенческой визы для обучения в Италии
           </Text>
         </Box>
 
@@ -147,10 +170,10 @@ const CodiceSection = ({ progress }) => {
         <Alert
           icon={<IconAlertCircle size={16} />}
           title="Важная информация"
-          color="blue"
+          color="red"
         >
-          Codice Fiscale необходим для поступления в итальянские университеты. 
-          Процесс получения может занять 2-4 недели.
+          Процесс получения студенческой визы может занять 2-3 месяца. 
+          Начните подготовку за 4-6 месяцев до начала обучения!
         </Alert>
 
         {/* Progress Overview */}
@@ -160,7 +183,7 @@ const CodiceSection = ({ progress }) => {
               <Stack gap="md">
                 <Group justify="space-between" align="center">
                   <Text size="lg" fw={600}>
-                    Прогресс получения: {completedSteps}/{totalSteps} шагов
+                    Прогресс получения визы: {completedSteps}/{totalSteps} шагов
                   </Text>
                   <Badge color="blue" variant="light">
                     {Math.round((completedSteps / totalSteps) * 100)}%
@@ -180,9 +203,9 @@ const CodiceSection = ({ progress }) => {
             <Grid.Col span={{ base: 12, md: 4 }}>
               <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)' }}>
                 <Stack align="center" gap="sm">
-                  <IconCreditCard size={48} color="var(--mantine-color-blue-6)" />
+                  <IconPlane size={48} color="var(--mantine-color-blue-6)" />
                   <Text size="lg" fw={700} c="blue">
-                    {codiceProgress}%
+                    {visaProgress}%
                   </Text>
                   <Text size="sm" c="dimmed" ta="center">
                     Общий прогресс
@@ -191,6 +214,54 @@ const CodiceSection = ({ progress }) => {
               </Card>
             </Grid.Col>
           </Grid>
+        </Paper>
+
+        {/* Timeline */}
+        <Paper className="p-6" shadow="sm">
+          <Text size="lg" fw={600} className="mb-4">
+            Временная линия
+          </Text>
+          <Stack gap="md">
+            {visaTimeline.map((item, index) => (
+              <Card key={index} shadow="sm" padding="md" radius="md" withBorder>
+                <Group justify="space-between" align="center">
+                  <Group>
+                    <ActionIcon
+                      color={
+                        item.status === 'completed' ? 'green' :
+                        item.status === 'upcoming' ? 'yellow' : 'gray'
+                      }
+                      variant={item.status === 'completed' ? 'filled' : 'light'}
+                      size="lg"
+                    >
+                      {item.status === 'completed' ? <IconCheck size={20} /> :
+                       item.status === 'upcoming' ? <IconClock size={20} /> :
+                       <IconCalendar size={20} />}
+                    </ActionIcon>
+                    <Box>
+                      <Text size="md" fw={600} c="dark">
+                        {item.title}
+                      </Text>
+                      <Text size="sm" c="dimmed">
+                        {new Date(item.date).toLocaleDateString('ru-RU')}
+                      </Text>
+                    </Box>
+                  </Group>
+                  <Badge
+                    color={
+                      item.status === 'completed' ? 'green' :
+                      item.status === 'upcoming' ? 'yellow' : 'gray'
+                    }
+                    variant="light"
+                    size="sm"
+                  >
+                    {item.status === 'completed' ? 'Завершено' :
+                     item.status === 'upcoming' ? 'Скоро' : 'Будущее'}
+                  </Badge>
+                </Group>
+              </Card>
+            ))}
+          </Stack>
         </Paper>
 
         {/* Steps */}
@@ -256,7 +327,7 @@ const CodiceSection = ({ progress }) => {
         <Paper className="p-6" shadow="sm">
           <Group justify="space-between" align="center" className="mb-4">
             <Text size="lg" fw={600}>
-              Документы
+              Документы для визы
             </Text>
             <Button
               leftSection={<IconUpload size={16} />}
@@ -271,7 +342,7 @@ const CodiceSection = ({ progress }) => {
               <Card key={doc.id} shadow="sm" padding="md" radius="md" withBorder>
                 <Group justify="space-between" align="center">
                   <Group>
-                    <IconCreditCard size={20} color="var(--mantine-color-gray-6)" />
+                    <IconPlane size={20} color="var(--mantine-color-gray-6)" />
                     <Box>
                       <Text size="md" fw={500} c="dark">
                         {doc.name}
@@ -279,6 +350,11 @@ const CodiceSection = ({ progress }) => {
                       {doc.uploadedAt && (
                         <Text size="xs" c="dimmed">
                           Загружено: {new Date(doc.uploadedAt).toLocaleDateString('ru-RU')} • {doc.size}
+                        </Text>
+                      )}
+                      {doc.validUntil && (
+                        <Text size="xs" c="dimmed">
+                          Действителен до: {new Date(doc.validUntil).toLocaleDateString('ru-RU')}
                         </Text>
                       )}
                     </Box>
@@ -327,11 +403,11 @@ const CodiceSection = ({ progress }) => {
                   <Group>
                     <IconPlayerPlay size={24} color="var(--mantine-color-blue-6)" />
                     <Text size="md" fw={600}>
-                      Как получить справку о доходах
+                      Запись в консульство
                     </Text>
                   </Group>
                   <Text size="sm" c="dimmed">
-                    Инструкция по получению справки в налоговой
+                    Как записаться на подачу документов
                   </Text>
                   <Button color="blue" variant="outline" fullWidth>
                     Смотреть видео
@@ -345,11 +421,11 @@ const CodiceSection = ({ progress }) => {
                   <Group>
                     <IconPlayerPlay size={24} color="var(--mantine-color-green-6)" />
                     <Text size="md" fw={600}>
-                      Заполнение заявления
+                      Подача документов
                     </Text>
                   </Group>
                   <Text size="sm" c="dimmed">
-                    Пошаговая инструкция по заполнению формы
+                    Пошаговая инструкция по подаче документов
                   </Text>
                   <Button color="green" variant="outline" fullWidth>
                     Смотреть видео
@@ -372,7 +448,7 @@ const CodiceSection = ({ progress }) => {
               fullWidth
               justify="flex-start"
             >
-              Официальный сайт для получения Codice Fiscale
+              Итальянское консульство - визы
             </Button>
             <Button
               variant="outline"
@@ -380,7 +456,7 @@ const CodiceSection = ({ progress }) => {
               fullWidth
               justify="flex-start"
             >
-              Итальянское консульство в Казахстане
+              Запись на подачу документов
             </Button>
             <Button
               variant="outline"
@@ -389,6 +465,14 @@ const CodiceSection = ({ progress }) => {
               justify="flex-start"
             >
               Список необходимых документов
+            </Button>
+            <Button
+              variant="outline"
+              leftSection={<IconExternalLink size={16} />}
+              fullWidth
+              justify="flex-start"
+            >
+              Страховые компании
             </Button>
           </Stack>
         </Paper>
@@ -426,4 +510,4 @@ const CodiceSection = ({ progress }) => {
   );
 };
 
-export default CodiceSection;
+export default VisaSection;

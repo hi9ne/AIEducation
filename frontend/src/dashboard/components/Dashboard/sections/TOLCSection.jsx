@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import React, { useState } from 'react';
 import { 
@@ -31,12 +32,20 @@ import {
 
 const TOLCSection = ({ progress }) => {
   const { user } = useSelector((state) => state.auth);
+
+  // Обновляем данные при изменении пользователя
+  useEffect(() => {
+    if (user?.profile) {
+      setCurrentLevel(user.profile.tolc_current_score || 0);
+      setTargetLevel(user.profile.tolc_target_score || 0);
+    }
+  }, [user]);
   // Извлекаем значения из объекта progress
   const tolcProgress = progress?.currentProgress?.tolc || 0;
   const overallProgress = progress?.overallProgress || 0;
   const [opened, setOpened] = useState(false);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [targetLevel, setTargetLevel] = useState(0);
+  const [currentLevel, setCurrentLevel] = useState(user?.profile?.tolc_current_score || 0);
+  const [targetLevel, setTargetLevel] = useState(user?.profile?.tolc_target_score || 0);
 
   // Генерируем тесты на основе данных пользователя
   const userTests = user?.profile ? [

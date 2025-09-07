@@ -1,3 +1,4 @@
+import { useSelector } from 'react-redux';
 import React, { useState } from 'react';
 import { 
   Box, 
@@ -30,6 +31,7 @@ import {
 } from '@tabler/icons-react';
 
 const UniversitalySection = ({ progress }) => {
+  const { user } = useSelector((state) => state.auth);
   const [opened, setOpened] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -42,7 +44,7 @@ const UniversitalySection = ({ progress }) => {
       id: 1,
       title: 'Создание аккаунта на Universitaly',
       description: 'Регистрация на официальном сайте',
-      completed: true,
+      completed: user?.profile?.universitaly_step_1_completed || false,
       required: true,
       documents: ['Email', 'Пароль', 'Личные данные']
     },
@@ -50,7 +52,7 @@ const UniversitalySection = ({ progress }) => {
       id: 2,
       title: 'Заполнение анкеты',
       description: 'Подробная информация о себе',
-      completed: true,
+      completed: user?.profile?.universitaly_step_1_completed || false,
       required: true,
       documents: ['Фото', 'Документы', 'Справки']
     },

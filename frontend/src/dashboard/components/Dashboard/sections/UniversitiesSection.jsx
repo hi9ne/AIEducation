@@ -149,7 +149,7 @@ const UniversitiesSection = ({ progress }) => {
   const [favorites, setFavorites] = useState(new Set());
 
   // Используем тестовые данные, если нет данных из API
-  const displayUniversities = universities && universities.length > 0 ? universities : mockUniversities;
+  const displayUniversities = universities || [];
 
   // Загружаем университеты при монтировании компонента
   useEffect(() => {

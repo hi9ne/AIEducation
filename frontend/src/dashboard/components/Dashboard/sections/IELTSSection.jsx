@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import React, { useState } from 'react';
 import { 
@@ -32,9 +33,17 @@ import {
 
 const IELTSSection = ({ progress }) => {
   const { user } = useSelector((state) => state.auth);
+
+  // Обновляем данные при изменении пользователя
+  useEffect(() => {
+    if (user?.profile) {
+      setCurrentLevel(user.profile.ielts_current_score || 0);
+      setTargetLevel(user.profile.ielts_target_score || 0);
+    }
+  }, [user]);
   const [opened, setOpened] = useState(false);
-  const [currentLevel, setCurrentLevel] = useState(5.5);
-  const [targetLevel, setTargetLevel] = useState(7.0);
+  const [currentLevel, setCurrentLevel] = useState(user?.profile?.ielts_current_score || 0);
+  const [targetLevel, setTargetLevel] = useState(user?.profile?.ielts_target_score || 0);
 
   // Извлекаем значения из объекта progress
   const ieltsProgress = progress?.currentProgress?.ielts || 75;
