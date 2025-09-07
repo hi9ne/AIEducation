@@ -200,24 +200,24 @@ const MainPage = () => {
     return (
       <Alert color="red" title="Error" mb="xl">
         {error}
-      </Alert>
+        </Alert>
     );
   }
 
   return (
-    <Box>
+          <Box>
       {/* Header with refresh button */}
       <Group justify="space-between" mb="xl">
         <Text size="xl" fw={600}>Добро пожаловать в личный кабинет!</Text>
         <ActionIcon
           variant="light"
           size="lg"
-          onClick={handleRefresh}
+            onClick={handleRefresh}
           loading={loading.dashboardStats}
-        >
+          >
           <IconRefresh size={20} />
         </ActionIcon>
-      </Group>
+        </Group>
 
       {/* Progress Section */}
       <Grid mb="xl">
@@ -228,61 +228,61 @@ const MainPage = () => {
 
       {/* Main Statistics */}
       <Grid mb="xl">
-        <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
                     Всего курсов
-                  </Text>
+                </Text>
                   <Text fw={700} size="xl">
                     {displayStats?.total_courses || 0}
-                  </Text>
+                </Text>
                 </div>
                 <ThemeIcon color="blue" size="xl" radius="md">
                   <IconBook size={24} />
                 </ThemeIcon>
               </Group>
-            </Card>
-          </motion.div>
-        </Grid.Col>
+              </Card>
+            </motion.div>
+          </Grid.Col>
 
-        <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
                     Завершено
-                  </Text>
+                </Text>
                   <Text fw={700} size="xl">
                     {displayStats?.completed_courses || 0}
-                  </Text>
+                </Text>
                 </div>
                 <ThemeIcon color="green" size="xl" radius="md">
                   <IconTrophy size={24} />
                 </ThemeIcon>
               </Group>
-            </Card>
-          </motion.div>
-        </Grid.Col>
+              </Card>
+            </motion.div>
+          </Grid.Col>
 
-        <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
@@ -294,19 +294,19 @@ const MainPage = () => {
                 </div>
                 <ThemeIcon color="yellow" size="xl" radius="md">
                   <IconTrophy size={24} />
-                </ThemeIcon>
-              </Group>
-            </Card>
-          </motion.div>
-        </Grid.Col>
+                  </ThemeIcon>
+                </Group>
+              </Card>
+            </motion.div>
+          </Grid.Col>
 
-        <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card shadow="sm" padding="lg" radius="md" withBorder>
+          <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Card shadow="sm" padding="lg" radius="md" withBorder>
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
@@ -318,12 +318,12 @@ const MainPage = () => {
                 </div>
                 <ThemeIcon color="red" size="xl" radius="md">
                   <IconTrendingUp size={24} />
-                </ThemeIcon>
-              </Group>
-            </Card>
-          </motion.div>
-        </Grid.Col>
-      </Grid>
+                  </ThemeIcon>
+                </Group>
+              </Card>
+            </motion.div>
+          </Grid.Col>
+        </Grid>
 
       {/* Прогресс недели */}
       <Card shadow="sm" padding="lg" radius="md" withBorder mb="xl">
@@ -332,19 +332,19 @@ const MainPage = () => {
           <Group justify="space-between">
             <Text size="sm" c="dimmed">
               {displayStats?.weekly_progress || 0} из {displayStats?.weekly_goal || 20} часов
-            </Text>
+              </Text>
             <Text size="sm" fw={500}>
               {Math.round(((displayStats?.weekly_progress || 0) / (displayStats?.weekly_goal || 20)) * 100)}%
-            </Text>
-          </Group>
-          <Progress
+              </Text>
+            </Group>
+            <Progress
             value={((displayStats?.weekly_progress || 0) / (displayStats?.weekly_goal || 20)) * 100}
-            size="lg"
+              size="lg"
             radius="xl"
-            color="blue"
+              color="blue"
           />
         </Stack>
-      </Card>
+          </Card>
 
       {/* Рекомендуемые курсы */}
       <Card shadow="sm" padding="lg" radius="md" withBorder mb="xl">
@@ -357,7 +357,7 @@ const MainPage = () => {
         <Grid>
           {displayStats?.recommended_courses?.map((course, index) => (
             <Grid.Col key={course.id} span={{ base: 12, md: 6 }}>
-              <motion.div
+            <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 * index }}
@@ -371,17 +371,17 @@ const MainPage = () => {
                   </Group>
                   <Text size="sm" c="dimmed" mb="sm">
                     {course.duration}
-                  </Text>
+                    </Text>
                   <Stack gap="xs">
-                    <Group justify="space-between">
+                  <Group justify="space-between">
                       <Text size="sm">Прогресс</Text>
                       <Text size="sm" fw={500}>{course.progress}%</Text>
-                    </Group>
+                  </Group>
                     <Progress value={course.progress} size="sm" radius="xl" />
-                  </Stack>
-                </Card>
-              </motion.div>
-            </Grid.Col>
+                </Stack>
+              </Card>
+            </motion.div>
+          </Grid.Col>
           ))}
         </Grid>
       </Card>
@@ -400,16 +400,16 @@ const MainPage = () => {
               <Group>
                 <ThemeIcon color="yellow" size="lg" radius="md">
                   <IconTrophy size={20} />
-                </ThemeIcon>
+                  </ThemeIcon>
                 <div>
                   <Text fw={500}>{achievement.title}</Text>
                   <Text size="sm" c="dimmed">{achievement.description}</Text>
                 </div>
-              </Group>
+                </Group>
             </motion.div>
           ))}
-        </Stack>
-      </Card>
+                </Stack>
+              </Card>
 
       {/* Предстоящие события */}
       <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -433,7 +433,7 @@ const MainPage = () => {
               </Group>
             </motion.div>
           ))}
-        </Stack>
+      </Stack>
       </Card>
     </Box>
   );

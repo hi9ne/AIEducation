@@ -128,14 +128,3 @@ class DocumentSerializer(serializers.ModelSerializer):
         model = Document
         fields = '__all__'
         read_only_fields = ('user', 'uploaded_at')
-
-
-class DashboardStatsSerializer(serializers.Serializer):
-    total_courses = serializers.IntegerField()
-    completed_courses = serializers.IntegerField()
-    upcoming_deadlines = serializers.IntegerField()
-    achievements_unlocked = serializers.IntegerField()
-    current_streak = serializers.IntegerField()
-    total_points = serializers.IntegerField()
-    applications_submitted = serializers.IntegerField()
-    universities_favorited = serializers.IntegerField()

@@ -5,7 +5,7 @@ import PageTransition from '../Animations/PageTransition.jsx';
 import MainPage from './sections/MainPage.jsx';
 import IELTSSection from './sections/IELTSSection.jsx';
 import TOLCSection from './sections/TOLCSection.jsx';
-import UniversitiesSection from './sections/UniversitiesSection.jsx';
+import UniversitiesSection from './sections/UniversitiesSection';
 import UniversitalySection from './sections/UniversitalySection.jsx';
 import CodiceSection from './sections/CodiceSection.jsx';
 import DOVSection from './sections/DOVSection.jsx';
