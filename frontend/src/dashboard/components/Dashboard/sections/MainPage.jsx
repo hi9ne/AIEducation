@@ -320,31 +320,9 @@ const MainPage = () => {
         </Grid.Col>
       </Grid>
 
-      {/* Main Statistics */}
+    {/* Main Statistics (without recommended courses tile) */}
       <Grid mb="xl">
-          <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
-              <Group justify="space-between">
-                <div>
-                  <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
-                    Рекомендуемые курсы
-                </Text>
-                  <Text fw={700} size="xl">
-                    {displayStats?.total_courses || 0}
-                </Text>
-                </div>
-                <ThemeIcon color="blue" size="xl" radius="md">
-                  <IconBook size={24} />
-                </ThemeIcon>
-              </Group>
-              </Card>
-            </motion.div>
-          </Grid.Col>
+      {/* Removed Recommended courses tile */}
 
           <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>
             <motion.div
@@ -440,47 +418,7 @@ const MainPage = () => {
         </Stack>
           </Card>
 
-      {/* Рекомендуемые курсы */}
-      {displayStats?.recommended_courses?.length > 0 && (
-        <Card shadow="sm" padding="lg" radius="md" withBorder mb="xl">
-          <Group justify="space-between" mb="md">
-            <Text fw={600} size="lg">Рекомендуемые курсы</Text>
-            <Button variant="light" size="sm">
-              Посмотреть все
-            </Button>
-          </Group>
-          <Grid>
-            {displayStats?.recommended_courses?.map((course, index) => (
-              <Grid.Col key={course.id} span={{ base: 12, md: 6 }}>
-              <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                >
-                  <Card shadow="sm" padding="md" radius="md" withBorder>
-                    <Group justify="space-between" mb="sm">
-                      <Text fw={500}>{course.title}</Text>
-                      <Badge color="blue" variant="light">
-                        {course.difficulty}
-                      </Badge>
-                    </Group>
-                    <Text size="sm" c="dimmed" mb="sm">
-                      {course.duration}
-                      </Text>
-                    <Stack gap="xs">
-                    <Group justify="space-between">
-                        <Text size="sm">Прогресс</Text>
-                        <Text size="sm" fw={500}>{course.progress}%</Text>
-                    </Group>
-                      <Progress value={course.progress} size="sm" radius="xl" />
-                  </Stack>
-                </Card>
-              </motion.div>
-            </Grid.Col>
-            ))}
-          </Grid>
-        </Card>
-      )}
+  {/* Recommended courses section removed as requested */}
 
       {/* Последние достижения */}
       {displayStats?.recent_achievements?.length > 0 && (

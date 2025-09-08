@@ -6,6 +6,41 @@ const HeaderComponent = () => {
   const location = useLocation();
   const isAuthenticated = localStorage.getItem('accessToken');
 
+  // Determine profile completeness from locally cached user info
+  const isProfileCompleteFromLocal = () => {
+    try {
+      const raw = localStorage.getItem('userInfo');
+      if (!raw) return false;
+      const u = JSON.parse(raw);
+      const p = u.profile || {};
+      const phone = u.phone || p.phone;
+      const city = u.city || p.city;
+      return (
+        Boolean(phone) &&
+        Boolean(city) &&
+        Boolean(p.education_background) &&
+        Array.isArray(p.interests) && p.interests.length > 0 &&
+        Array.isArray(p.goals) && p.goals.length > 0 &&
+        p.language_levels && Object.keys(p.language_levels).length > 0 &&
+        Boolean(p.budget_range) &&
+        Boolean(p.study_duration)
+      );
+    } catch {
+      return false;
+    }
+  };
+
+  // Smart login click: skip forms if already authorized and onboarded
+  const handleLoginClick = () => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (accessToken) {
+      const complete = isProfileCompleteFromLocal();
+      navigate(complete ? '/app/dashboard' : '/app/onboarding');
+      return;
+    }
+    navigate('/login');
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
@@ -17,7 +52,7 @@ const HeaderComponent = () => {
     navigate('/app/dashboard');
   };
 
-  const isActive = (path) => location.pathname === path;
+  // Determine active path inline where used to avoid scope issues
 
   return (
     <header className="main-header">
@@ -43,7 +78,7 @@ const HeaderComponent = () => {
                   e.preventDefault();
                   navigate('/');
                 }}
-                className={isActive('/') ? 'active' : ''}
+                className={location.pathname === '/' ? 'active' : ''}
               >
                 Home
               </a>
@@ -148,7 +183,7 @@ const HeaderComponent = () => {
                       e.preventDefault();
                       navigate('/app/dashboard');
                     }}
-                    className={isActive('/app/dashboard') ? 'active' : ''}
+                    className={location.pathname === '/app/dashboard' ? 'active' : ''}
                   >
                     Dashboard
                   </a>
@@ -160,7 +195,7 @@ const HeaderComponent = () => {
                       e.preventDefault();
                       navigate('/app/profile');
                     }}
-                    className={isActive('/app/profile') ? 'active' : ''}
+                    className={location.pathname === '/app/profile' ? 'active' : ''}
                   >
                     Profile
                   </a>
@@ -188,7 +223,7 @@ const HeaderComponent = () => {
           ) : (
             <button 
               className="login-button"
-              onClick={() => navigate('/login')}
+              onClick={handleLoginClick}
             >
               <span>Войти</span>
             </button>

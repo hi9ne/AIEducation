@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { registerUser, loginUser, fetchProfile, clearError, clearSuccess } from "../../store/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { notifications } from '@mantine/notifications';
 import {
   Box,
   Container,
@@ -115,8 +116,30 @@ function RegisterPage() {
           newErrors.password = "Должна быть хотя бы одна заглавная буква";
         } else if (!/(?=.*\d)/.test(value)) {
           newErrors.password = "Должна быть хотя бы одна цифра";
+        } else if (/^\d+$/.test(value)) {
+          newErrors.password = "Пароль не может состоять только из цифр";
         } else {
-          delete newErrors.password;
+          // Check if password contains personal info
+          const personalInfo = [
+            formData.first_name,
+            formData.last_name,
+            formData.email.split('@')[0]
+          ].filter(Boolean).map(str => str.toLowerCase());
+          
+          if (personalInfo.some(info => info && value.toLowerCase().includes(info))) {
+            newErrors.password = "Пароль не должен содержать ваши личные данные";
+          } else {
+            // Check for common passwords
+            const commonPasswords = [
+              'password', '123456', '12345678', 'qwerty', 'admin',
+              'welcome', 'monkey', 'letmein', 'dragon', 'football'
+            ];
+            if (commonPasswords.includes(value.toLowerCase())) {
+              newErrors.password = "Этот пароль слишком простой и часто используется";
+            } else {
+              delete newErrors.password;
+            }
+          }
         }
         break;
 
@@ -145,6 +168,10 @@ function RegisterPage() {
     if (!formData.last_name) newErrors.last_name = "Обязательное поле";
     if (!formData.password) newErrors.password = "Обязательное поле";
     if (!formData.password_confirm) newErrors.password2 = "Обязательное поле";
+    // Проверка совпадения паролей
+    if (formData.password && formData.password_confirm && formData.password !== formData.password_confirm) {
+      newErrors.password2 = "Пароли не совпадают";
+    }
     if (!agreedToTerms) newErrors.terms = "Необходимо согласие с условиями";
 
     // Запускаем валидацию для заполненных полей
@@ -184,25 +211,59 @@ function RegisterPage() {
     }
 
     try {
-      // Формируем username из email
-      const payload = { ...formData, username: formData.email };
+      // Create the registration payload
+      const payload = {
+        email: formData.email,
+        username: formData.email,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        password: formData.password,
+        password_confirm: formData.password_confirm
+      };
+
       const resultAction = await dispatch(registerUser(payload));
       
       if (registerUser.fulfilled.match(resultAction)) {
-        // Немедленный вход после успешной регистрации
-        const loginAction = await dispatch(loginUser({
-          email: formData.email,
-          password: formData.password,
-        }));
-        if (loginUser.fulfilled.match(loginAction)) {
-          await dispatch(fetchProfile());
-          navigate("/app/onboarding");
-        } else {
-          navigate("/login?registered=true");
+        // Show success message
+        notifications.show({
+          title: 'Успешная регистрация',
+          message: 'Пожалуйста, войдите в систему',
+          color: 'green'
+        });
+        
+        // Navigate to login page
+        navigate("/login?registered=true");
+      } else {
+        // Check for validation errors in resultAction.payload.details
+        const errorDetails = resultAction.payload?.details;
+        let errorMessage = resultAction.payload?.error || 'Пожалуйста, проверьте введенные данные';
+        
+        // If we have field-specific errors, format them
+        if (errorDetails && typeof errorDetails === 'object') {
+          const fieldErrors = Object.entries(errorDetails)
+            .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+            .join('\n');
+          
+          if (fieldErrors) {
+            errorMessage = fieldErrors;
+          }
         }
+
+        notifications.show({
+          title: 'Ошибка регистрации',
+          message: errorMessage,
+          color: 'red',
+          autoClose: false // Keep error visible until user dismisses it
+        });
       }
     } catch (error) {
       console.error('Registration error:', error);
+      // Show unexpected error
+      notifications.show({
+        title: 'Ошибка регистрации',
+        message: 'Произошла неожиданная ошибка. Попробуйте позже.',
+        color: 'red'
+      });
     }
   };
 

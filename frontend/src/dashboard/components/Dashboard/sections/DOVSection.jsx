@@ -93,7 +93,7 @@ const DOVSection = ({ progress }) => {
       required: true,
       size: user?.profile?.dov_document_2_size || null,
       uploadedAt: user?.profile?.dov_document_2_uploaded_at || null,
-      uploadedAt: user?.profile?.dov_document_3_uploaded_at || null,
+      document3UploadedAt: user?.profile?.dov_document_3_uploaded_at || null,
       needsApostille: false
     },
     {
