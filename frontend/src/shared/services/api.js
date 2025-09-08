@@ -32,6 +32,17 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  transformRequest: [(data, headers) => {
+    // Don't transform FormData
+    if (data instanceof FormData) {
+      return data;
+    }
+    // Transform JSON data
+    if (headers['Content-Type'] === 'application/json') {
+      return JSON.stringify(data);
+    }
+    return data;
+  }],
   withCredentials: true
 });
 
@@ -114,12 +125,21 @@ api.interceptors.response.use(
 // Utility function for handling errors
 const handleApiError = (error) => {
   if (error.response) {
-    // Сервер ответил с ошибкой
+    // Server responded with an error
     const { status, data } = error.response;
     
     switch (status) {
       case 400:
-        return data.detail || data.error || 'Неверные данные';
+        // If the error data contains validation errors, return the data directly
+        // so we can handle field-specific errors in the UI
+        if (data.detail || data.error) {
+          return data.detail || data.error;
+        }
+        if (typeof data === 'object' && Object.keys(data).length > 0) {
+          return data; // Return validation errors directly
+        }
+        return 'Неверные данные';
+        
       case 401:
         return 'Необходима авторизация';
       case 403:
@@ -131,6 +151,9 @@ const handleApiError = (error) => {
       case 500:
         return 'Ошибка сервера. Попробуйте позже';
       default:
+        if (typeof data === 'object' && Object.keys(data).length > 0) {
+          return data; // Return error details directly
+        }
         return data.detail || data.error || `Ошибка ${status}`;
     }
   } else if (error.request) {
@@ -156,7 +179,37 @@ export const authAPI = {
     return api.get('/api/auth/profile/');
   },
   updateProfile: (data) => api.patch('/api/auth/profile/update/', data),
-  updateProfileComplete: (data) => api.patch("/api/auth/profile/update-complete/", data),
+  updateProfileComplete: (data) => {
+    const formData = new FormData();
+    
+    // Append all fields to FormData
+    Object.keys(data).forEach(key => {
+      const value = data[key];
+      if (value === undefined || value === null || value === '') return;
+      if (key === 'avatar' && value instanceof File) {
+        formData.append(key, value);
+        return;
+      }
+      // JSON fields must be stringified for multipart
+      if (typeof value === 'object') {
+        // Dates to YYYY-MM-DD
+        if (value instanceof Date) {
+          const iso = value.toISOString().slice(0, 10);
+          formData.append(key, iso);
+        } else {
+          formData.append(key, JSON.stringify(value));
+        }
+      } else {
+        formData.append(key, value);
+      }
+    });
+
+    return api.patch("/api/auth/profile/update-complete/", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
   
   // Пароли
   changePassword: (data) => api.post('/api/auth/change-password/', data),

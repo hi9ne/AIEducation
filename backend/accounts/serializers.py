@@ -52,6 +52,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(read_only=True)
+    phone = serializers.CharField(required=False, allow_blank=True)
+    date_of_birth = serializers.DateField(required=False, allow_null=True)
     
     class Meta:
         model = User
@@ -59,6 +61,11 @@ class UserSerializer(serializers.ModelSerializer):
                  'date_of_birth', 'country', 'city', 'avatar', 'is_verified', 
                  'created_at', 'updated_at', 'profile')
         read_only_fields = ('id', 'is_verified', 'created_at', 'updated_at')
+        
+    def validate_phone(self, value):
+        if value and not value.startswith('+'):
+            value = '+' + value
+        return value
 
 
 class PasswordChangeSerializer(serializers.Serializer):

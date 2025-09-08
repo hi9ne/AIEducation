@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import ai_views
 
 urlpatterns = [
     # Universities
@@ -40,4 +41,5 @@ urlpatterns = [
     
     # Dashboard
     path('dashboard/stats/', views.dashboard_stats, name='dashboard-stats'),
+    path('ai/chat/', ai_views.chat, name='ai-chat'),
 ]

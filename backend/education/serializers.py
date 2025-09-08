@@ -48,23 +48,24 @@ class EnrollmentSerializer(serializers.ModelSerializer):
 
 
 class DashboardStatsSerializer(serializers.Serializer):
-    overall_progress = serializers.FloatField()
-    ielts_completed = serializers.BooleanField()
-    dov_completed = serializers.BooleanField()
-    universities_selected = serializers.BooleanField()
-    universitaly_registration = serializers.BooleanField()
-    visa_obtained = serializers.BooleanField()
-    total_courses = serializers.IntegerField()
-    completed_courses = serializers.IntegerField()
-    upcoming_deadlines = serializers.IntegerField()
-    achievements_unlocked = serializers.IntegerField()
-    current_streak = serializers.IntegerField()
-    total_study_time = serializers.IntegerField()
-    weekly_goal = serializers.IntegerField()
-    weekly_progress = serializers.IntegerField()
-    recommended_courses = CourseSerializer(many=True)
-    total_points = serializers.IntegerField()
-    applications_submitted = serializers.IntegerField(default=0)
+    # Provide sensible defaults and make fields non-required to avoid KeyError
+    overall_progress = serializers.FloatField(required=False, default=0.0)
+    ielts_completed = serializers.BooleanField(required=False, default=False)
+    dov_completed = serializers.BooleanField(required=False, default=False)
+    universities_selected = serializers.BooleanField(required=False, default=False)
+    universitaly_registration = serializers.BooleanField(required=False, default=False)
+    visa_obtained = serializers.BooleanField(required=False, default=False)
+    total_courses = serializers.IntegerField(required=False, default=0)
+    completed_courses = serializers.IntegerField(required=False, default=0)
+    upcoming_deadlines = serializers.IntegerField(required=False, default=0)
+    achievements_unlocked = serializers.IntegerField(required=False, default=0)
+    current_streak = serializers.IntegerField(required=False, default=0)
+    total_study_time = serializers.IntegerField(required=False, default=0)
+    weekly_goal = serializers.IntegerField(required=False, default=0)
+    weekly_progress = serializers.IntegerField(required=False, default=0)
+    recommended_courses = CourseSerializer(many=True, required=False, default=list)
+    total_points = serializers.IntegerField(required=False, default=0)
+    applications_submitted = serializers.IntegerField(required=False, default=0)
 
 
 class ApplicationSerializer(serializers.ModelSerializer):

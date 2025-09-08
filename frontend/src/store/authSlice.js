@@ -102,11 +102,24 @@ export const fetchProfile = createAsyncThunk(
   }
 );
 
+export const updateProfileComplete = createAsyncThunk(
+  'auth/updateProfileComplete',
+  async (profileData, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.updateProfileComplete(profileData);
+      return response.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+
 export const updateProfile = createAsyncThunk(
   'auth/updateProfile',
   async (profileData, { rejectWithValue, dispatch }) => {
     try {
-      const response = await authAPI.updateProfileComplete(profileData);
+      const response = await authAPI.updateProfile(profileData);
       
       // Обновляем полный профиль после изменения
       dispatch(fetchProfile());

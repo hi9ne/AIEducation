@@ -115,16 +115,31 @@ function LoginPage() {
       if (loginUser.fulfilled.match(result)) {
         console.log('Login successful, fetching profile...');
         // Загружаем полный профиль
-        await dispatch(fetchProfile());
-        
-        // Всегда перенаправляем в личный кабинет после успешного входа
-        navigate('/app/dashboard');
+  await dispatch(fetchProfile());
+  // После входа сначала ведем в личный кабинет
+  navigate('/app/dashboard');
       } else {
         console.log('Login not fulfilled:', result);
       }
     } catch (error) {
       console.error('Login error:', error);
     }
+  };
+
+  // Helper to determine if profile is complete
+  const isProfileComplete = (u) => {
+    if (!u) return false;
+    const p = u.profile || {};
+    return (
+      Boolean(u.phone) &&
+      Boolean(u.city) &&
+      Boolean(p.education_background) &&
+      Array.isArray(p.interests) && p.interests.length > 0 &&
+      Array.isArray(p.goals) && p.goals.length > 0 &&
+      p.language_levels && Object.keys(p.language_levels).length > 0 &&
+      Boolean(p.budget_range) &&
+      Boolean(p.study_duration)
+    );
   };
 
   const handleForgotPassword = () => {
@@ -294,7 +309,7 @@ function LoginPage() {
                       variant="outline"
                       size="lg"
                       fullWidth
-                      leftIcon={<IconBrandGoogle size={20} />}
+                      leftSection={<IconBrandGoogle size={20} />}
                       className="social-button"
                       radius="md"
                     >
@@ -304,7 +319,7 @@ function LoginPage() {
                       variant="outline"
                       size="lg"
                       fullWidth
-                      leftIcon={<IconBrandGithub size={20} />}
+                      leftSection={<IconBrandGithub size={20} />}
                       className="social-button"
                       radius="md"
                     >

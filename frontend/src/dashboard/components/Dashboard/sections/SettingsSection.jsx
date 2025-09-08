@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { 
   Box, 
   Stack, 
@@ -13,7 +13,6 @@ import {
   Select,
   Switch,
   Divider,
-  Avatar,
   ActionIcon,
   FileInput,
   NumberInput,
@@ -32,11 +31,14 @@ import {
   IconEdit,
   IconX
 } from '@tabler/icons-react';
+import { updateProfileComplete, fetchProfile } from '../../../../store/authSlice';
 
 const SettingsSection = () => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const [isEditing, setIsEditing] = useState(false);
-  const [avatar, setAvatar] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
   
   const [userData, setUserData] = useState({
     firstName: '',
@@ -82,13 +84,21 @@ const SettingsSection = () => {
         city: user.city || '',
         country: user.country || '',
       }));
+      // set current avatar preview from profile
+      setAvatarPreview(user?.avatar || '');
     }
   }, [user]);
 
-  const handleSave = () => {
-    // Здесь будет логика сохранения данных
-    setIsEditing(false);
-    console.log('Данные сохранены:', userData);
+  const handleSave = async () => {
+    // Save avatar if selected
+    try {
+      if (avatarFile instanceof File) {
+        await dispatch(updateProfileComplete({ avatar: avatarFile }));
+        await dispatch(fetchProfile());
+      }
+    } finally {
+      setIsEditing(false);
+    }
   };
 
   const handleCancel = () => {
@@ -127,26 +137,49 @@ const SettingsSection = () => {
           </Text>
           
           <Group position="apart" align="flex-start">
-            <Group>
-              <Avatar
-                size={120}
-                radius="xl"
-                color="blue"
-                src={avatar}
+            <Stack gap="xs" align="center">
+              {/* Passport-like big photo preview */}
+              <Box
+                style={{
+                  width: 180,
+                  height: 240,
+                  border: '1px solid var(--mantine-color-gray-4)',
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                  background: 'var(--mantine-color-gray-1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
               >
-                {user?.first_name?.[0] || ''}{user?.last_name?.[0] || ''}
-              </Avatar>
+                {avatarPreview ? (
+                  <img
+                    src={avatarPreview}
+                    alt="Фото профиля"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <Text c="dimmed">Нет фото</Text>
+                )}
+              </Box>
               {isEditing && (
                 <FileInput
-                  placeholder="Изменить фото"
+                  placeholder="Загрузить фото"
                   leftSection={<IconCamera size={16} />}
-                  value={avatar}
-                  onChange={setAvatar}
+                  onChange={(file) => {
+                    setAvatarFile(file);
+                    if (file instanceof File) {
+                      const url = URL.createObjectURL(file);
+                      setAvatarPreview(url);
+                    } else {
+                      setAvatarPreview(user?.avatar || '');
+                    }
+                  }}
                   accept="image/*"
                   size="sm"
                 />
               )}
-            </Group>
+            </Stack>
             
             <Box style={{ flex: 1 }}>
               <Text size="lg" fw={600} mb="md">

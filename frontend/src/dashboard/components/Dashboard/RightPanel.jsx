@@ -66,6 +66,7 @@ import {
   IconEyeOff
 } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../../shared/services/api';
 
 const RightPanel = () => {
   const dispatch = useDispatch();
@@ -90,9 +91,9 @@ const RightPanel = () => {
 
   // Local state
   const [aiMessage, setAiMessage] = useState('');
-  const [aiResponse, setAiResponse] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [chatError, setChatError] = useState(null);
   const [activeTab, setActiveTab] = useState('chat');
   const [expandedSections, setExpandedSections] = useState({
     recommendations: true,
@@ -118,24 +119,45 @@ const RightPanel = () => {
 
   // AI message handling
   const handleSendMessage = async () => {
-    if (!aiMessage.trim()) return;
-    
-    setIsTyping(true);
-    setAiResponse('');
-    
-    // Simulate typing effect
-    const response = 'Анализирую ваши данные и готовлю персонализированные рекомендации...';
-    let currentText = '';
-    
-    for (const char of response) {
-      await new Promise(resolve => setTimeout(resolve, 30));
-      currentText += char;
-      setAiResponse(currentText);
-    }
-    
-    setIsTyping(false);
+    const message = aiMessage.trim();
+    if (!message || isTyping) return;
+    setChatError(null);
+
+    // Push user message to chat
+    setChatHistory((prev) => [...prev, { id: Date.now(), role: 'user', content: message }]);
     setAiMessage('');
+
+    // Simulate assistant typing and reply
+    setIsTyping(true);
+    try {
+      const payload = {
+        messages: [
+          { role: 'system', content: 'Ты — дружелюбный помощник по учебе. Отвечай кратко и по делу.' },
+          ...chatHistory.map(m => ({ role: m.role, content: m.content })),
+          { role: 'user', content: message }
+        ],
+        model: 'gpt-4o-mini',
+        temperature: 0.6,
+        max_tokens: 300,
+      };
+      const res = await api.post('/api/education/ai/chat/', payload);
+      const assistant = res.data?.content || 'Не удалось получить ответ.';
+      setChatHistory((prev) => [...prev, { id: Date.now() + 1, role: 'assistant', content: assistant }]);
+    } catch (e) {
+      const fallback = 'Произошла ошибка сервиса ИИ. Попробуйте позже.';
+      setChatHistory((prev) => [...prev, { id: Date.now() + 1, role: 'assistant', content: fallback }]);
+  setChatError('Ошибка запроса к ИИ. Проверьте, что бэкенд запущен (порт 8000).');
+    } finally {
+      setIsTyping(false);
+    }
   };
+
+  // Auto-scroll chat to bottom when new messages or typing state changes
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatHistory, isTyping]);
 
   // Notification handlers
   const handleMarkAsRead = (id) => {
@@ -189,12 +211,59 @@ const RightPanel = () => {
             </Group>
 
             <Stack spacing="md">
+              {/* Chat messages area */}
+              <ScrollArea h={220} offsetScrollbars className={styles.chatMessages}>
+                <Stack spacing="sm">
+                  {chatHistory.length === 0 && (
+                    <Text size="sm" c="dimmed" ta="center">
+                      Начните диалог — задайте вопрос внизу
+                    </Text>
+                  )}
+                  {chatHistory.map((msg) => (
+                    <Group key={msg.id} position={msg.role === 'user' ? 'right' : 'left'}>
+                      <Box
+                        p="sm"
+                        sx={(theme) => ({
+                          maxWidth: '85%',
+                          borderRadius: theme.radius.md,
+                          backgroundColor:
+                            msg.role === 'user' ? theme.colors.blue[0] : theme.colors.gray[0],
+                          border: `1px solid ${
+                            msg.role === 'user' ? theme.colors.blue[2] : theme.colors.gray[3]
+                          }`
+                        })}
+                      >
+                        <Text size="sm">{msg.content}</Text>
+                      </Box>
+                    </Group>
+                  ))}
+                  {isTyping && (
+                    <Group position="left">
+                      <Box p="sm" sx={(theme) => ({
+                        borderRadius: theme.radius.md,
+                        backgroundColor: theme.colors.gray[0],
+                        border: `1px solid ${theme.colors.gray[3]}`
+                      })}>
+                        <Text size="sm" c="dimmed">Печатает…</Text>
+                      </Box>
+                    </Group>
+                  )}
+                  <div ref={messagesEndRef} />
+                </Stack>
+              </ScrollArea>
+
               <Textarea
                 value={aiMessage}
                 onChange={(e) => setAiMessage(e.target.value)}
                 placeholder="Задайте вопрос AI помощнику..."
                 minRows={2}
                 maxRows={4}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
               />
 
               <Group position="apart">
@@ -208,24 +277,16 @@ const RightPanel = () => {
                 </Button>
                 <Button
                   variant="light"
-                  onClick={() => setAiResponse('')}
+                  onClick={() => setChatHistory([])}
                   size="sm"
                 >
-                  Очистить
+                  Очистить чат
                 </Button>
               </Group>
-
-              {aiResponse && (
-                <Box
-                  p="md"
-                  sx={(theme) => ({
-                    backgroundColor: theme.colors.blue[0],
-                    borderRadius: theme.radius.md,
-                    border: `1px solid ${theme.colors.blue[2]}`
-                  })}
-                >
-                  <Text size="sm">{aiResponse}</Text>
-                </Box>
+              {chatError && (
+                <Text size="xs" c="red">
+                  {chatError}
+                </Text>
               )}
             </Stack>
           </Card>
@@ -355,44 +416,7 @@ const RightPanel = () => {
             )}
           </Card>
 
-          {/* Stats Card */}
-          <Card shadow="sm" p="lg" radius="md" withBorder>
-            <Group position="apart" mb="md">
-              <Text size="lg" fw={600}>Статистика</Text>
-              <ThemeIcon size="lg" color="green" variant="light">
-                <IconTrendingUp size={20} />
-              </ThemeIcon>
-            </Group>
-
-            {isLoading ? (
-              <Stack spacing="sm">
-                <Skeleton height={20} radius="sm" />
-                <Skeleton height={20} radius="sm" />
-                <Skeleton height={20} radius="sm" />
-              </Stack>
-            ) : (
-              <Stack spacing="sm">
-                <Group position="apart">
-                  <Text size="sm">Всего очков</Text>
-                  <Text size="sm" fw={500} c="green">
-                    {dashboardStats.total_points || 0}
-                  </Text>
-                </Group>
-                <Group position="apart">
-                  <Text size="sm">Достижений</Text>
-                  <Text size="sm" fw={500} c="blue">
-                    {dashboardStats.achievements_unlocked || 0}
-                  </Text>
-                </Group>
-                <Group position="apart">
-                  <Text size="sm">Серия</Text>
-                  <Text size="sm" fw={500} c="orange">
-                    {dashboardStats.current_streak || 0} дней
-                  </Text>
-                </Group>
-              </Stack>
-            )}
-          </Card>
+          {/* Stats Card removed as requested */}
         </Stack>
       </motion.div>
     </Box>

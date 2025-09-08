@@ -10,7 +10,11 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me')
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '172.16.7.177']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '172.16.7.177', '172.22.32.1']
+
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # Only for development
+CORS_ALLOW_CREDENTIALS = True
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -103,6 +107,11 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# File Upload Settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -171,6 +180,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://172.16.7.177:5174",
     "http://172.16.7.177:5175",
     "http://172.16.7.177:5176",
+    "http://172.22.32.1:5173",
+    "http://172.22.32.1:5174",
+    "http://172.22.32.1:5175",
+    "http://172.22.32.1:5176",
+    "http://172.22.32.1:8000"
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
