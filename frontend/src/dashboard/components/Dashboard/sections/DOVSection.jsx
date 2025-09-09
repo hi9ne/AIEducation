@@ -19,6 +19,8 @@ import {
   FileInput,
   Alert
 } from '@mantine/core';
+import { useEffect } from 'react';
+import { useDashboardStore } from '../../../../store/dashboardStore';
 import { 
   IconFileText, 
   IconPlayerPlay, 
@@ -76,6 +78,11 @@ const DOVSection = ({ progress }) => {
   // Рассчитываем прогресс на основе реальных данных
   const completedSteps = steps.filter(step => step.completed).length;
   const dovProgress = Math.round((completedSteps / steps.length) * 100);
+  // Синхронизируем прогресс DOV с глобальным стором
+  const updateProgress = useDashboardStore((s) => s.updateProgress);
+  useEffect(() => {
+    updateProgress('dov', dovProgress);
+  }, [dovProgress, updateProgress]);
   const documents = [
     {
       id: 1,

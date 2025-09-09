@@ -24,10 +24,23 @@ const DashboardLayout = () => {
   }, [dispatch]);
 
   return (
-    <Box style={{ minHeight: '100vh', width: '100%', overflow: 'hidden', position: 'relative' }}>
+    <Box style={{
+      minHeight: '100vh',
+      width: '100%',
+      overflow: 'hidden',
+      position: 'relative',
+      background: 'linear-gradient(180deg, #f8fafc 0%, #ffffff 40%, #f8fafc 100%)'
+    }}>
       <div style={{ display: 'flex', flexDirection: 'row', minHeight: '100vh', width: '100%' }}>
         {/* Левая панель навигации */}
-        <div style={{ flex: '0 0 20%', maxWidth: '250px', borderRight: '1px solid var(--mantine-color-gray-3)', backgroundColor: 'var(--mantine-color-gray-0)', minHeight: '100vh' }}>
+        <div style={{
+          flex: '0 0 20%',
+          maxWidth: '250px',
+          borderRight: '1px solid var(--mantine-color-gray-3)',
+          backgroundColor: 'white',
+          minHeight: '100vh',
+          boxShadow: '0 6px 18px rgba(2,6,23,0.06)'
+        }}>
           <LeftNavigation 
             activeSection={activeSection}
             onSectionChange={setActiveSection}
@@ -39,7 +52,13 @@ const DashboardLayout = () => {
         </div>
 
         {/* Центральная зона контента */}
-        <div style={{ flex: '1 1 auto', borderRight: '1px solid var(--mantine-color-gray-3)', backgroundColor: 'var(--mantine-color-gray-0)', minHeight: '100vh', overflow: 'auto' }}>
+        <div style={{
+          flex: '1 1 auto',
+          borderRight: '1px solid var(--mantine-color-gray-3)',
+          backgroundColor: 'transparent',
+          minHeight: '100vh',
+          overflow: 'auto'
+        }}>
           <ScrollArea style={{ height: '100%' }}>
             <CentralContent 
               activeSection={activeSection}
@@ -57,6 +76,7 @@ const DashboardLayout = () => {
           minHeight: '100vh', 
           overflow: 'auto', 
           border: '1px solid var(--mantine-color-gray-3)',
+          boxShadow: '0 6px 18px rgba(2,6,23,0.06)',
           position: 'relative',
           zIndex: 1000,
           display: 'block'

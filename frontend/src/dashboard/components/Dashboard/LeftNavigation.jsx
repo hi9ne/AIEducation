@@ -24,9 +24,12 @@ import {
   IconBell,
   IconHelp
 } from '@tabler/icons-react';
+import { useDashboardStore } from '../../../store/dashboardStore';
 
 const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
   const [showStudentCard, setShowStudentCard] = useState(false);
+  const { currentProgress } = useDashboardStore();
+
   const navigationItems = [
     {
       id: 'main',
@@ -40,16 +43,14 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
       label: 'IELTS',
       description: 'Подготовка к тесту',
       icon: IconBook,
-      color: 'green',
-      progress: 75
+      color: 'green'
     },
     {
       id: 'tolc',
       label: 'TOLC',
       description: 'Итальянский тест',
       icon: IconSchool,
-      color: 'purple',
-      progress: 30
+      color: 'purple'
     },
     {
       id: 'universities',
@@ -63,32 +64,28 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
       label: 'Universitaly',
       description: 'Регистрация',
       icon: IconFileText,
-      color: 'cyan',
-      progress: 60
+      color: 'cyan'
     },
     {
       id: 'codice',
       label: 'Codice Fiscale',
       description: 'Налоговый код',
       icon: IconCreditCard,
-      color: 'teal',
-      progress: 40
+      color: 'teal'
     },
     {
       id: 'dov',
       label: 'DOV',
       description: 'Легализация',
       icon: IconFile,
-      color: 'indigo',
-      progress: 20
+      color: 'indigo'
     },
     {
       id: 'visa',
       label: 'Виза',
       description: 'Визовая поддержка',
       icon: IconPlane,
-      color: 'pink',
-      progress: 10
+      color: 'pink'
     }
   ];
 
@@ -121,30 +118,30 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
   };
 
   return (
-    <Box style={{ height: '100%', backgroundColor: 'var(--mantine-color-gray-0)', paddingTop: 24 }}>
+    <Box style={{ height: '100%', backgroundColor: 'white', paddingTop: 24 }}>
       <Stack gap="xs" style={{ padding: '16px' }}>
         {/* Top spacer to avoid clipping under app frame */}
         <Box style={{ height: 8 }} />
         {/* User Profile */}
         <Paper
           withBorder
-          radius="md"
+          radius="lg"
           p="md"
           onClick={() => setShowStudentCard(true)}
           style={{
             marginTop: 10,
             backgroundColor: 'white',
             borderColor: 'var(--mantine-color-gray-3)',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+            boxShadow: '0 6px 18px rgba(2,6,23,0.06)',
             cursor: 'pointer',
             transition: 'transform 150ms ease, box-shadow 150ms ease'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)';
+            e.currentTarget.style.boxShadow = '0 12px 28px rgba(2,6,23,0.08)';
             e.currentTarget.style.transform = 'translateY(-1px)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.03)';
+            e.currentTarget.style.boxShadow = '0 6px 18px rgba(2,6,23,0.06)';
             e.currentTarget.style.transform = 'translateY(0)';
           }}
         >
@@ -158,14 +155,14 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
               {user?.first_name?.[0]}{user?.last_name?.[0]}
             </Avatar>
             <Box style={{ flex: 1 }}>
-              <Text size="sm" fw={600} c="dark">
+              <Text size="sm" fw={700} c="dark">
                 {user?.first_name} {user?.last_name}
               </Text>
               <Text size="xs" c="dimmed">
                 Студент
               </Text>
             </Box>
-            <Badge color="green" variant="light" size="sm">
+            <Badge color="green" variant="light" size="sm" radius="sm">
               Активен
             </Badge>
           </Group>
@@ -177,6 +174,17 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
             
+            // Определяем живой прогресс по id секции
+            const liveProgressMap = {
+              ielts: currentProgress?.ielts ?? 0,
+              tolc: currentProgress?.tolc ?? 0,
+              universitaly: currentProgress?.universitaly ?? 0,
+              codice: currentProgress?.codice ?? 0,
+              dov: currentProgress?.dov ?? 0,
+              visa: currentProgress?.visa ?? 0,
+            };
+            const itemProgress = liveProgressMap[item.id];
+
             return (
               <Button
                 key={item.id}
@@ -193,15 +201,15 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
                   </div>
                 }
                 rightSection={
-                  item.progress && (
+                  typeof itemProgress === 'number' ? (
                     <Badge 
                       size="xs" 
                       color={item.color} 
                       variant="light"
                     >
-                      {item.progress}%
+                      {itemProgress}%
                     </Badge>
-                  )
+                  ) : null
                 }
                 style={{
                   display: 'flex',
@@ -209,14 +217,14 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
                   height: 'auto',
                   minHeight: 48,
                   padding: '10px 12px',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   backgroundColor: isActive ? getColorValue(item.color) : 'transparent',
                   borderLeft: isActive ? `3px solid ${getColorValue(item.color)}` : '3px solid transparent',
                   transition: 'all 0.2s ease'
                 }}
               >
                 <Box style={{ textAlign: 'left', lineHeight: 1.2 }}>
-                  <Text size="sm" fw={isActive ? 600 : 500} c={isActive ? 'white' : 'dark'} style={{ lineHeight: 1.2 }}>
+                  <Text size="sm" fw={isActive ? 700 : 500} c={isActive ? 'white' : 'dark'} style={{ lineHeight: 1.2 }}>
                     {item.label}
                   </Text>
                   <Text size="xs" c={isActive ? 'white' : 'dimmed'} style={{ lineHeight: 1.2 }}>
@@ -231,7 +239,7 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
         <Divider style={{ margin: '16px 0' }} />
 
         {/* Settings */}
-        <Button
+    <Button
           variant={activeSection === 'settings' ? 'filled' : 'subtle'}
           color={activeSection === 'settings' ? 'gray' : 'gray'}
           onClick={() => onSectionChange('settings')}
@@ -239,8 +247,8 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
           leftSection={<IconSettings size={20} />}
           style={{
             height: 'auto',
-            padding: '12px',
-            borderRadius: '8px',
+      padding: '12px',
+      borderRadius: '10px',
             transition: 'all 0.2s ease'
           }}
         >
@@ -256,15 +264,15 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
 
         {/* Help & Support */}
         <Stack gap="xs" style={{ marginTop: '16px' }}>
-          <Button
+      <Button
             variant="subtle"
             color="gray"
             justify="flex-start"
             leftSection={<IconHelp size={20} />}
             style={{
               height: 'auto',
-              padding: '12px',
-              borderRadius: '8px',
+        padding: '12px',
+        borderRadius: '10px',
               transition: 'all 0.2s ease'
             }}
           >
@@ -278,15 +286,15 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
             </Box>
           </Button>
 
-          <Button
+      <Button
             variant="subtle"
             color="gray"
             justify="flex-start"
             leftSection={<IconBell size={20} />}
             style={{
               height: 'auto',
-              padding: '12px',
-              borderRadius: '8px',
+        padding: '12px',
+        borderRadius: '10px',
               transition: 'all 0.2s ease'
             }}
           >
