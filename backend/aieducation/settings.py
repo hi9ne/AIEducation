@@ -1,52 +1,48 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+# CORS settings - prefer environment configuration for production
+# Set CORS_ALLOW_ALL_ORIGINS via env (default False in prod)
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() == 'true'
+CORS_ALLOW_CREDENTIALS = os.getenv('CORS_ALLOW_CREDENTIALS', 'True').lower() == 'true'
 
-load_dotenv()
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me')
-
-# Production-friendly toggles
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
-
-# Normalize ALLOWED_HOSTS: allow providing full URLs in env (strip scheme/path)
-def _normalize_host(h: str) -> str | None:
-    h = (h or '').strip()
-    if not h:
-        return None
-    if '://' in h:
-        h = h.split('://', 1)[1]
-    # strip path/port if present
-    h = h.split('/', 1)[0]
-    return h or None
-
-# Include common defaults and Railway wildcard so deployments "just work"
-_raw_hosts = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.up.railway.app')
-ALLOWED_HOSTS = [h for h in (_normalize_host(x) for x in _raw_hosts.split(',')) if h]
-
-# CSRF trusted origins: take from env or derive from allowed hosts
-_raw_csrf = os.getenv('CSRF_TRUSTED_ORIGINS', '')
-if _raw_csrf.strip():
-    CSRF_TRUSTED_ORIGINS = [x.strip().rstrip('/') for x in _raw_csrf.split(',') if x.strip()]
+# Build CORS_ALLOWED_ORIGINS from env or FRONTEND_URL (if provided)
+_raw_cors = os.getenv('CORS_ALLOWED_ORIGINS', '')
+if _raw_cors.strip():
+    CORS_ALLOWED_ORIGINS = [x.strip().rstrip('/') for x in _raw_cors.split(',') if x.strip()]
 else:
-    # add both http and https for convenience (Django requires absolute origins)
-    _csrf_hosts: list[str] = []
-    for h in ALLOWED_HOSTS:
-        if not h or h in ('localhost', '127.0.0.1'):
-            continue
-        if h.startswith('.'):
-            h_origin = f"*.{h.lstrip('.')}"
-        else:
-            h_origin = h
-        _csrf_hosts.append(h_origin)
-    CSRF_TRUSTED_ORIGINS = [
-        *(f"https://{h}" for h in _csrf_hosts),
-        *(f"http://{h}" for h in _csrf_hosts),
+    frontend_url = os.getenv('FRONTEND_URL', '').strip().rstrip('/')
+    # include common local dev origins for convenience
+    local_origins = [
+        'http://localhost:3000', 'http://127.0.0.1:3000',
+        'http://localhost:5173', 'http://127.0.0.1:5173',
+        'http://localhost:5174', 'http://127.0.0.1:5174',
+        'http://localhost:5175', 'http://127.0.0.1:5175',
+        'http://localhost:5176', 'http://127.0.0.1:5176',
     ]
+    CORS_ALLOWED_ORIGINS = [*(local_origins if not frontend_url else []), *( [frontend_url] if frontend_url else [])]
 
-# CORS settings
+# Allowed methods & headers
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 CORS_ALLOW_ALL_ORIGINS = True  # Only for development
 CORS_ALLOW_CREDENTIALS = True
 
@@ -203,30 +199,20 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-# CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-    "http://localhost:5175",
-    "http://127.0.0.1:5175",
-    "http://localhost:5176",
-    "http://127.0.0.1:5176",
-    "http://172.16.7.177:5174",
-    "http://172.16.7.177:5175",
-    "http://172.16.7.177:5176",
-    "http://172.22.32.1:5173",
-    "http://172.22.32.1:5174",
-    "http://172.22.32.1:5175",
-    "http://172.22.32.1:5176",
-    "http://172.22.32.1:8000"
-]
+# CORS settings - prefer environment configuration for production
+# Allow enabling wildcard for development via env
+CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() == 'true'
+CORS_ALLOW_CREDENTIALS = os.getenv('CORS_ALLOW_CREDENTIALS', 'True').lower() == 'true'
 
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
+# Build CORS_ALLOWED_ORIGINS from env or FRONTEND_URL
+_raw_cors = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
+if _raw_cors:
+    CORS_ALLOWED_ORIGINS = [x.strip().rstrip('/') for x in _raw_cors.split(',') if x.strip()]
+else:
+    _frontend = os.getenv('FRONTEND_URL', '').strip().rstrip('/')
+    CORS_ALLOWED_ORIGINS = [_frontend] if _frontend else []
+
+# Allowed methods & headers
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
