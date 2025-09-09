@@ -22,7 +22,8 @@ def _normalize_host(h: str) -> str | None:
     h = h.split('/', 1)[0]
     return h or None
 
-_raw_hosts = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+# Include common defaults and Railway wildcard so deployments "just work"
+_raw_hosts = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.up.railway.app')
 ALLOWED_HOSTS = [h for h in (_normalize_host(x) for x in _raw_hosts.split(',')) if h]
 
 # CSRF trusted origins: take from env or derive from allowed hosts
