@@ -2,25 +2,26 @@
 // This should show the correct URL: /api/auth/profile/
 import axios from 'axios';
 
-// Auto-detect environment and set API URL
+// Resolve API base URL
 const getApiUrl = () => {
-  // Check if we're in development (localhost or local network)
-  if (window.location.hostname === 'localhost' || 
-      window.location.hostname === '127.0.0.1' ||
-      window.location.hostname.startsWith('172.') ||
-      window.location.hostname.startsWith('192.168.') ||
-      window.location.hostname.startsWith('10.')) {
-    // Use the same hostname as the frontend for backend in development
-    return `http://${window.location.hostname}:8000`;
+  // 1) If env is provided at build time, always use it (safest for prod)
+  const envUrl = (import.meta.env?.VITE_API_URL || '').trim();
+  if (envUrl) return envUrl;
+
+  // 2) Local dev fallback: match current LAN/localhost and port 8000
+  const host = window.location.hostname || '';
+  if (
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host.startsWith('172.') ||
+    host.startsWith('192.168.') ||
+    host.startsWith('10.')
+  ) {
+    return `http://${host}:8000`;
   }
-  
-  // Check if we're in production (Railway)
-  if (window.location.hostname.includes('railway.app')) {
-    return 'https://backend-production-0046c.up.railway.app';
-  }
-  
-  // Fallback to environment variable
-  return import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+  // 3) Final fallback
+  return 'http://localhost:8000';
 };
 
 const apiUrl = getApiUrl();

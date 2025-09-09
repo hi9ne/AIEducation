@@ -8,9 +8,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me')
 
-DEBUG = True
+# Production-friendly toggles
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '172.16.7.177', '172.22.32.1']
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # Only for development
@@ -38,6 +39,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    # Static files via WhiteNoise in production
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -66,15 +69,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'aieducation.wsgi.application'
 
-# Database - Supabase PostgreSQL
+# Database - prefer Railway PG* envs, fallback to Supabase-style names
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('dbname', 'postgres'),
-        'USER': os.getenv('user', 'postgres'),
-        'PASSWORD': os.getenv('password', ''),
-        'HOST': os.getenv('host', 'localhost'),
-        'PORT': os.getenv('port', '5432'),
+        'NAME': os.getenv('PGDATABASE') or os.getenv('dbname', 'postgres'),
+        'USER': os.getenv('PGUSER') or os.getenv('user', 'postgres'),
+        'PASSWORD': os.getenv('PGPASSWORD') or os.getenv('password', ''),
+        'HOST': os.getenv('PGHOST') or os.getenv('host', 'localhost'),
+        'PORT': os.getenv('PGPORT') or os.getenv('port', '5432'),
     }
 }
 
@@ -103,6 +106,7 @@ USE_TZ = True
 # Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
