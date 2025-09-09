@@ -15,3 +15,5 @@ djangorestframework-simplejwt
 supabase
 dj-database-url
 openpyxl
+gunicorn
+whitenoise
