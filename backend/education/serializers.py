@@ -13,11 +13,19 @@ class MajorSerializer(serializers.ModelSerializer):
 
 
 class UniversitySerializer(serializers.ModelSerializer):
-    majors = MajorSerializer(many=True, read_only=True, source='majors.major')
-    
+    # University has related_name 'majors' to UniversityMajor; expose list of Major
+    majors = serializers.SerializerMethodField()
+
     class Meta:
         model = University
         fields = '__all__'
+
+    def get_majors(self, obj):
+        try:
+            majors = [um.major for um in obj.majors.all()]
+            return MajorSerializer(majors, many=True).data
+        except Exception:
+            return []
 
 
 class UniversityMajorSerializer(serializers.ModelSerializer):
@@ -125,7 +133,17 @@ class StudyPlanSerializer(serializers.ModelSerializer):
 
 
 class DocumentSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Document
         fields = '__all__'
         read_only_fields = ('user', 'uploaded_at')
+
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        try:
+            url = obj.file.url if obj.file else ''
+            return request.build_absolute_uri(url) if request and url else url
+        except Exception:
+            return ''

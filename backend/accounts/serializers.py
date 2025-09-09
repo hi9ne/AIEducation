@@ -46,8 +46,8 @@ class UserLoginSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-    fields = '__all__'
-    read_only_fields = ('user', 'created_at', 'updated_at')
+        fields = '__all__'
+        read_only_fields = ('user', 'created_at', 'updated_at')
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -104,3 +104,15 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
 class EmailVerificationSerializer(serializers.Serializer):
     token = serializers.CharField()
+
+# DEBUG guard to detect misconfigured serializer class-level `fields`
+try:
+    from django.conf import settings as _dj_settings
+    if getattr(_dj_settings, 'DEBUG', False):
+        def _dbg(cls, name):
+            val = getattr(cls, 'fields', None)
+            print(f"[SERDBG] {name}.class_attr.fields -> type={type(val).__name__} value={val!r}")
+        _dbg(UserProfileSerializer, 'UserProfileSerializer')
+        _dbg(UserSerializer, 'UserSerializer')
+except Exception:
+    pass

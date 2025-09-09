@@ -49,8 +49,6 @@ class Migration(migrations.Migration):
                 ('description', models.TextField()),
                 ('website', models.URLField(blank=True)),
                 ('logo', models.ImageField(blank=True, null=True, upload_to='universities/')),
-                ('ranking', models.IntegerField(blank=True, null=True)),
-                ('tuition_fee', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
                 ('currency', models.CharField(default='EUR', max_length=3)),
                 ('student_count', models.IntegerField(blank=True, null=True)),
                 ('founded_year', models.IntegerField(blank=True, null=True)),
@@ -177,7 +175,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('duration_years', models.IntegerField(default=3)),
-                ('tuition_fee', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
                 ('language', models.CharField(default='English', max_length=50)),
                 ('requirements', models.TextField(blank=True)),
                 ('is_active', models.BooleanField(default=True)),

@@ -65,6 +65,7 @@ import {
 } from '@tabler/icons-react';
 import { motion } from 'framer-motion';
 import api from '../../../shared/services/api';
+import { useDashboardStore } from '../../../store/dashboardStore';
 
 const RightPanel = () => {
   const dispatch = useDispatch();
@@ -179,6 +180,9 @@ const RightPanel = () => {
   const isLoadingAI = Boolean(loadingEdu?.aiRecommendations);
   const isLoadingNotif = Boolean(loadingNotif);
   const hasError = errorEdu || errorNotif;
+
+  // Deadlines from dashboard store (populated on layout mount)
+  const deadlines = useDashboardStore((s) => s.deadlines);
 
   return (
     <Box className={styles.rightPanel} style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
@@ -427,6 +431,31 @@ const RightPanel = () => {
                 </Stack>
               </ScrollArea>
             )}
+          </Card>
+
+          {/* Deadlines Card */}
+          <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+            <Group position="apart" mb="md">
+              <Text size="lg" fw={600}>Дедлайны</Text>
+              <Badge radius="sm" variant="light" color="violet">{deadlines?.length || 0}</Badge>
+            </Group>
+            <ScrollArea h={200} offsetScrollbars>
+              <Stack spacing="sm">
+                {!deadlines || deadlines.length === 0 ? (
+                  <Text c="dimmed" ta="center" size="sm">Нет ближайших дедлайнов</Text>
+                ) : (
+                  deadlines.map((d) => (
+                    <Group key={d.id} position="apart" p="sm" style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 8 }}>
+                      <Box>
+                        <Text size="sm" fw={500}>{d.title}</Text>
+                        <Text size="xs" c="dimmed">До: {new Date(d.due_date).toLocaleDateString()}</Text>
+                      </Box>
+                      <Badge color={d.color || 'gray'} variant="light" radius="sm">{d.days} дн.</Badge>
+                    </Group>
+                  ))
+                )}
+              </Stack>
+            </ScrollArea>
           </Card>
 
           {/* Stats Card removed as requested */}

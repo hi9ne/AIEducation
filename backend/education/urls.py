@@ -41,5 +41,6 @@ urlpatterns = [
     
     # Dashboard
     path('dashboard/stats/', views.dashboard_stats, name='dashboard-stats'),
+    path('dashboard/deadlines/', views.dashboard_deadlines, name='dashboard-deadlines'),
     path('ai/chat/', ai_views.chat, name='ai-chat'),
 ]

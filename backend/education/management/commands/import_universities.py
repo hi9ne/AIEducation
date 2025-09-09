@@ -84,16 +84,13 @@ class Command(BaseCommand):
         col_city = pick_column(df, ["city", "город"]) or None
         col_desc = pick_column(df, ["description", "описание", "about"]) or None
         col_site = pick_column(df, ["website", "сайт", "url", "link"]) or None
-        col_rank = pick_column(df, ["ranking", "rank", "рейтинг"]) or None
-        col_tuition = pick_column(df, ["tuition", "tuition_fee", "стоимость", "оплата", "fee"]) or None
-        col_currency = pick_column(df, ["currency", "валюта"]) or None
+        col_level = pick_column(df, ["level", "уровень"]) or None
         col_students = pick_column(df, ["students", "student_count", "студентов"]) or None
         col_founded = pick_column(df, ["founded", "основан", "год основания", "founded_year"]) or None
         col_majors = majors_col_override or pick_column(df, ["majors", "specialties", "направления", "специальности", "faculties", "факультеты"]) or None
         col_lang = pick_column(df, ["language", "язык", "language of instruction"]) or None
         col_requirements = pick_column(df, ["requirements", "требования"]) or None
         col_duration = pick_column(df, ["duration", "duration_years", "продолжительность"]) or None
-        col_major_tuition = pick_column(df, ["major_tuition", "major_fee", "tuition_major"]) or None
 
         created_unis = 0
         updated_unis = 0
@@ -129,9 +126,7 @@ class Command(BaseCommand):
                     except Exception:
                         return None
 
-                if col_rank: fields["ranking"] = parse_int(get_value(row, col_rank))
-                if col_tuition: fields["tuition_fee"] = parse_decimal(get_value(row, col_tuition))
-                if col_currency: fields["currency"] = str(get_value(row, col_currency) or "EUR").strip()[:3]
+                if col_level: fields["level"] = str(get_value(row, col_level) or "").strip()
                 if col_students: fields["student_count"] = parse_int(get_value(row, col_students))
                 if col_founded: fields["founded_year"] = parse_int(get_value(row, col_founded))
 
@@ -170,10 +165,6 @@ class Command(BaseCommand):
                             "language": str(get_value(row, col_lang) or "English").strip() or "English",
                             "requirements": str(get_value(row, col_requirements) or "").strip(),
                         }
-                        mt = get_value(row, col_major_tuition)
-                        if mt is not None:
-                            link_defaults["tuition_fee"] = parse_decimal(mt)
-
                         _, link_created = UniversityMajor.objects.get_or_create(
                             university=uni,
                             major=major,

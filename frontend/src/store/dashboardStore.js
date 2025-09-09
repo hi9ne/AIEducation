@@ -1,17 +1,18 @@
 import { create } from 'zustand';
+import { authAPI, educationAPI } from '../shared/services/api';
 
 export const useDashboardStore = create((set, get) => ({
-  // Общий прогресс
-  overallProgress: 45,
+  // Общий прогресс (инициал по умолчанию)
+  overallProgress: 0,
   
   // Прогресс по секциям
   currentProgress: {
-    ielts: 75,
+    ielts: 0,
     tolc: 0,
-    universities: 40,
-    universitaly: 20,
-    codice: 10,
-    dov: 5,
+    universities: 0,
+    universitaly: 0,
+    codice: 0,
+    dov: 0,
     visa: 0
   },
 
@@ -20,13 +21,10 @@ export const useDashboardStore = create((set, get) => ({
 
   // Данные пользователя
   userData: {
-    name: 'Аскар Студент',
-    level: 'Продвинутый',
-    ieltsCurrent: 5.5,
-    ieltsTarget: 7.0,
-  // Локальный статус сертификата IELTS (UI-уровень)
-  // { number?: string, score?: number, date?: string, fileName?: string }
-  ieltsCertificate: null,
+    name: '',
+    level: '',
+    ieltsCurrent: 0,
+    ieltsTarget: 0,
     tolcCurrent: 0,
     tolcTarget: 0
   },
@@ -46,12 +44,7 @@ export const useDashboardStore = create((set, get) => ({
   ],
 
   // Дедлайны
-  deadlines: [
-    { title: 'IELTS тест', days: 45, priority: 'high', color: 'red' },
-    { title: 'Подача документов', days: 60, priority: 'medium', color: 'yellow' },
-    { title: 'TOLC тест', days: 30, priority: 'high', color: 'red' },
-    { title: 'Виза', days: 90, priority: 'low', color: 'green' }    
-  ],
+  deadlines: [],
 
   // Действия
   setActiveSection: (section) => set({ activeSection: section }),
@@ -107,11 +100,40 @@ export const useDashboardStore = create((set, get) => ({
     userData: { ...state.userData, ...data }
   })),
 
-  // Управление сертификатом IELTS (UI-хранилище)
-  setIELTSCertificate: (cert) => set((state) => ({
-    userData: { ...state.userData, ieltsCertificate: cert }
-  })),
-  removeIELTSCertificate: () => set((state) => ({
-    userData: { ...state.userData, ieltsCertificate: null }
-  }))
+  // Инициализация стора реальными данными
+  initFromBackend: async () => {
+    try {
+      const [profileRes, statsRes, deadlinesRes] = await Promise.all([
+        authAPI.getProfile(),
+        educationAPI.getDashboardStats(),
+        educationAPI.getDeadlines(),
+      ]);
+      const profile = profileRes?.data || {};
+      const stats = statsRes?.data || {};
+      const deadlines = Array.isArray(deadlinesRes?.data) ? deadlinesRes.data : [];
+
+      // Обновляем имя/уровни при наличии
+      set((state) => ({
+        userData: {
+          ...state.userData,
+          name: profile?.first_name || profile?.email || state.userData.name,
+          level: state.userData.level,
+          ieltsCurrent: profile?.profile?.ielts_current_score ?? state.userData.ieltsCurrent,
+          ieltsTarget: profile?.profile?.ielts_target_score ?? state.userData.ieltsTarget,
+        },
+        overallProgress: stats?.overall_progress ?? state.overallProgress,
+        currentProgress: {
+          ...state.currentProgress,
+          ielts: stats?.ielts_completed ? 100 : state.currentProgress.ielts,
+          dov: stats?.dov_completed ? 100 : state.currentProgress.dov,
+          universities: stats?.universities_selected ? 100 : state.currentProgress.universities,
+          universitaly: stats?.universitaly_registration ? 100 : state.currentProgress.universitaly,
+          visa: stats?.visa_obtained ? 100 : state.currentProgress.visa,
+        },
+  deadlines,
+      }));
+    } catch (e) {
+      console.error('Failed to init dashboard store', e);
+    }
+  },
 }));

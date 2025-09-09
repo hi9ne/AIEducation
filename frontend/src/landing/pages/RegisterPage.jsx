@@ -224,15 +224,13 @@ function RegisterPage() {
       const resultAction = await dispatch(registerUser(payload));
       
       if (registerUser.fulfilled.match(resultAction)) {
-        // Show success message
+        // Автовход: перенаправляем в приложение
         notifications.show({
           title: 'Успешная регистрация',
-          message: 'Пожалуйста, войдите в систему',
+          message: 'Вы вошли в систему',
           color: 'green'
         });
-        
-        // Navigate to login page
-        navigate("/login?registered=true");
+        navigate('/app/onboarding');
       } else {
         // Check for validation errors in resultAction.payload.details
         const errorDetails = resultAction.payload?.details;

@@ -7,7 +7,7 @@ from .models import (
 
 @admin.register(University)
 class UniversityAdmin(admin.ModelAdmin):
-    list_display = ('name', 'country', 'city', 'ranking', 'tuition_fee', 'is_active')
+    list_display = ('name', 'country', 'city', 'is_active')
     list_filter = ('country', 'is_active', 'created_at')
     search_fields = ('name', 'country', 'city')
     ordering = ('name',)

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import React, { useState } from 'react';
 import { 
   Box, 
@@ -30,8 +30,10 @@ import {
   IconCheck,
   IconCalculator
 } from '@tabler/icons-react';
+import { updateProfileComplete, fetchProfile } from '../../../../store/authSlice';
 
 const TOLCSection = ({ progress }) => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
   // Обновляем данные при изменении пользователя
@@ -453,9 +455,27 @@ const TOLCSection = ({ progress }) => {
             max={50}
             step={1}
           />
-      <Button onClick={() => setOpened(false)} radius="md">
-            Сохранить цели
-          </Button>
+          <Group justify="flex-end" gap="sm">
+            <Button variant="light" onClick={() => setOpened(false)} radius="md">Отмена</Button>
+            <Button
+              onClick={async () => {
+                try {
+                  await dispatch(updateProfileComplete({
+                    tolc_current_score: currentLevel,
+                    tolc_target_score: targetLevel,
+                  })).unwrap();
+                  await dispatch(fetchProfile());
+                } catch (e) {
+                  console.error('Failed to save TOLC levels', e);
+                } finally {
+                  setOpened(false);
+                }
+              }}
+              radius="md"
+            >
+              Сохранить цели
+            </Button>
+          </Group>
         </Stack>
       </Modal>
     </Box>

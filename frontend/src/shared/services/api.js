@@ -256,6 +256,9 @@ export const educationAPI = {
     });
   },
   listDocuments: () => api.get('/api/education/documents/'),
+  deleteDocument: (id) => api.delete(`/api/education/documents/${id}/`),
+  getDashboardStats: () => api.get('/api/education/dashboard/stats/'),
+  getDeadlines: () => api.get('/api/education/dashboard/deadlines/'),
 };
 
 // Helper functions

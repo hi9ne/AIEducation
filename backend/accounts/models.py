@@ -37,13 +37,20 @@ class UserProfile(models.Model):
     onboarding_completed = models.BooleanField(default=False)
     # Дата экзамена/сертификата IELTS
     ielts_exam_date = models.DateField(null=True, blank=True)
+    # Баллы и цели по экзаменам
+    ielts_current_score = models.FloatField(null=True, blank=True)
+    ielts_target_score = models.FloatField(null=True, blank=True)
+    tolc_current_score = models.FloatField(null=True, blank=True)
+    tolc_target_score = models.FloatField(null=True, blank=True)
+    # Дата экзамена TOLC (если планируется/сдан)
+    tolc_exam_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Profile of {self.user.email}"
 
-    
+
 class EmailVerification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=100, unique=True)

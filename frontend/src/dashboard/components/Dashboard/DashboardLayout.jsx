@@ -14,13 +14,15 @@ import './ForcedPanel.css';
 const DashboardLayout = () => {
   const [activeSection, setActiveSection] = useState('main');
   const [opened, { toggle }] = useDisclosure(false);
-  const { currentProgress, overallProgress } = useDashboardStore();
+  const { currentProgress, overallProgress, initFromBackend } = useDashboardStore();
   const [showMobileRightPanel, setShowMobileRightPanel] = useState(false);
   const user = useSelector(state => state.auth.user);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(fetchProfile());
+  // Инициализация стора реальными данными
+  initFromBackend?.();
   }, [dispatch]);
 
   return (
