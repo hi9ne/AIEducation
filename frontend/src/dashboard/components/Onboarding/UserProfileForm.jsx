@@ -206,17 +206,23 @@ const UserProfileForm = () => {
     { title: 'Завершение', icon: IconCheck },
   ];
 
-  // Список телефонных кодов с флагами
-  const phoneCodes = [
-    { value: '+39', label: '🇮🇹 +39' },
-    { value: '+7', label: '🇷🇺 +7' },
-    { value: '+380', label: '🇺🇦 +380' },
-    { value: '+375', label: '🇧🇾 +375' },
-    { value: '+1', label: '🇺🇸 +1' },
-    { value: '+44', label: '🇬🇧 +44' },
-    { value: '+49', label: '🇩🇪 +49' },
-    { value: '+33', label: '🇫🇷 +33' },
-  ];
+  // Правила телефонов по странам ЦА
+  const phoneRules = {
+    '+996': { country: 'Кыргызстан', flag: '🇰🇬', length: 9, example: '555123456' },
+    '+7': { country: 'Казахстан', flag: ' 🇰🇿', length: 10, example: '7012345678' },
+    '+998': { country: 'Узбекистан', flag: ' 🇺🇿', length: 9, example: '901234567' },
+    '+992': { country: 'Таджикистан', flag: ' 🇹🇯', length: 9, example: '921234567' },
+  };
+
+  // Список телефонных кодов с флагами (только нужные страны)
+  const phoneCodes = Object.entries(phoneRules).map(([code, info]) => ({
+    value: code,
+    label: `${info.flag} ${code}`,
+  }));
+
+  const getPhoneMaxLen = (code) => phoneRules[code]?.length ?? 12;
+  const getPhoneCountry = (code) => phoneRules[code]?.country ?? 'страны';
+  const getPhoneExample = (code) => phoneRules[code]?.example ?? '';
 
   const interests = [
     'Программирование', 'Дизайн', 'Бизнес', 'Медицина', 'Инженерия', 'Архитектура',
@@ -274,7 +280,15 @@ const UserProfileForm = () => {
       case 0: // Личные данные
         if (!formData.first_name.trim()) newErrors.first_name = 'Имя обязательно';
         if (!formData.last_name.trim()) newErrors.last_name = 'Фамилия обязательна';
-        if (!formData.phone_local || !String(formData.phone_local).trim()) newErrors.phone_local = 'Телефон обязателен';
+          if (!formData.phone_local || !String(formData.phone_local).trim()) {
+            newErrors.phone_local = 'Телефон обязателен';
+          } else {
+            const required = getPhoneMaxLen(formData.phone_code);
+            const len = String(formData.phone_local).replace(/\D/g, '').length;
+            if (len !== required) {
+              newErrors.phone_local = `Номер для ${getPhoneCountry(formData.phone_code)} должен содержать ${required} цифр`;
+            }
+          }
         if (!formData.city || !String(formData.city).trim()) newErrors.city = 'Город обязателен';
         break;
       case 1: // Образование
@@ -301,11 +315,7 @@ const UserProfileForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
-    if (validateStep(activeStep)) {
-      setActiveStep((prev) => prev + 1);
-    }
-  };
+  // handleNext удален — используем inline переход с валидацией
 
   const handlePrev = () => {
     setActiveStep((prev) => prev - 1);
@@ -340,7 +350,8 @@ const UserProfileForm = () => {
         goals: formData.goals,
         language_levels: formData.language_levels,
         budget_range: formData.budget_range,
-        study_duration: formData.study_duration,
+  study_duration: formData.study_duration,
+  onboarding_completed: true,
       };
 
       await dispatch(updateProfileComplete(payload)).unwrap();
@@ -352,11 +363,8 @@ const UserProfileForm = () => {
         color: 'green',
       });
 
-  // Update profile data and navigate
-  // Отметим прохождение онбординга локально и сразу перейдем в кабинет
-  try { localStorage.setItem('onboardingComplete', 'true'); } catch {}
+  // Переходим в кабинет и обновляем профиль в фоне
   navigate('/app/dashboard', { replace: true });
-  // Обновим профиль в фоне (не блокируем переход)
   dispatch(fetchProfile());
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -411,7 +419,7 @@ const UserProfileForm = () => {
 
   const renderStepContent = () => {
     switch (activeStep) {
-      case 0: // Личные данные
+  case 0: // Личные данные
         return (
           <Stack spacing="md">
             <DateInput
@@ -701,16 +709,30 @@ const UserProfileForm = () => {
                             label="Код"
                             data={phoneCodes}
                             value={formData.phone_code}
-                            onChange={(v)=>handleInputChange('phone_code', v)}
+                            onChange={(v)=>{
+                              // при смене кода — подрежем номер под нужную длину
+                              const newCode = v;
+                              const maxLen = getPhoneMaxLen(newCode);
+                              setFormData((prev)=>({
+                                ...prev,
+                                phone_code: newCode,
+                                phone_local: (prev.phone_local || '').slice(0, maxLen),
+                              }));
+                              // сбросим ошибку номера, если была
+                              if (errors.phone_local) {
+                                setErrors((prev)=>({ ...prev, phone_local: null }));
+                              }
+                            }}
                             w={120}
                           />
                           <TextInput
                             label="Телефон"
-                            placeholder="(999) 123-45-67"
+                            placeholder={`например: ${getPhoneExample(formData.phone_code)}`}
                             value={formData.phone_local}
                             inputMode="numeric"
                             onChange={(e)=>{
-                              const onlyDigits = (e.target.value || '').replace(/\D+/g, '').slice(0, 15);
+                              const maxLen = getPhoneMaxLen(formData.phone_code);
+                              const onlyDigits = (e.target.value || '').replace(/\D+/g, '').slice(0, maxLen);
                               handleInputChange('phone_local', onlyDigits);
                             }}
                             error={errors.phone_local}

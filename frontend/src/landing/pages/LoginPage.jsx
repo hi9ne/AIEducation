@@ -115,9 +115,16 @@ function LoginPage() {
       if (loginUser.fulfilled.match(result)) {
         console.log('Login successful, fetching profile...');
         // Загружаем полный профиль
-  await dispatch(fetchProfile());
-  // После входа сначала ведем в личный кабинет
-  navigate('/app/dashboard');
+  const profileAction = await dispatch(fetchProfile());
+  const fetchedUser = profileAction?.payload;
+  const done = fetchedUser?.profile?.onboarding_completed === true;
+
+  // Ведем пользователя в нужный раздел в зависимости от флага онбординга
+  if (done) {
+          navigate('/app/dashboard');
+        } else {
+          navigate('/app/onboarding');
+        }
       } else {
         console.log('Login not fulfilled:', result);
       }
@@ -126,21 +133,7 @@ function LoginPage() {
     }
   };
 
-  // Helper to determine if profile is complete
-  const isProfileComplete = (u) => {
-    if (!u) return false;
-    const p = u.profile || {};
-    return (
-      Boolean(u.phone) &&
-      Boolean(u.city) &&
-      Boolean(p.education_background) &&
-      Array.isArray(p.interests) && p.interests.length > 0 &&
-      Array.isArray(p.goals) && p.goals.length > 0 &&
-      p.language_levels && Object.keys(p.language_levels).length > 0 &&
-      Boolean(p.budget_range) &&
-      Boolean(p.study_duration)
-    );
-  };
+  // Проверка больше не нужна — используем флаг с бэкенда
 
   const handleForgotPassword = () => {
     navigate('/reset-password');
