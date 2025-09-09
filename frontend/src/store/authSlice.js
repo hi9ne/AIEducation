@@ -29,6 +29,12 @@ export const registerUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await authAPI.register(userData);
+      // Автовход сразу после успешной регистрации
+      if (response?.data?.tokens && response?.data?.user) {
+        localStorage.setItem('accessToken', response.data.tokens.access);
+        localStorage.setItem('refreshToken', response.data.tokens.refresh);
+        localStorage.setItem('userInfo', JSON.stringify(response.data.user));
+      }
       return response.data;
     } catch (error) {
       const errorMessage = apiHelpers.handleError(error);
@@ -268,10 +274,13 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state) => {
+      .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;  
         state.error = null;
-        state.success = 'Регистрация прошла успешно! Проверьте email для подтверждения.';
+        // Сохраняем пользователя и отмечаем как аутентифицированного
+        state.isAuthenticated = true;
+        state.user = action.payload?.user || null;
+        state.success = 'Регистрация прошла успешно! Вы вошли в систему.';
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;

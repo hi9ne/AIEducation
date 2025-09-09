@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { showNotification } from '@mantine/notifications';
 import { updateProfileComplete, updateProfile, fetchProfile } from '../../../store/authSlice';
+import { educationAPI } from '../../../shared/services/api';
 import {
   Box,
   Container,
@@ -119,9 +120,9 @@ const UserProfileForm = () => {
     study_duration: '',
     // Внутренние поля для сертификатов
     exams: {
-      ielts: { status: '', date: '', score: '', file: null },
+      ielts: { status: '', date: '', score: '', target: '', file: null },
       toefl: { status: '', date: '', score: '', file: null },
-      tolc: { status: '', date: '', score: '', file: null },
+      tolc: { status: '', date: '', score: '', target: '', file: null },
     },
   });
 
@@ -192,6 +193,21 @@ const UserProfileForm = () => {
         language_levels: toObject(user.profile?.language_levels),
         budget_range: user.profile?.budget_range || '',
         study_duration: user.profile?.study_duration || '',
+        exams: {
+          ...prev.exams,
+          ielts: {
+            ...prev.exams.ielts,
+            score: user.profile?.ielts_current_score != null ? String(user.profile.ielts_current_score) : prev.exams.ielts.score,
+            target: user.profile?.ielts_target_score != null ? String(user.profile.ielts_target_score) : prev.exams.ielts.target,
+            date: user.profile?.ielts_exam_date || prev.exams.ielts.date,
+          },
+          tolc: {
+            ...prev.exams.tolc,
+            score: user.profile?.tolc_current_score != null ? String(user.profile.tolc_current_score) : prev.exams.tolc.score,
+            target: user.profile?.tolc_target_score != null ? String(user.profile.tolc_target_score) : prev.exams.tolc.target,
+            date: user.profile?.tolc_exam_date || prev.exams.tolc.date,
+          },
+        },
       }));
     }
   }, [user, navigate]);
@@ -352,9 +368,56 @@ const UserProfileForm = () => {
         budget_range: formData.budget_range,
   study_duration: formData.study_duration,
   onboarding_completed: true,
+  // Передаем результаты экзаменов, если есть
+  exams: {
+    ielts: {
+      status: formData.exams.ielts.status,
+      date: formData.exams.ielts.date,
+      score: formData.exams.ielts.score,
+      target: formData.exams.ielts.target,
+    },
+    toefl: formData.exams.toefl,
+    tolc: {
+      status: formData.exams.tolc.status,
+      date: formData.exams.tolc.date,
+      score: formData.exams.tolc.score,
+      target: formData.exams.tolc.target,
+    },
+  }
       };
 
       await dispatch(updateProfileComplete(payload)).unwrap();
+
+      // Upload attached exam certificates (IELTS/TOLC) to Documents so they show up in sections
+      const uploads = [];
+      const ieltsFile = formData?.exams?.ielts?.file;
+      if (ieltsFile) {
+        uploads.push(
+          educationAPI.uploadDocument({
+            file: ieltsFile,
+            name: 'IELTS Certificate',
+            description: 'Uploaded during onboarding',
+          })
+        );
+      }
+      const tolcFile = formData?.exams?.tolc?.file;
+      if (tolcFile) {
+        uploads.push(
+          educationAPI.uploadDocument({
+            file: tolcFile,
+            name: 'TOLC Certificate',
+            description: 'Uploaded during onboarding',
+          })
+        );
+      }
+      if (uploads.length) {
+        try {
+          await Promise.allSettled(uploads);
+        } catch (e) {
+          // Swallow errors to not block onboarding; they can re-upload in sections
+          console.error('Certificate upload during onboarding failed', e);
+        }
+      }
       
       // Show success notification
       showNotification({
@@ -475,7 +538,7 @@ const UserProfileForm = () => {
                     <Text weight={500}>{examKey.toUpperCase()}</Text>
                   </Group>
                 </Group>
-                <SimpleGrid cols={3} spacing="sm" breakpoints={[{ maxWidth: 'sm', cols: 1 }] }>
+                <SimpleGrid cols={4} spacing="sm" breakpoints={[{ maxWidth: 'sm', cols: 1 }] }>
                   <Select label="Статус" placeholder="Выберите" data={[{value:'have',label:'Есть сертификат'},{value:'passed',label:'Сдавал'},{value:'no',label:'Нет'}]} value={formData.exams[examKey].status} onChange={(v)=>setFormData(prev=>({...prev, exams:{...prev.exams,[examKey]:{...prev.exams[examKey], status:v}}}))} />
                   <TextInput label="Дата" placeholder="YYYY-MM" value={formData.exams[examKey].date}
                     onChange={(e)=>{
@@ -495,6 +558,17 @@ const UserProfileForm = () => {
                       const normalized = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : cleaned;
                       setFormData(prev=>({...prev, exams:{...prev.exams,[examKey]:{...prev.exams[examKey], score: normalized}}}));
                     }} />
+                  {['ielts','tolc'].includes(examKey) && (
+                    <TextInput label="Цель" placeholder={examKey==='ielts' ? 'Напр. 7.0' : 'Напр. 40'} value={formData.exams[examKey].target}
+                      inputMode="decimal"
+                      onChange={(e)=>{
+                        const raw = e.target.value || '';
+                        const cleaned = raw.replace(/[^0-9.,]/g,'').replace(',','.');
+                        const parts = cleaned.split('.');
+                        const normalized = parts.length > 2 ? parts[0] + '.' + parts.slice(1).join('') : cleaned;
+                        setFormData(prev=>({...prev, exams:{...prev.exams,[examKey]:{...prev.exams[examKey], target: normalized}}}));
+                      }} />
+                  )}
                 </SimpleGrid>
                 <Group mt="sm">
                   <FileInput label="Загрузить PDF" placeholder="Выберите файл" accept="application/pdf" value={formData.exams[examKey].file} onChange={(file)=>setFormData(prev=>({...prev, exams:{...prev.exams,[examKey]:{...prev.exams[examKey], file}}}))} />

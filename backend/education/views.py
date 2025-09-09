@@ -20,12 +20,13 @@ from .serializers import (
 
 
 class UniversityListView(generics.ListAPIView):
-    queryset = University.objects.filter(is_active=True)
+    queryset = University.objects.filter(is_active=True).prefetch_related('majors__major')
     serializer_class = UniversitySerializer
     permission_classes = [permissions.IsAuthenticated]
-    filterset_fields = ['country', 'city']
+    # Убрали фильтрацию по стране; оставили только город
+    filterset_fields = ['city']
     search_fields = ['name', 'description']
-    ordering_fields = ['name', 'ranking', 'tuition_fee']
+    ordering_fields = ['name']
     ordering = ['name']
 
     def get_queryset(self):
@@ -35,15 +36,6 @@ class UniversityListView(generics.ListAPIView):
         major = self.request.query_params.get('major')
         if major:
             queryset = queryset.filter(majors__major__name__icontains=major)
-        
-        # Фильтрация по стоимости
-        min_tuition = self.request.query_params.get('min_tuition')
-        max_tuition = self.request.query_params.get('max_tuition')
-        
-        if min_tuition:
-            queryset = queryset.filter(tuition_fee__gte=min_tuition)
-        if max_tuition:
-            queryset = queryset.filter(tuition_fee__lte=max_tuition)
         
         return queryset
 
@@ -263,6 +255,39 @@ def dashboard_stats(request):
     
     serializer = DashboardStatsSerializer(stats)
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def dashboard_deadlines(request):
+    """Return upcoming study plan item deadlines for the current user."""
+    today = timezone.now().date()
+    items = StudyPlanItem.objects.filter(
+        study_plan__user=request.user,
+        is_completed=False,
+        due_date__gte=today,
+    ).order_by('due_date')[:20]
+
+    results = []
+    for it in items:
+        days_remaining = (it.due_date - today).days
+        if days_remaining <= 7:
+            priority, color = 'high', 'red'
+        elif days_remaining <= 30:
+            priority, color = 'medium', 'yellow'
+        else:
+            priority, color = 'low', 'green'
+
+        results.append({
+            'id': it.id,
+            'title': it.title,
+            'due_date': it.due_date.isoformat(),
+            'days': days_remaining,
+            'priority': priority,
+            'color': color,
+        })
+
+    return Response(results)
 
 
 @api_view(['POST'])

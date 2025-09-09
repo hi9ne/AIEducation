@@ -40,8 +40,6 @@ const IELTSSection = ({ progress }) => {
   const { user } = useSelector((state) => state.auth);
   // Важно: выбираем значения из zustand по отдельности, чтобы избежать бесконечных перерисовок
   const userData = useDashboardStore((s) => s.userData);
-  const setIELTSCertificate = useDashboardStore((s) => s.setIELTSCertificate);
-  const removeIELTSCertificate = useDashboardStore((s) => s.removeIELTSCertificate);
 
   // Обновляем данные при изменении пользователя
   useEffect(() => {
@@ -53,6 +51,8 @@ const IELTSSection = ({ progress }) => {
   const [opened, setOpened] = useState(false);
   const [certModal, setCertModal] = useState(false);
   const [certFile, setCertFile] = useState(null);
+  const [certDoc, setCertDoc] = useState(null); // документ из БД
+  const [certLoading, setCertLoading] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(user?.profile?.ielts_current_score || 0);
   const [targetLevel, setTargetLevel] = useState(user?.profile?.ielts_target_score || 0);
 
@@ -111,6 +111,25 @@ const IELTSSection = ({ progress }) => {
   const [examModal, setExamModal] = useState(false);
   const [examInput, setExamInput] = useState(examDate || null);
 
+  // Подтягиваем документы пользователя и ищем языковой сертификат
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      try {
+        setCertLoading(true);
+        const res = await educationAPI.listDocuments();
+        const docs = Array.isArray(res?.data) ? res.data : res?.data?.results || [];
+        const langCert = docs.find((d) => d.document_type === 'language_certificate');
+        setCertDoc(langCert || null);
+      } catch (e) {
+        console.error('Failed to load documents', e);
+      } finally {
+        setCertLoading(false);
+      }
+    };
+    load();
+  }, [user]);
+
   return (
     <Box p="md">
       <Stack gap="lg">
@@ -136,57 +155,24 @@ const IELTSSection = ({ progress }) => {
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
               <Stack gap="md">
-                <Text size="lg" fw={600}>
-                  Текущий уровень
-                </Text>
+                <Text size="lg" fw={600}>Текущий уровень</Text>
                 <Group justify="space-between">
-                  <Text size="2xl" fw={700} c="blue">
-                    {currentLevel}
-                  </Text>
-                  <Button
-                    size="sm"
-                    variant="light"
-                    onClick={() => setOpened(true)}
-                    radius="md"
-                  >
-                    Изменить
-                  </Button>
+                  <Text size="2xl" fw={700} c="blue">{currentLevel}</Text>
+                  <Button size="sm" variant="light" onClick={() => setOpened(true)} radius="md">Изменить</Button>
                 </Group>
-                <Progress
-                  value={(currentLevel / 9) * 100}
-                  size="lg"
-                  radius="md"
-                  color="blue"
-                />
+                <Progress value={(currentLevel / 9) * 100} size="lg" radius="md" color="blue" />
               </Stack>
             </Card>
           </Grid.Col>
-
           <Grid.Col span={{ base: 12, md: 6 }}>
             <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
               <Stack gap="md">
-                <Text size="lg" fw={600}>
-                  Целевой уровень
-                </Text>
+                <Text size="lg" fw={600}>Целевой уровень</Text>
                 <Group justify="space-between">
-                  <Text size="2xl" fw={700} c="green">
-                    {targetLevel}
-                  </Text>
-                  <Button
-                    size="sm"
-                    variant="light"
-                    onClick={() => setOpened(true)}
-                    radius="md"
-                  >
-                    Изменить
-                  </Button>
+                  <Text size="2xl" fw={700} c="green">{targetLevel}</Text>
+                  <Button size="sm" variant="light" onClick={() => setOpened(true)} radius="md">Изменить</Button>
                 </Group>
-                <Progress
-                  value={(targetLevel / 9) * 100}
-                  size="lg"
-                  radius="md"
-                  color="green"
-                />
+                <Progress value={(targetLevel / 9) * 100} size="lg" radius="md" color="green" />
               </Stack>
             </Card>
           </Grid.Col>
@@ -221,25 +207,46 @@ const IELTSSection = ({ progress }) => {
                 <Text size="lg" fw={600}>Сертификат IELTS</Text>
                 <Text size="sm" c="dimmed">Добавьте свой сертификат или проверьте статус</Text>
               </Box>
-              {userData?.ieltsCertificate ? (
+              {certLoading ? (
+                <Badge color="gray" variant="light" radius="sm">Проверяем…</Badge>
+              ) : certDoc ? (
                 <Badge color="green" variant="light" radius="sm">Добавлен</Badge>
               ) : (
                 <Badge color="gray" variant="light" radius="sm">Не добавлен</Badge>
               )}
             </Group>
 
-            {userData?.ieltsCertificate ? (
+            {certDoc ? (
               <Group justify="space-between" align="center">
-                <Stack gap={2}>
-                  <Text size="sm">Номер: <b>{userData.ieltsCertificate.number}</b></Text>
-                  <Text size="sm">Балл: <b>{userData.ieltsCertificate.score}</b></Text>
-                  <Text size="sm">Дата: <b>{userData.ieltsCertificate.date}</b></Text>
-                  {userData.ieltsCertificate.fileName && (
-                    <Text size="sm">Файл: <b>{userData.ieltsCertificate.fileName}</b></Text>
-                  )}
-                </Stack>
+                <Text size="sm">Сертификат добавлен.</Text>
                 <Group>
-                  <Button variant="light" color="red" onClick={() => removeIELTSCertificate()} radius="md">
+                  {certDoc.file_url && (
+                    <Button
+                      component="a"
+                      href={certDoc.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      leftSection={<IconEye size={16} />}
+                      variant="light"
+                      radius="md"
+                    >
+                      Просмотреть
+                    </Button>
+                  )}
+                  <Button
+                    variant="light"
+                    color="red"
+                    onClick={async () => {
+                      try {
+                        if (!certDoc?.id) return;
+                        await educationAPI.deleteDocument(certDoc.id);
+                        setCertDoc(null);
+                      } catch (e) {
+                        console.error('Failed to delete certificate', e);
+                      }
+                    }}
+                    radius="md"
+                  >
                     Удалить
                   </Button>
                 </Group>
@@ -424,16 +431,19 @@ const IELTSSection = ({ progress }) => {
               >
                 Отмена
               </Button>
-              <Button
-                onClick={() => {
-                  // Логика сохранения уровней
-                  console.log('Сохраняем уровни:', { currentLevel, targetLevel });
+              <Button onClick={async () => {
+                try {
+                  await dispatch(updateProfileComplete({
+                    ielts_current_score: currentLevel,
+                    ielts_target_score: targetLevel,
+                  })).unwrap();
+                  await dispatch(fetchProfile());
+                } catch (e) {
+                  console.error('Failed to save IELTS levels', e);
+                } finally {
                   setOpened(false);
-                }}
-                radius="md"
-              >
-                Сохранить
-              </Button>
+                }
+              }} radius="md">Сохранить</Button>
             </Group>
           </Stack>
         </Modal>
@@ -462,16 +472,19 @@ const IELTSSection = ({ progress }) => {
             <Group justify="flex-end" gap="sm">
               <Button variant="light" onClick={() => setCertModal(false)} radius="md">Отмена</Button>
               <Button
-                onClick={() => {
+                onClick={async () => {
                   if (!certFile) return;
-                  educationAPI.uploadDocument({ file: certFile, name: 'IELTS Certificate', description: 'IELTS PDF' })
-                    .then(() => {
-                      setIELTSCertificate({ fileName: certFile.name });
-                      setCertModal(false);
-                    })
-                    .catch((e) => {
-                      console.error('Upload failed', e);
-                    });
+                  try {
+                    setCertLoading(true);
+                    const res = await educationAPI.uploadDocument({ file: certFile, name: 'IELTS Certificate', description: 'IELTS PDF' });
+                    const doc = res?.data;
+                    setCertDoc(doc || null);
+                    setCertModal(false);
+                  } catch (e) {
+                    console.error('Upload failed', e);
+                  } finally {
+                    setCertLoading(false);
+                  }
                 }}
                 radius="md"
               >

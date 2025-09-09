@@ -1,5 +1,6 @@
 from rest_framework import status, generics, permissions
 from rest_framework.decorators import api_view, permission_classes
+from datetime import datetime
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
@@ -317,11 +318,85 @@ def update_user_profile(request):
             'bio', 'interests', 'goals', 'language_levels', 
             'education_background', 'work_experience', 
             'preferred_countries', 'budget_range', 'study_duration',
-            'ielts_exam_date'
+            'ielts_exam_date',
+            # прямые поля для результатов экзаменов
+            'ielts_current_score', 'ielts_target_score',
+            'tolc_current_score', 'tolc_target_score', 'tolc_exam_date'
         ]
         for field in profile_fields:
             if field in data:
                 profile_data[field] = data[field]
+
+        # Дополнительно: поддержка вложенного объекта exams
+        # Ожидаемый формат:
+        # exams: { ielts: { score: '6.5', date: 'YYYY-MM' }, tolc: { score: '30', date: 'YYYY-MM' } }
+        try:
+            exams = data.get('exams')
+            # exams could arrive as JSON string when using multipart/form-data
+            if isinstance(exams, str):
+                try:
+                    import json
+                    exams = json.loads(exams)
+                except Exception:
+                    exams = None
+            if isinstance(exams, dict):
+                ielts = exams.get('ielts') or {}
+                tolc = exams.get('tolc') or {}
+
+                # IELTS score
+                score = ielts.get('score')
+                if score not in (None, ''):
+                    try:
+                        profile_data['ielts_current_score'] = float(str(score).replace(',', '.'))
+                    except Exception:
+                        pass
+                # IELTS target
+                target = ielts.get('target')
+                if target not in (None, ''):
+                    try:
+                        profile_data['ielts_target_score'] = float(str(target).replace(',', '.'))
+                    except Exception:
+                        pass
+                # IELTS date (YYYY-MM or YYYY-MM-DD)
+                date_val = ielts.get('date')
+                if isinstance(date_val, str) and date_val:
+                    try:
+                        if len(date_val) == 7 and date_val[4] == '-':
+                            # YYYY-MM -> first day of month
+                            dt = datetime.strptime(date_val + '-01', '%Y-%m-%d').date()
+                        else:
+                            dt = datetime.strptime(date_val, '%Y-%m-%d').date()
+                        profile_data['ielts_exam_date'] = dt.isoformat()
+                    except Exception:
+                        pass
+
+                # TOLC score
+                tscore = tolc.get('score')
+                if tscore not in (None, ''):
+                    try:
+                        profile_data['tolc_current_score'] = float(str(tscore).replace(',', '.'))
+                    except Exception:
+                        pass
+                # TOLC target
+                ttarget = tolc.get('target')
+                if ttarget not in (None, ''):
+                    try:
+                        profile_data['tolc_target_score'] = float(str(ttarget).replace(',', '.'))
+                    except Exception:
+                        pass
+                # TOLC date
+                tdate_val = tolc.get('date')
+                if isinstance(tdate_val, str) and tdate_val:
+                    try:
+                        if len(tdate_val) == 7 and tdate_val[4] == '-':
+                            tdt = datetime.strptime(tdate_val + '-01', '%Y-%m-%d').date()
+                        else:
+                            tdt = datetime.strptime(tdate_val, '%Y-%m-%d').date()
+                        profile_data['tolc_exam_date'] = tdt.isoformat()
+                    except Exception:
+                        pass
+        except Exception:
+            pass
         
         # Обновляем пользователя
         if user_data:

@@ -24,7 +24,6 @@ import {
 import {
   IconSearch,
   IconMapPin,
-  IconCurrencyEuro,
   IconUsers,
   IconCalendar,
   IconEye,
@@ -51,10 +50,8 @@ const UniversitiesSection = ({ progress }) => {
   // Прогресс поиска убран
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedProgram, setSelectedProgram] = useState('');
-  const [minTuition, setMinTuition] = useState('');
-  const [maxTuition, setMaxTuition] = useState('');
+  const [selectedLevel, setSelectedLevel] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [opened, setOpened] = useState(false);
   const [selectedUniversity, setSelectedUniversity] = useState(null);
@@ -82,30 +79,26 @@ const UniversitiesSection = ({ progress }) => {
   const filteredUniversities = displayUniversities?.filter((university) => {
     const term = (searchTerm || '').toLowerCase().trim();
     const name = (university.name || '').toLowerCase();
-    const country = (university.country || '').toLowerCase();
     const city = (university.city || '').toLowerCase();
     const description = (university.description || '').toLowerCase();
     const programsList = (university.programs || []).map(p => (p || '').toLowerCase());
-    const tuitionVal = university.tuition ?? university.tuition_fee ?? 0;
+  const level = (university.level || '').toLowerCase();
 
     const matchesSearch = !term ||
       name.includes(term) ||
-      country.includes(term) ||
       city.includes(term) ||
       description.includes(term) ||
       programsList.some(p => p.includes(term));
 
-    const matchesCountry = !selectedCountry || country === (selectedCountry || '').toLowerCase();
     const matchesProgram = !selectedProgram || programsList.some(p => p === (selectedProgram || '').toLowerCase());
-    const matchesTuition = (minTuition === '' || (tuitionVal || 0) >= Number(minTuition)) &&
-                           (maxTuition === '' || (tuitionVal || 0) <= Number(maxTuition));
+    const matchesLevel = !selectedLevel || level === (selectedLevel || '').toLowerCase();
 
-    return matchesSearch && matchesCountry && matchesProgram && matchesTuition;
+    return matchesSearch && matchesProgram && matchesLevel;
   }) || [];
 
   // Значения для выпадающих списков без пустых элементов
-  const countries = [...new Set((displayUniversities?.map(u => u.country)?.filter(Boolean)) || [])];
   const programs = [...new Set((displayUniversities?.flatMap(u => u.programs || [])?.filter(Boolean)) || [])];
+  const levels = [...new Set((displayUniversities?.map(u => u.level)?.filter(Boolean)) || [])];
 
   const handleViewDetails = (university) => {
     setSelectedUniversity(university);
@@ -182,22 +175,10 @@ const UniversitiesSection = ({ progress }) => {
         <Grid gutter="md">
           <Grid.Col span={{ base: 12, md: 6 }}>
             <TextInput
-              placeholder="Поиск по названию, стране или программе..."
+              placeholder="Поиск по названию, городу или программе..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               leftSection={<IconSearch size={16} color="#2563eb" />}
-              size="md"
-              radius="md"
-              variant="filled"
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 6, md: 3 }}>
-            <Select
-              placeholder="Выберите страну"
-              value={selectedCountry}
-              onChange={setSelectedCountry}
-              data={countries.map(country => ({ value: country, label: country }))}
-              clearable
               size="md"
               radius="md"
               variant="filled"
@@ -216,24 +197,12 @@ const UniversitiesSection = ({ progress }) => {
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, md: 3 }}>
-            <NumberInput
-              placeholder="Мин. стоимость"
-              value={minTuition}
-              onChange={setMinTuition}
-              leftSection={<IconCurrencyEuro size={16} color="#2563eb" />}
-              min={0}
-              size="md"
-              radius="md"
-              variant="filled"
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 6, md: 3 }}>
-            <NumberInput
-              placeholder="Макс. стоимость"
-              value={maxTuition}
-              onChange={setMaxTuition}
-              leftSection={<IconCurrencyEuro size={16} color="#2563eb" />}
-              min={0}
+            <Select
+              placeholder="Сложность поступления"
+              value={selectedLevel}
+              onChange={setSelectedLevel}
+              data={levels.map(level => ({ value: level, label: level }))}
+              clearable
               size="md"
               radius="md"
               variant="filled"
@@ -296,23 +265,14 @@ const UniversitiesSection = ({ progress }) => {
                     {/* Местоположение (всегда отображается) */}
                     <Group gap="xs">
                       <IconMapPin size={16} />
-                      <Text size="sm" c="dimmed">{university.city || university.country || '—'}</Text>
+                      <Text size="sm" c="dimmed">{university.city || '—'}</Text>
                     </Group>
 
-                    {/* Стоимость (всегда отображается) */}
-                    {(() => {
-                      const val = university.tuition ?? university.tuition_fee;
-                      const shown = (val === null || val === undefined || val === '')
-                        ? '—'
-                        : (() => { const num = Number(val); return isNaN(num) ? String(val) : num.toLocaleString(); })();
-                      const curr = university.currency ? ` (${university.currency})` : '';
-                      return (
-                        <Group gap="xs">
-                          <IconCurrencyEuro size={16} />
-                          <Text size="sm" c="dimmed">{shown}{shown !== '—' ? ' / год' : ''}{curr}</Text>
-                        </Group>
-                      );
-                    })()}
+                    {/* Сложность поступления (если указана) */}
+                    <Group gap="xs">
+                      <IconTrophy size={16} />
+                      <Text size="sm" c="dimmed">Сложность: {university.level || '—'}</Text>
+                    </Group>
 
                     {/* Кол-во студентов (всегда отображается) */}
                     {(() => {
@@ -327,12 +287,6 @@ const UniversitiesSection = ({ progress }) => {
                         </Group>
                       );
                     })()}
-
-                    {/* Рейтинг (всегда отображается) */}
-                    <Group gap="xs">
-                      <IconTrophy size={16} color="#f59e0b" />
-                      <Text size="sm" c="dimmed">Рейтинг: {university.ranking ?? '—'}</Text>
-                    </Group>
 
                     {/* Год основания (всегда отображается) */}
                     <Group gap="xs">
@@ -426,12 +380,11 @@ const UniversitiesSection = ({ progress }) => {
           <Stack gap="md">
             <Group>
               <IconMapPin size={16} />
-              <Text>{selectedUniversity.city || selectedUniversity.country || '—'}</Text>
+              <Text>{selectedUniversity.city || '—'}</Text>
             </Group>
-            
             <Group>
-              <IconCurrencyEuro size={16} />
-              <Text>{(selectedUniversity.tuition ?? selectedUniversity.tuition_fee ?? 0).toLocaleString()} €/год</Text>
+              <IconTrophy size={16} />
+              <Text>Сложность: {selectedUniversity.level || '—'}</Text>
             </Group>
             
             <Group>

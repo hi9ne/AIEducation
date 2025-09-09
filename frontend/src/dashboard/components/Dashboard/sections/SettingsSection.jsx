@@ -59,17 +59,9 @@ const SettingsSection = () => {
     }
   });
 
-  const [ieltsGoals, setIeltsGoals] = useState({
-    current: 5.5,
-    target: 7.0,
-    testDate: '2024-06-15'
-  });
+  const [ieltsGoals, setIeltsGoals] = useState({ current: 0, target: 0, testDate: '' });
 
-  const [tolcGoals, setTolcGoals] = useState({
-    current: 0,
-    target: 0,
-    testDate: ''
-  });
+  const [tolcGoals, setTolcGoals] = useState({ current: 0, target: 0, testDate: '' });
 
   // Обновляем данные при изменении пользователя
   useEffect(() => {
@@ -86,16 +78,35 @@ const SettingsSection = () => {
       }));
       // set current avatar preview from profile
       setAvatarPreview(user?.avatar || '');
+      // Инициализируем цели из профиля
+      setIeltsGoals({
+        current: user?.profile?.ielts_current_score || 0,
+        target: user?.profile?.ielts_target_score || 0,
+        testDate: user?.profile?.ielts_exam_date || ''
+      });
+      setTolcGoals({
+        current: user?.profile?.tolc_current_score || 0,
+        target: user?.profile?.tolc_target_score || 0,
+        testDate: user?.profile?.tolc_exam_date || ''
+      });
     }
   }, [user]);
 
   const handleSave = async () => {
-    // Save avatar if selected
     try {
-      if (avatarFile instanceof File) {
-        await dispatch(updateProfileComplete({ avatar: avatarFile }));
-        await dispatch(fetchProfile());
-      }
+      const payload = {
+        // Personal
+        avatar: avatarFile instanceof File ? avatarFile : undefined,
+        // Goals and dates
+        ielts_current_score: ieltsGoals.current,
+        ielts_target_score: ieltsGoals.target,
+        ielts_exam_date: ieltsGoals.testDate || null,
+        tolc_current_score: tolcGoals.current,
+        tolc_target_score: tolcGoals.target,
+        tolc_exam_date: tolcGoals.testDate || null,
+      };
+      await dispatch(updateProfileComplete(payload));
+      await dispatch(fetchProfile());
     } finally {
       setIsEditing(false);
     }
