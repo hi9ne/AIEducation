@@ -60,6 +60,18 @@ const UniversitiesSection = ({ progress }) => {
   const [selectedUniversity, setSelectedUniversity] = useState(null);
   const [favorites, setFavorites] = useState(new Set());
 
+  // Helper: format ISO date to ru-RU (DD.MM.YYYY)
+  const formatDate = (dateLike) => {
+    if (!dateLike) return '';
+    try {
+      const dt = new Date(dateLike);
+      if (Number.isNaN(dt.getTime())) return '';
+      return dt.toLocaleDateString('ru-RU');
+    } catch {
+      return '';
+    }
+  };
+
   // Helpers: normalize level to 0-100 and map to color (low=green → high=red)
   const getLogoSrc = (u) => {
     const val = (u?.logo_url || u?.logo || '').trim?.() || '';
@@ -353,10 +365,10 @@ const UniversitiesSection = ({ progress }) => {
                       );
                     })()}
 
-                    {/* Год основания (всегда отображается) */}
+                    {/* Дедлайн подачи документов (всегда отображается) */}
                     <Group gap="xs">
                       <IconCalendar size={16} color="#0ea5e9" />
-                      <Text size="sm" c="dimmed">Основан: {university.founded_year ?? '—'}</Text>
+                      <Text size="sm" c="dimmed">Дедлайн: {formatDate(university.deadline) || '—'}</Text>
                     </Group>
                   </Stack>
 
