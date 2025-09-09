@@ -14,7 +14,8 @@ class University(models.Model):
     logo = models.ImageField(upload_to='universities/', null=True, blank=True)
     level = models.CharField(max_length=50, blank=True)
     student_count = models.IntegerField(null=True, blank=True)
-    founded_year = models.IntegerField(null=True, blank=True)
+    # Application submission deadline (replaces founded_year)
+    deadline = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -34,7 +35,7 @@ class StudentProgress(models.Model):
     universitaly_registration = models.BooleanField(default=False)
     visa_obtained = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
     def calculate_progress(self):
         total_steps = 5  # Total number of steps
