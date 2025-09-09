@@ -11,7 +11,30 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-change-me')
 # Production-friendly toggles
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# Normalize ALLOWED_HOSTS: allow providing full URLs in env (strip scheme/path)
+def _normalize_host(h: str) -> str | None:
+    h = (h or '').strip()
+    if not h:
+        return None
+    if '://' in h:
+        h = h.split('://', 1)[1]
+    # strip path/port if present
+    h = h.split('/', 1)[0]
+    return h or None
+
+_raw_hosts = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+ALLOWED_HOSTS = [h for h in (_normalize_host(x) for x in _raw_hosts.split(',')) if h]
+
+# CSRF trusted origins: take from env or derive from allowed hosts
+_raw_csrf = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if _raw_csrf.strip():
+    CSRF_TRUSTED_ORIGINS = [x.strip().rstrip('/') for x in _raw_csrf.split(',') if x.strip()]
+else:
+    # add both http and https for convenience (Django requires absolute origins)
+    CSRF_TRUSTED_ORIGINS = [
+        *(f"https://{h}" for h in ALLOWED_HOSTS if h and h != 'localhost' and h != '127.0.0.1'),
+        *(f"http://{h}" for h in ALLOWED_HOSTS if h and h != 'localhost' and h != '127.0.0.1'),
+    ]
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # Only for development
