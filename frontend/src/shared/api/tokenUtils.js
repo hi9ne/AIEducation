@@ -1,5 +1,17 @@
 // Утилиты для работы с токенами
-const API_BASE_URL = 'http://localhost:8000/api/auth';
+const detectBaseUrl = () => {
+  const host = window.location.hostname;
+  if (
+    host === 'localhost' || host === '127.0.0.1' ||
+    host.startsWith('172.') || host.startsWith('192.168.') || host.startsWith('10.')
+  ) {
+    return `http://${host}:8000/api/auth`;
+  }
+  if (host.includes('railway.app')) return 'https://backend-production-0046c.up.railway.app/api/auth';
+  return (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/auth';
+};
+
+const API_BASE_URL = detectBaseUrl();
 
 export const refreshToken = async () => {
   const refreshTokenValue = localStorage.getItem('refreshToken');
