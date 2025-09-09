@@ -20,6 +20,8 @@ import {
   Alert,
   Divider
 } from '@mantine/core';
+import { useEffect } from 'react';
+import { useDashboardStore } from '../../../../store/dashboardStore';
 import { 
   IconPlane, 
   IconPlayerPlay, 
@@ -77,6 +79,11 @@ const VisaSection = ({ progress }) => {
   // Рассчитываем прогресс на основе реальных данных
   const completedSteps = steps.filter(step => step.completed).length;
   const visaProgress = Math.round((completedSteps / steps.length) * 100);
+  // Синхронизируем прогресс Visa с глобальным стором
+  const updateProgress = useDashboardStore((s) => s.updateProgress);
+  useEffect(() => {
+    updateProgress('visa', visaProgress);
+  }, [visaProgress, updateProgress]);
 
   const documents = [
     {

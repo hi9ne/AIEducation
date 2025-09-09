@@ -152,21 +152,43 @@ const UniversitiesSection = ({ progress }) => {
   }
 
   return (
-    <Box>
-      <Text size="xl" fw={600} mb="md">Поиск и выбор университетов</Text>
+    <Box style={{ padding: '4px' }}>
+      <Text
+        size="xl"
+        fw={800}
+        mb="sm"
+        style={{
+          background: 'linear-gradient(90deg, #1e3a8a 0%, #0ea5e9 50%, #14b8a6 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          letterSpacing: '0.2px'
+        }}
+      >
+        Поиск и выбор университетов
+      </Text>
       
   {/* Блок прогресса поиска университетов удалён по требованию */}
 
       {/* Фильтры */}
-      <Paper p="md" mb="md" withBorder>
-        <Text fw={500} mb="sm">Фильтры поиска</Text>
-        <Grid>
+      <Paper p="md" mb="md" withBorder style={{
+        background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
+        borderRadius: 12,
+        boxShadow: '0 6px 18px rgba(15, 23, 42, 0.06)'
+      }}>
+        <Group justify="space-between" mb="sm">
+          <Text fw={600}>Фильтры поиска</Text>
+          <Badge variant="light" color="blue">{(universities || []).length} записей</Badge>
+        </Group>
+        <Grid gutter="md">
           <Grid.Col span={{ base: 12, md: 6 }}>
             <TextInput
               placeholder="Поиск по названию, стране или программе..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              leftSection={<IconSearch size={16} />}
+              leftSection={<IconSearch size={16} color="#2563eb" />}
+              size="md"
+              radius="md"
+              variant="filled"
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, md: 3 }}>
@@ -176,6 +198,9 @@ const UniversitiesSection = ({ progress }) => {
               onChange={setSelectedCountry}
               data={countries.map(country => ({ value: country, label: country }))}
               clearable
+              size="md"
+              radius="md"
+              variant="filled"
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, md: 3 }}>
@@ -185,6 +210,9 @@ const UniversitiesSection = ({ progress }) => {
               onChange={setSelectedProgram}
               data={programs.map(program => ({ value: program, label: program }))}
               clearable
+              size="md"
+              radius="md"
+              variant="filled"
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, md: 3 }}>
@@ -192,8 +220,11 @@ const UniversitiesSection = ({ progress }) => {
               placeholder="Мин. стоимость"
               value={minTuition}
               onChange={setMinTuition}
-              leftSection={<IconCurrencyEuro size={16} />}
+              leftSection={<IconCurrencyEuro size={16} color="#2563eb" />}
               min={0}
+              size="md"
+              radius="md"
+              variant="filled"
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, md: 3 }}>
@@ -201,8 +232,11 @@ const UniversitiesSection = ({ progress }) => {
               placeholder="Макс. стоимость"
               value={maxTuition}
               onChange={setMaxTuition}
-              leftSection={<IconCurrencyEuro size={16} />}
+              leftSection={<IconCurrencyEuro size={16} color="#2563eb" />}
               min={0}
+              size="md"
+              radius="md"
+              variant="filled"
             />
           </Grid.Col>
         </Grid>
@@ -225,17 +259,29 @@ const UniversitiesSection = ({ progress }) => {
         </Group>
 
         {filteredUniversities.length === 0 ? (
-          <Alert icon={<IconAlertCircle size={16} />} title="Университеты не найдены">
+          <Alert icon={<IconAlertCircle size={16} />} title="Университеты не найдены" color="blue" radius="md">
             Попробуйте изменить параметры поиска
           </Alert>
         ) : (
-          <Grid>
+          <Grid gutter="lg">
             {filteredUniversities.map((university) => (
               <Grid.Col key={university.id} span={{ base: 12, md: 6, lg: 4 }}>
-                <Card shadow="sm" padding="lg" radius="md" withBorder>
-                  <Card.Section withBorder inheritPadding py="xs">
+                <Card
+                  shadow="md"
+                  padding="lg"
+                  radius="lg"
+                  withBorder
+                  style={{
+                    background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
+                    borderColor: 'var(--mantine-color-gray-3)',
+                    transition: 'transform 150ms ease, box-shadow 150ms ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(2,6,23,0.08)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = ''; }}
+                >
+                  <Card.Section withBorder inheritPadding py="xs" style={{ backgroundColor: 'rgba(2,132,199,0.04)' }}>
                     <Group justify="space-between">
-                      <Text fw={500} size="lg">{university.name}</Text>
+                      <Text fw={700} size="lg">{university.name}</Text>
                       <ActionIcon
                         variant="subtle"
                         color={favorites.has(university.id) ? "red" : "gray"}
@@ -284,13 +330,13 @@ const UniversitiesSection = ({ progress }) => {
 
                     {/* Рейтинг (всегда отображается) */}
                     <Group gap="xs">
-                      <IconTrophy size={16} />
+                      <IconTrophy size={16} color="#f59e0b" />
                       <Text size="sm" c="dimmed">Рейтинг: {university.ranking ?? '—'}</Text>
                     </Group>
 
                     {/* Год основания (всегда отображается) */}
                     <Group gap="xs">
-                      <IconCalendar size={16} />
+                      <IconCalendar size={16} color="#0ea5e9" />
                       <Text size="sm" c="dimmed">Основан: {university.founded_year ?? '—'}</Text>
                     </Group>
                   </Stack>
@@ -314,6 +360,7 @@ const UniversitiesSection = ({ progress }) => {
                       size="sm"
                       leftSection={<IconEye size={16} />}
                       onClick={() => handleViewDetails(university)}
+                      radius="md"
                     >
                       Подробнее
                     </Button>
@@ -325,6 +372,7 @@ const UniversitiesSection = ({ progress }) => {
                         onClick={() => university.website && window.open(university.website, '_blank')}
                         disabled={!university.website}
                         title={university.website ? 'Открыть сайт' : 'Сайт не указан'}
+                        radius="md"
                       >
                         Сайт
                       </Button>
@@ -357,6 +405,8 @@ const UniversitiesSection = ({ progress }) => {
               value={currentPage}
               onChange={setCurrentPage}
               total={Math.ceil(filteredUniversities.length / 12)}
+              color="blue"
+              radius="md"
             />
           </Group>
         )}
@@ -368,6 +418,9 @@ const UniversitiesSection = ({ progress }) => {
         onClose={() => setOpened(false)}
         title={selectedUniversity?.name}
         size="lg"
+        centered
+        overlayProps={{ backgroundOpacity: 0.45, blur: 3 }}
+        transitionProps={{ transition: 'pop', duration: 200 }}
       >
         {selectedUniversity && (
           <Stack gap="md">

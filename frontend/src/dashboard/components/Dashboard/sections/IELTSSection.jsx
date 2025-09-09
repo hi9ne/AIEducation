@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import React, { useState } from 'react';
+import { useDashboardStore } from '../../../../store/dashboardStore';
 import { 
   Box, 
   Stack, 
@@ -19,6 +20,7 @@ import {
   TextInput,
   NumberInput
 } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { 
   IconPlayerPlay, 
   IconEye, 
@@ -30,9 +32,16 @@ import {
   IconCheck,
   IconX
 } from '@tabler/icons-react';
+import { updateProfileComplete, fetchProfile } from '../../../../store/authSlice';
+import { educationAPI } from '../../../../shared/services/api';
 
 const IELTSSection = ({ progress }) => {
+  const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  // Важно: выбираем значения из zustand по отдельности, чтобы избежать бесконечных перерисовок
+  const userData = useDashboardStore((s) => s.userData);
+  const setIELTSCertificate = useDashboardStore((s) => s.setIELTSCertificate);
+  const removeIELTSCertificate = useDashboardStore((s) => s.removeIELTSCertificate);
 
   // Обновляем данные при изменении пользователя
   useEffect(() => {
@@ -42,12 +51,22 @@ const IELTSSection = ({ progress }) => {
     }
   }, [user]);
   const [opened, setOpened] = useState(false);
+  const [certModal, setCertModal] = useState(false);
+  const [certFile, setCertFile] = useState(null);
   const [currentLevel, setCurrentLevel] = useState(user?.profile?.ielts_current_score || 0);
   const [targetLevel, setTargetLevel] = useState(user?.profile?.ielts_target_score || 0);
 
-  // Извлекаем значения из объекта progress
-  const ieltsProgress = progress?.currentProgress?.ielts || 75;
+  // Реальный прогресс: доля текущего уровня к целевому (0-100)
   const overallProgress = progress?.overallProgress || 0;
+  const ieltsProgress = targetLevel > 0
+    ? Math.max(0, Math.min(100, Math.round((currentLevel / targetLevel) * 100)))
+    : 0;
+
+  // Синхронизация с глобальным стором (для консистентности в других частях UI)
+  const updateProgress = useDashboardStore((s) => s.updateProgress);
+  useEffect(() => {
+    updateProgress('ielts', ieltsProgress);
+  }, [ieltsProgress, updateProgress]);
 
   // Генерируем тесты на основе данных пользователя
   const userTests = user?.profile ? [
@@ -81,20 +100,33 @@ const IELTSSection = ({ progress }) => {
   const totalTests = userTests.length;
   const testProgress = Math.round((completedTests / totalTests) * 100);
 
+  // Дата экзамена из БД
+  const examDateStr = user?.profile?.ielts_exam_date || null;
+  const examDate = examDateStr ? new Date(examDateStr) : null;
+  const today = new Date();
+  // normalize dates to UTC midnight to avoid tz drift
+  const daysUntilExam = examDate 
+    ? Math.max(0, Math.ceil((Date.UTC(examDate.getFullYear(), examDate.getMonth(), examDate.getDate()) - Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / (1000 * 60 * 60 * 24)))
+    : null;
+  const [examModal, setExamModal] = useState(false);
+  const [examInput, setExamInput] = useState(examDate || null);
+
   return (
     <Box p="md">
       <Stack gap="lg">
         {/* Заголовок секции */}
         <Group justify="space-between">
           <Box>
-            <Text size="xl" fw={700} c="blue">
-              IELTS Подготовка
-            </Text>
+            <Text size="xl" fw={800} style={{
+              background: 'linear-gradient(90deg, #1e3a8a 0%, #0ea5e9 50%, #14b8a6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>IELTS Подготовка</Text>
             <Text size="sm" c="dimmed">
               Подготовка к международному экзамену
             </Text>
           </Box>
-          <Badge color="blue" variant="light" size="lg">
+          <Badge color="blue" variant="light" size="lg" radius="sm">
             {ieltsProgress}% завершено
           </Badge>
         </Group>
@@ -102,7 +134,7 @@ const IELTSSection = ({ progress }) => {
         {/* Текущий и целевой уровень */}
         <Grid>
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Card withBorder>
+            <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
               <Stack gap="md">
                 <Text size="lg" fw={600}>
                   Текущий уровень
@@ -115,6 +147,7 @@ const IELTSSection = ({ progress }) => {
                     size="sm"
                     variant="light"
                     onClick={() => setOpened(true)}
+                    radius="md"
                   >
                     Изменить
                   </Button>
@@ -130,7 +163,7 @@ const IELTSSection = ({ progress }) => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Card withBorder>
+            <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
               <Stack gap="md">
                 <Text size="lg" fw={600}>
                   Целевой уровень
@@ -143,6 +176,7 @@ const IELTSSection = ({ progress }) => {
                     size="sm"
                     variant="light"
                     onClick={() => setOpened(true)}
+                    radius="md"
                   >
                     Изменить
                   </Button>
@@ -159,7 +193,7 @@ const IELTSSection = ({ progress }) => {
         </Grid>
 
         {/* Общий прогресс */}
-        <Card withBorder>
+  <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
           <Stack gap="md">
             <Group justify="space-between">
               <Text size="lg" fw={600}>
@@ -179,10 +213,51 @@ const IELTSSection = ({ progress }) => {
           </Stack>
         </Card>
 
+        {/* Сертификат IELTS */}
+        <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+          <Stack gap="md">
+            <Group justify="space-between">
+              <Box>
+                <Text size="lg" fw={600}>Сертификат IELTS</Text>
+                <Text size="sm" c="dimmed">Добавьте свой сертификат или проверьте статус</Text>
+              </Box>
+              {userData?.ieltsCertificate ? (
+                <Badge color="green" variant="light" radius="sm">Добавлен</Badge>
+              ) : (
+                <Badge color="gray" variant="light" radius="sm">Не добавлен</Badge>
+              )}
+            </Group>
+
+            {userData?.ieltsCertificate ? (
+              <Group justify="space-between" align="center">
+                <Stack gap={2}>
+                  <Text size="sm">Номер: <b>{userData.ieltsCertificate.number}</b></Text>
+                  <Text size="sm">Балл: <b>{userData.ieltsCertificate.score}</b></Text>
+                  <Text size="sm">Дата: <b>{userData.ieltsCertificate.date}</b></Text>
+                  {userData.ieltsCertificate.fileName && (
+                    <Text size="sm">Файл: <b>{userData.ieltsCertificate.fileName}</b></Text>
+                  )}
+                </Stack>
+                <Group>
+                  <Button variant="light" color="red" onClick={() => removeIELTSCertificate()} radius="md">
+                    Удалить
+                  </Button>
+                </Group>
+              </Group>
+            ) : (
+              <Group justify="flex-end">
+                <Button onClick={() => setCertModal(true)} radius="md">
+                  Добавить сертификат
+                </Button>
+              </Group>
+            )}
+          </Stack>
+        </Card>
+
         {/* Статистика */}
         <Grid>
           <Grid.Col span={{ base: 12, md: 3 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-green-0)' }}>
+            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-green-0)', border: '1px solid var(--mantine-color-green-2)' }} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconCheck size={48} color="var(--mantine-color-green-6)" />
                 <Text size="lg" fw={700} c="green">
@@ -196,7 +271,7 @@ const IELTSSection = ({ progress }) => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 3 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)' }}>
+            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)', border: '1px solid var(--mantine-color-blue-2)' }} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconBook size={48} color="var(--mantine-color-blue-6)" />
                 <Text size="lg" fw={700} c="blue">
@@ -210,21 +285,24 @@ const IELTSSection = ({ progress }) => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 3 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-orange-0)' }}>
+            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-orange-0)', border: '1px solid var(--mantine-color-orange-2)' }} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconClock size={48} color="var(--mantine-color-orange-6)" />
-                <Text size="lg" fw={700} c="orange">
-                  45
-                </Text>
-                <Text size="sm" c="dimmed" ta="center">
-                  Дней до экзамена
-                </Text>
+                <Group gap={6} align="center">
+                  <Text size="lg" fw={700} c="orange">
+                    {daysUntilExam === null ? '—' : daysUntilExam}
+                  </Text>
+                  <Button size="xs" variant="light" onClick={() => setExamModal(true)} radius="md">
+                    Указать дату
+                  </Button>
+                </Group>
+                <Text size="sm" c="dimmed" ta="center">Дней до экзамена</Text>
               </Stack>
             </Card>
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 3 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-purple-0)' }}>
+            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-purple-0)', border: '1px solid var(--mantine-color-violet-2, #e9d8fd)' }} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconTrophy size={48} color="var(--mantine-color-purple-6)" />
                 <Text size="lg" fw={700} c="purple">
@@ -239,7 +317,7 @@ const IELTSSection = ({ progress }) => {
         </Grid>
 
         {/* Список тестов */}
-        <Card withBorder>
+        <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
           <Stack gap="md">
             <Text size="lg" fw={600}>
               Доступные тесты
@@ -250,6 +328,8 @@ const IELTSSection = ({ progress }) => {
                   key={test.id}
                   p="md"
                   withBorder
+                  radius="md"
+                  shadow="xs"
                   style={{
                     backgroundColor: test.status === 'completed' 
                       ? 'var(--mantine-color-green-0)' 
@@ -264,17 +344,18 @@ const IELTSSection = ({ progress }) => {
                         {test.title}
                       </Text>
                       <Group gap="md" mb="sm">
-                        <Badge color="blue" variant="light">
+                        <Badge color="blue" variant="light" radius="sm">
                           {test.duration}
                         </Badge>
                         <Badge 
                           color={test.difficulty === 'Сложный' ? 'red' : 'yellow'} 
                           variant="light"
+                          radius="sm"
                         >
                           {test.difficulty}
                         </Badge>
                         {test.score && (
-                          <Badge color="green" variant="light">
+                          <Badge color="green" variant="light" radius="sm">
                             {test.score} баллов
                           </Badge>
                         )}
@@ -282,17 +363,18 @@ const IELTSSection = ({ progress }) => {
                     </Box>
                     <Group gap="sm">
                       {test.status === 'completed' ? (
-                        <Badge color="green" variant="light">
+                        <Badge color="green" variant="light" radius="sm">
                           Завершено
                         </Badge>
                       ) : test.status === 'locked' ? (
-                        <Badge color="gray" variant="light">
+                        <Badge color="gray" variant="light" radius="sm">
                           Заблокировано
                         </Badge>
                       ) : (
                         <Button
                           size="sm"
                           leftSection={<IconPlayerPlay size={16} />}
+                          radius="md"
                         >
                           Начать
                         </Button>
@@ -311,6 +393,9 @@ const IELTSSection = ({ progress }) => {
           onClose={() => setOpened(false)}
           title="Изменение уровня"
           size="md"
+          centered
+          overlayProps={{ backgroundOpacity: 0.45, blur: 3 }}
+          transitionProps={{ transition: 'pop', duration: 200 }}
         >
           <Stack gap="md">
             <NumberInput
@@ -335,6 +420,7 @@ const IELTSSection = ({ progress }) => {
               <Button
                 variant="light"
                 onClick={() => setOpened(false)}
+                radius="md"
               >
                 Отмена
               </Button>
@@ -344,6 +430,105 @@ const IELTSSection = ({ progress }) => {
                   console.log('Сохраняем уровни:', { currentLevel, targetLevel });
                   setOpened(false);
                 }}
+                radius="md"
+              >
+                Сохранить
+              </Button>
+            </Group>
+          </Stack>
+        </Modal>
+
+        {/* Модальное окно добавления сертификата */}
+        <Modal
+          opened={certModal}
+          onClose={() => setCertModal(false)}
+          title="Добавление сертификата IELTS"
+          size="md"
+          centered
+          overlayProps={{ backgroundOpacity: 0.45, blur: 3 }}
+          transitionProps={{ transition: 'pop', duration: 200 }}
+        >
+          <Stack gap="md">
+            <Text size="sm" c="dimmed">Загрузите PDF сертификата (только .pdf)</Text>
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => {
+                const f = e.currentTarget.files?.[0] || null;
+                if (f && f.type !== 'application/pdf') return;
+                setCertFile(f);
+              }}
+            />
+            <Group justify="flex-end" gap="sm">
+              <Button variant="light" onClick={() => setCertModal(false)} radius="md">Отмена</Button>
+              <Button
+                onClick={() => {
+                  if (!certFile) return;
+                  educationAPI.uploadDocument({ file: certFile, name: 'IELTS Certificate', description: 'IELTS PDF' })
+                    .then(() => {
+                      setIELTSCertificate({ fileName: certFile.name });
+                      setCertModal(false);
+                    })
+                    .catch((e) => {
+                      console.error('Upload failed', e);
+                    });
+                }}
+                radius="md"
+              >
+                Сохранить
+              </Button>
+            </Group>
+          </Stack>
+        </Modal>
+
+        {/* Модалка даты экзамена */}
+        <Modal
+          opened={examModal}
+          onClose={() => setExamModal(false)}
+          title="Дата экзамена IELTS"
+          size="md"
+          centered
+          overlayProps={{ backgroundOpacity: 0.45, blur: 3 }}
+          transitionProps={{ transition: 'pop', duration: 200 }}
+        >
+          <Stack gap="md">
+            <DateInput
+              value={examInput}
+              onChange={setExamInput}
+              label="Дата экзамена"
+              valueFormat="YYYY-MM-DD"
+              placeholder="Выберите дату"
+              clearable
+            />
+            <Group justify="flex-end" gap="sm">
+              <Button variant="light" onClick={() => setExamModal(false)} radius="md">Отмена</Button>
+              <Button
+                onClick={async () => {
+                  let selected = null;
+                  if (examInput) {
+                    if (examInput instanceof Date) {
+                      selected = examInput;
+                    } else if (typeof examInput === 'string') {
+                      const parsed = new Date(examInput);
+                      if (!isNaN(parsed.getTime())) selected = parsed;
+                    }
+                  }
+
+                  const iso = selected
+                    ? new Date(Date.UTC(selected.getFullYear(), selected.getMonth(), selected.getDate()))
+                        .toISOString()
+                        .slice(0, 10)
+                    : null;
+
+                  try {
+                    await dispatch(updateProfileComplete({ ielts_exam_date: iso })).unwrap();
+                    await dispatch(fetchProfile());
+                  } catch (e) {
+                    console.error('Failed to save exam date', e);
+                  }
+                  setExamModal(false);
+                }}
+                radius="md"
               >
                 Сохранить
               </Button>

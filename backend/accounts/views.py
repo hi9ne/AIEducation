@@ -316,7 +316,8 @@ def update_user_profile(request):
         profile_fields = [
             'bio', 'interests', 'goals', 'language_levels', 
             'education_background', 'work_experience', 
-            'preferred_countries', 'budget_range', 'study_duration'
+            'preferred_countries', 'budget_range', 'study_duration',
+            'ielts_exam_date'
         ]
         for field in profile_fields:
             if field in data:
