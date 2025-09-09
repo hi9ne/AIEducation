@@ -636,7 +636,7 @@ const UserProfileForm = () => {
         <Grid gutter="xl">
           {/* Левое меню шагов */}
           <Grid.Col span={2}>
-            <Paper withBorder radius="md" p="md">
+            <Paper withBorder radius="md" p="md" style={{ paddingTop: 14 }}>
               <Stack>
                 {steps.map((s, idx) => (
                   <Group
@@ -647,8 +647,13 @@ const UserProfileForm = () => {
                       if (idx <= activeStep) setActiveStep(idx);
                     }}
                   >
-                    <ThemeIcon color={idx === activeStep ? 'teal' : 'gray'} radius="xl" size="lg">
-                      <Text weight={700}>{idx + 1}</Text>
+                    <ThemeIcon
+                      color={idx === activeStep ? 'teal' : 'gray'}
+                      radius="xl"
+                      size="lg"
+                      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <span style={{ fontWeight: 700, lineHeight: 1 }}>{idx + 1}</span>
                     </ThemeIcon>
                     <Text size="sm" weight={idx === activeStep ? 600 : 400}>{s.title}</Text>
                   </Group>

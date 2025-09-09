@@ -18,7 +18,8 @@ const PrivateLayout = () => {
   })();
 
   const isProfileComplete = useMemo(() => {
-    if (!user) return null; // неизвестно, не редиректим
+    // until user is fetched, don't decide
+    if (!user) return null;
     const p = user.profile || {};
     const phone = user.phone || p.phone;
     const city = user.city || p.city;
@@ -50,11 +51,16 @@ const PrivateLayout = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // Если пользователь авторизован, профиль загружен и он незаполнен — направляем на онбординг
+  // Пока профиль неизвестен, не делаем редиректов
+  if (isProfileComplete === null) {
+    return <main><Outlet /></main>;
+  }
+
+  // Если профиль незаполнен — направляем на онбординг
   if (
-  isProfileComplete === false &&
-  location.pathname !== '/app/onboarding' &&
-  !onboardingComplete
+    isProfileComplete === false &&
+    location.pathname !== '/app/onboarding' &&
+    !onboardingComplete
   ) {
     return <Navigate to="/app/onboarding" replace />;
   }
