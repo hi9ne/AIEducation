@@ -118,13 +118,7 @@ const DashboardLayout = () => {
           </div>
         )}
         
-        {/* Floating action button for mobile */}
-        <div 
-          id="right-panel-mobile-button"
-          onClick={() => setShowMobileRightPanel(!showMobileRightPanel)}
-        >
-          AI
-        </div>
+  {/* Floating mobile button removed per request */}
       </div>
     </Box>
   );

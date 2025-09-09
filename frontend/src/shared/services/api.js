@@ -213,12 +213,12 @@ export const authAPI = {
   
   // Пароли
   changePassword: (data) => api.post('/api/auth/change-password/', data),
-  resetPassword: (email) => api.post('/api/auth/password-reset/', { email }),
-  verifyReset: (data) => api.post('/api/auth/password-reset/verify/', data),
+  resetPassword: (email) => api.post('/api/auth/request-password-reset/', { email }),
+  verifyReset: (data) => api.post('/api/auth/confirm-password-reset/', data),
   
   // Email верификация
-  requestEmailVerify: () => api.post('/api/email/verify/request/'),
-  verifyEmail: (token) => api.get(`/api/email/verify/?token=${token}`),
+  requestEmailVerify: () => api.post('/api/auth/email/verify/request/'),
+  verifyEmail: (token) => api.post('/api/auth/verify-email/', { token }),
 };
 
 // User profile API
@@ -231,9 +231,7 @@ export const profileAPI = {
 
 // Payment API  
 export const paymentAPI = {
-  create: (paymentData) => api.post('/api/payments/create/', paymentData),
-  getStatus: (paymentId) => api.get(`/api/payments/status/?payment_id=${encodeURIComponent(paymentId)}`),
-  simulate: (paymentId) => api.post('/api/payments/simulate/', { payment_id: paymentId }),
+  create: (paymentData) => api.post('/api/payments/create-payment/', paymentData),
 };
 
 // Admin API
@@ -248,7 +246,7 @@ export const apiHelpers = {
   // Проверка статуса соединения
   checkConnection: async () => {
     try {
-      await api.get('/api/profile/', { timeout: 5000 });
+  await api.get('/api/auth/profile/', { timeout: 5000 });
       return true;
     } catch {
       return false;

@@ -5,10 +5,8 @@ import {
   fetchAchievements,
   fetchDashboardStats
 } from '../../../store/educationSlice';
-import { 
-  fetchNotifications, 
-  markNotificationAsRead 
-} from '../../../store/notificationsSlice';
+// Redux notifications slice no longer used here; using Zustand store instead
+import useNotificationsStore from '../../../store/notificationsStore';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import styles from './RightPanel.module.css';
 import {
@@ -65,7 +63,7 @@ import {
   IconEye,
   IconEyeOff
 } from '@tabler/icons-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import api from '../../../shared/services/api';
 
 const RightPanel = () => {
@@ -75,47 +73,56 @@ const RightPanel = () => {
   
   // Redux state
   const { 
-    aiRecommendations = [], 
-    achievements = [], 
-    dashboardStats = {}, 
+  aiRecommendations = [], 
     loading: loadingEdu, 
     error: errorEdu 
   } = useSelector(state => state.education);
   
-  const { 
-    notifications = [], 
-    unreadCount = 0, 
-    loading: loadingNotif, 
-    error: errorNotif 
-  } = useSelector(state => state.notifications);
+  // Select only required slices/actions from zustand to keep stable deps
+  const notifications = useNotificationsStore((s) => s.notifications) || [];
+  const unreadCount = useNotificationsStore((s) => s.unreadCount) || 0;
+  const loadingNotif = useNotificationsStore((s) => s.loading?.notifications);
+  const errorNotif = useNotificationsStore((s) => s.errors?.notifications);
+  const fetchNotifications = useNotificationsStore((s) => s.fetchNotifications);
+  const fetchUnreadCount = useNotificationsStore((s) => s.fetchUnreadCount);
+  const markAllAsReadZ = useNotificationsStore((s) => s.markAllAsRead);
+  const markAsReadZ = useNotificationsStore((s) => s.markAsRead);
 
   // Local state
   const [aiMessage, setAiMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [chatError, setChatError] = useState(null);
-  const [activeTab, setActiveTab] = useState('chat');
-  const [expandedSections, setExpandedSections] = useState({
-    recommendations: true,
-    notifications: true,
-    stats: true
-  });
-  const [quickActions] = useState([
-    { id: 'analyze', label: 'Анализ прогресса', icon: IconTarget, color: 'blue' },
-    { id: 'suggest', label: 'Рекомендации', icon: IconBulb, color: 'green' },
-    { id: 'motivate', label: 'Мотивация', icon: IconTrophy, color: 'orange' },
-    { id: 'plan', label: 'План обучения', icon: IconClock, color: 'purple' }
-  ]);
+  // UI local states trimmed to essentials
 
   // Load data on mount
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchAIRecommendations());
-      dispatch(fetchNotifications());
+      fetchNotifications();
+      fetchUnreadCount();
       dispatch(fetchAchievements());
       dispatch(fetchDashboardStats());
     }
-  }, [dispatch, isAuthenticated]);
+    // fetch* are stable from zustand; do not include full store
+  }, [dispatch, isAuthenticated, fetchNotifications, fetchUnreadCount]);
+
+  // Fallback: if no AI recommendations were returned, ask backend to generate demo ones once
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const tryGenerate = async () => {
+      try {
+        if (Array.isArray(aiRecommendations) && aiRecommendations.length === 0) {
+          await api.post('/api/education/generate-ai-recommendations/', {});
+          dispatch(fetchAIRecommendations());
+        }
+    } catch {
+        // swallow; optional helper
+      }
+    };
+    tryGenerate();
+    // run when auth flips or recommendations become empty
+  }, [isAuthenticated, aiRecommendations, dispatch]);
 
   // AI message handling
   const handleSendMessage = async () => {
@@ -143,7 +150,7 @@ const RightPanel = () => {
       const res = await api.post('/api/education/ai/chat/', payload);
       const assistant = res.data?.content || 'Не удалось получить ответ.';
       setChatHistory((prev) => [...prev, { id: Date.now() + 1, role: 'assistant', content: assistant }]);
-    } catch (e) {
+  } catch {
       const fallback = 'Произошла ошибка сервиса ИИ. Попробуйте позже.';
       setChatHistory((prev) => [...prev, { id: Date.now() + 1, role: 'assistant', content: fallback }]);
   setChatError('Ошибка запроса к ИИ. Проверьте, что бэкенд запущен (порт 8000).');
@@ -161,16 +168,16 @@ const RightPanel = () => {
 
   // Notification handlers
   const handleMarkAsRead = (id) => {
-    dispatch(markNotificationAsRead(id));
+    // Use zustand action to keep the same source of truth
+    markAsReadZ(id);
   };
 
   const handleMarkAllAsRead = () => {
-    notifications
-      .filter(n => !n.is_read)
-      .forEach(n => dispatch(markNotificationAsRead(n.id)));
+    markAllAsReadZ();
   };
 
-  const isLoading = loadingEdu || loadingNotif;
+  const isLoadingAI = Boolean(loadingEdu?.aiRecommendations);
+  const isLoadingNotif = Boolean(loadingNotif);
   const hasError = errorEdu || errorNotif;
 
   return (
@@ -298,7 +305,7 @@ const RightPanel = () => {
               <Badge>{aiRecommendations.length}</Badge>
             </Group>
 
-            {isLoading ? (
+            {isLoadingAI && aiRecommendations.length === 0 ? (
               <Stack spacing="sm">
                 <Skeleton height={50} radius="sm" />
                 <Skeleton height={50} radius="sm" />
@@ -356,7 +363,7 @@ const RightPanel = () => {
               </Group>
             </Group>
 
-            {isLoading ? (
+            {isLoadingNotif && notifications.length === 0 ? (
               <Stack spacing="sm">
                 <Skeleton height={50} radius="sm" />
                 <Skeleton height={50} radius="sm" />

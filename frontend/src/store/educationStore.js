@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import educationApi from './shared/api/educationApi';
+import educationApi from '../shared/api/educationApi';
 
 const useEducationStore = create((set, get) => ({
   // Состояние
@@ -313,26 +313,7 @@ const useEducationStore = create((set, get) => ({
     }
   },
 
-  // Действия для уведомлений
-  fetchNotifications: async () => {
-    set((state) => ({
-      loading: { ...state.loading, notifications: true },
-      errors: { ...state.errors, notifications: null },
-    }));
-
-    try {
-      const data = await educationApi.getNotifications();
-      set((state) => ({
-        notifications: data.results || data,
-        loading: { ...state.loading, notifications: false },
-      }));
-    } catch (error) {
-      set((state) => ({
-        loading: { ...state.loading, notifications: false },
-        errors: { ...state.errors, notifications: error.message },
-      }));
-    }
-  },
+  // Уведомления: используйте notificationsStore/notificationsSlice
 
   // Действия для планов обучения
   fetchStudyPlans: async () => {

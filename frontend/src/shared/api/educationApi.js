@@ -1,7 +1,19 @@
 // API клиент для работы с бекендом образования
 import { refreshToken, isTokenExpired } from './tokenUtils';
 
-const API_BASE_URL = 'http://localhost:8000/api/education';
+const detectBaseUrl = () => {
+  const host = window.location.hostname;
+  if (
+    host === 'localhost' || host === '127.0.0.1' ||
+    host.startsWith('172.') || host.startsWith('192.168.') || host.startsWith('10.')
+  ) {
+    return `http://${host}:8000/api/education`;
+  }
+  if (host.includes('railway.app')) return 'https://backend-production-0046c.up.railway.app/api/education';
+  return (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/education';
+};
+
+const API_BASE_URL = detectBaseUrl();
 
 class EducationAPI {
   constructor() {
@@ -106,9 +118,7 @@ class EducationAPI {
     return this.request(`/majors/${queryString ? '?' + queryString : ''}`);
   }
 
-  async getMajor(id) {
-    return this.request(`/majors/${id}/`);
-  }
+  // Детального эндпойнта majors на бэке нет
 
   // Курсы
   async getCourses(params = {}) {
@@ -197,10 +207,7 @@ class EducationAPI {
     });
   }
 
-  // Уведомления
-  async getNotifications() {
-    return this.request('/notifications/');
-  }
+  // Уведомления здесь отсутствуют — используйте notificationsApi
 
   // Планы обучения
   async getStudyPlans() {

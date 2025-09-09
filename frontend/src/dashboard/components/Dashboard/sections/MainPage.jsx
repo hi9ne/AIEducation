@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchDashboardStats } from '../../../../store/educationSlice';
 import { useAuth } from '../../../../shared/hooks/useAuth';
@@ -21,7 +21,7 @@ import { motion } from "framer-motion";
 import { IconBook, IconCalendar, IconTrophy, IconRefresh, IconTrendingUp } from '@tabler/icons-react';
 import CircularProgress from '../../../../shared/components/Animations/CircularProgress';
 
-const ProgressSection = ({ stats, user }) => {
+const ProgressSection = ({ user }) => {
   const calculateStatusText = (progress) => {
     if (progress === 100) return "Completed";
     if (progress > 0) return "In progress";
@@ -113,12 +113,10 @@ const ProgressSection = ({ stats, user }) => {
 const MainPage = () => {
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useAuth();
+  const hasFetchedRef = useRef(false);
   
-  const { dashboardStats, loading, error } = useSelector((state) => ({
-    dashboardStats: state.education.dashboardStats,
-    loading: state.education.loading,
-    error: state.education.error,
-  }));
+  const loading = useSelector((state) => state.education.loading);
+  const error = useSelector((state) => state.education.error);
 
   // Вычисляем статистику на основе данных пользователя
   const displayStats = useMemo(() => {
@@ -261,9 +259,10 @@ const MainPage = () => {
   console.log('MainPage - displayStats:', displayStats);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !hasFetchedRef.current) {
       console.log('MainPage useEffect - isAuthenticated:', isAuthenticated);
-      console.log('Dispatching fetchDashboardStats');
+      console.log('Dispatching fetchDashboardStats (once)');
+      hasFetchedRef.current = true;
       dispatch(fetchDashboardStats());
     }
   }, [dispatch, isAuthenticated]);
@@ -316,7 +315,7 @@ const MainPage = () => {
       {/* Progress Section */}
       <Grid mb="xl">
         <Grid.Col span={12}>
-          <ProgressSection stats={displayStats} user={user} />
+          <ProgressSection user={user} />
         </Grid.Col>
       </Grid>
 

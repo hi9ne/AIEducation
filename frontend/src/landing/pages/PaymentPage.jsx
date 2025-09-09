@@ -20,7 +20,6 @@ export function PaymentPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [pendingPaymentId, setPendingPaymentId] = useState(null);
-  const [paymentStatus, setPaymentStatus] = useState(null);
 
   const plans = {
     basic: {
@@ -122,19 +121,9 @@ export function PaymentPage() {
     setError(null);
     setSuccess(false);
     try {
-      const { data } = await paymentAPI.payWithCard({
-        plan: selectedPlan,
-        card_number: cardNumber,
-        card_expiry: cardExpiry,
-        card_cvv: cardCvv,
-        card_holder: cardHolder,
-      });
-      if (data.status === 'redirect' && data.payment_url) {
-        setPendingPaymentId(data.payment_id || null);
-        setPaymentStatus('pending');
-        window.open(data.payment_url, '_blank');
-        return;
-      }
+  const planMap = { basic: 1, popular: 2, premium: 3 };
+  const backendPlanId = planMap[selectedPlan] || 1;
+  await paymentAPI.create({ plan_id: backendPlanId, payment_method: 'card' });
         await dispatch(fetchProfile());
       setSuccess(true);
     } catch {
@@ -280,31 +269,18 @@ export function PaymentPage() {
               className="pay-button"
               onClick={async () => {
                 try {
-                  const { data } = await paymentAPI.getStatus(pendingPaymentId);
-                  setPaymentStatus(data.status);
-                  if (data.status === 'paid') {
-                    await dispatch(fetchProfile());
-                    setSuccess(true);
-                    setPendingPaymentId(null);
-                    const target = localStorage.getItem('postPaymentTarget') || 'home';
-                    if (target === 'whatsapp') {
-                      window.location.href = '/whatsapp';
-                    } else if (target === 'instagram') {
-                      window.location.href = '/instagram';
-                    } else {
-                      window.location.href = '/';
-                    }
-                  }
+                  // В текущей реализации платеж создается синхронно и помечается completed
+                  await dispatch(fetchProfile());
+                  setSuccess(true);
+                  setPendingPaymentId(null);
                 } catch {
-                  setError('Не удалось получить статус платежа');
+                  setError('Не удалось обновить профиль');
                 }
               }}
             >
               Проверить статус
             </button>
-            {paymentStatus && paymentStatus !== 'paid' && (
-              <p style={{ marginTop: 8 }}>Текущий статус: {paymentStatus}</p>
-            )}
+            {/* Синхронная оплата без статуса ожидания в текущей реализации */}
           </div>
         )}
       </div>

@@ -243,6 +243,36 @@ def verify_email(request):
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def request_email_verification(request):
+    """
+    Повторная отправка письма для подтверждения email текущего пользователя
+    """
+    user = request.user
+    if user.is_verified:
+        return Response({'message': 'Email уже подтвержден'}, status=status.HTTP_200_OK)
+
+    # помечаем старые токены как использованные
+    EmailVerification.objects.filter(user=user, is_used=False).update(is_used=True)
+
+    # создаем новый токен и отправляем письмо
+    token = secrets.token_urlsafe(32)
+    expires_at = timezone.now() + timezone.timedelta(hours=24)
+    EmailVerification.objects.create(user=user, token=token, expires_at=expires_at)
+
+    verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+    send_mail(
+        'Подтверждение email',
+        f'Перейдите по ссылке для подтверждения email: {verification_url}',
+        settings.EMAIL_HOST_USER,
+        [user.email],
+        fail_silently=False,
+    )
+
+    return Response({'message': 'Письмо для подтверждения отправлено'}, status=status.HTTP_200_OK)
+
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def refresh_token(request):

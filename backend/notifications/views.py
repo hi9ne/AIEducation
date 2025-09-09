@@ -61,8 +61,8 @@ def mark_as_read(request, notification_id):
         )
         notification.is_read = True
         notification.save()
-        
-        return Response({'message': 'Уведомление отмечено как прочитанное'})
+        serializer = NotificationSerializer(notification)
+        return Response(serializer.data)
     except Notification.DoesNotExist:
         return Response(
             {'error': 'Уведомление не найдено'},
