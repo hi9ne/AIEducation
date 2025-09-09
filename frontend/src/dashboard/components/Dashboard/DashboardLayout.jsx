@@ -35,19 +35,7 @@ const DashboardLayout = () => {
             onToggle={toggle}
             user={user}
           />
-          {/* Mobile toggle for right panel */}
-          <div style={{ 
-            display: 'block', 
-            margin: '10px', 
-            padding: '10px', 
-            backgroundColor: 'blue', 
-            color: 'white',
-            textAlign: 'center',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }} onClick={() => setShowMobileRightPanel(!showMobileRightPanel)}>
-            {showMobileRightPanel ? 'Скрыть панель ИИ' : 'Показать панель ИИ'}
-          </div>
+          {/* Кнопка показа панели ИИ удалена по требованию */}
         </div>
 
         {/* Центральная зона контента */}
@@ -80,7 +68,8 @@ const DashboardLayout = () => {
         </div>
         
         {/* Mobile right panel that appears when toggled */}
-        {showMobileRightPanel && (
+  {/* Мобильная правая панель отключена */}
+  {false && showMobileRightPanel && (
           <div style={{
             position: 'fixed',
             top: '0',
