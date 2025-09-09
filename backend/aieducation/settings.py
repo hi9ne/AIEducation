@@ -10,6 +10,14 @@ load_dotenv(dotenv_path=BASE_DIR / '.env')
 SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-secret-for-dev')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
+# ALLOWED_HOSTS: support env override or allow Railway subdomains by default
+_raw_hosts = os.getenv('ALLOWED_HOSTS', '').strip()
+if _raw_hosts:
+    ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(',') if h.strip()]
+else:
+    # Allow localhost for dev and any *.up.railway.app for Railway deployments
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.up.railway.app']
+
 # Consolidated CORS/CSRF configuration (env-driven)
 # CORS_ALLOW_ALL_ORIGINS can be enabled in development via env
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() == 'true'
