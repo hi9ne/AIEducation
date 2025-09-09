@@ -60,6 +60,19 @@ CORS_ALLOW_HEADERS = [
 # CSRF trusted origins should mirror allowed CORS origins when using separate frontend host
 CSRF_TRUSTED_ORIGINS = [u.rstrip('/') for u in CORS_ALLOWED_ORIGINS if u]
 
+# If no explicit CORS_ALLOWED_ORIGINS are configured, allow common Railway subdomains
+# and local dev hosts via regex. This helps when env vars are not set in the deployment.
+_raw_cors_regex = os.getenv('CORS_ALLOWED_ORIGIN_REGEXES', '').strip()
+if _raw_cors_regex:
+    # support comma-separated regex list from env
+    CORS_ALLOWED_ORIGIN_REGEXES = [r.strip() for r in _raw_cors_regex.split(',') if r.strip()]
+else:
+    CORS_ALLOWED_ORIGIN_REGEXES = [
+        r"^https?://.*\.up\.railway\.app(:\d+)?$",
+        r"^https?://localhost(:\d+)?$",
+        r"^https?://127\.0\.0\.1(:\d+)?$",
+    ]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
