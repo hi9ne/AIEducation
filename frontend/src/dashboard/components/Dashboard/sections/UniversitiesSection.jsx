@@ -20,6 +20,9 @@ import {
   Alert,
   ActionIcon,
   Modal,
+  Progress,
+  Image,
+  Avatar,
 } from '@mantine/core';
 import {
   IconSearch,
@@ -56,6 +59,51 @@ const UniversitiesSection = ({ progress }) => {
   const [opened, setOpened] = useState(false);
   const [selectedUniversity, setSelectedUniversity] = useState(null);
   const [favorites, setFavorites] = useState(new Set());
+
+  // Helpers: normalize level to 0-100 and map to color (low=green → high=red)
+  const getLogoSrc = (u) => {
+    const val = (u?.logo_url || u?.logo || '').trim?.() || '';
+    if (!val) return '';
+    // Basic sanitize: ensure it looks like a URL
+    if (val.startsWith('http://') || val.startsWith('https://')) return val;
+    return val; // allow relative path if any (backend/media)
+  };
+
+  const parseLevelToPercent = (level) => {
+    if (level === null || level === undefined) return null;
+    if (typeof level === 'number') {
+      let v = level;
+      if (v <= 1) v = v * 100; // 0-1 scale
+      else if (v <= 10) v = v * 10; // 0-10 scale
+      // else assume 0-100
+      return Math.max(0, Math.min(100, v));
+    }
+    const s = String(level).toLowerCase().trim();
+    // Try to extract a number first (e.g., "70%", "7.5")
+    const m = s.match(/(\d+(?:[\.,]\d+)?)/);
+    if (m) {
+      let v = parseFloat(m[1].replace(',', '.'));
+      if (v <= 1) v = v * 100; // 0-1
+      else if (v <= 10) v = v * 10; // 0-10
+      return Math.max(0, Math.min(100, v));
+    }
+    // Keyword mapping
+    const easy = ['easy', 'низкая', 'легкая', 'лёгкая'];
+    const medium = ['medium', 'средняя'];
+    const hard = ['hard', 'высокая', 'сложная'];
+    if (easy.includes(s)) return 20;
+    if (medium.includes(s)) return 60;
+    if (hard.includes(s)) return 90;
+    return null;
+  };
+
+  const getLevelColor = (percent) => {
+    if (percent == null) return 'gray';
+    if (percent < 35) return 'green';
+    if (percent < 65) return 'yellow';
+    if (percent < 85) return 'orange';
+    return 'red';
+  };
 
   // Используем тестовые данные, если нет данных из API
   const displayUniversities = universities || [];
@@ -250,7 +298,15 @@ const UniversitiesSection = ({ progress }) => {
                 >
                   <Card.Section withBorder inheritPadding py="xs" style={{ backgroundColor: 'rgba(2,132,199,0.04)' }}>
                     <Group justify="space-between">
-                      <Text fw={700} size="lg">{university.name}</Text>
+                      <Group gap="sm" align="center">
+                        {(() => {
+                          const src = getLogoSrc(university);
+                          return src ? (
+                            <Avatar src={src} alt={university.name} radius="sm" size={28} />
+                          ) : null;
+                        })()}
+                        <Text fw={700} size="lg">{university.name}</Text>
+                      </Group>
                       <ActionIcon
                         variant="subtle"
                         color={favorites.has(university.id) ? "red" : "gray"}
@@ -268,11 +324,20 @@ const UniversitiesSection = ({ progress }) => {
                       <Text size="sm" c="dimmed">{university.city || '—'}</Text>
                     </Group>
 
-                    {/* Сложность поступления (если указана) */}
-                    <Group gap="xs">
-                      <IconTrophy size={16} />
-                      <Text size="sm" c="dimmed">Сложность: {university.level || '—'}</Text>
-                    </Group>
+                    {/* Сложность поступления как прогресс-бар */}
+                    {(() => {
+                      const p = parseLevelToPercent(university.level);
+                      return (
+                        <Stack gap={4} style={{ width: '100%' }}>
+                          <Group gap="xs">
+                            <IconTrophy size={16} />
+                            <Text size="sm" c="dimmed">Сложность</Text>
+                            <Text size="xs" c="dimmed">{p == null ? '—' : `${Math.round(p)}%`}</Text>
+                          </Group>
+                          <Progress value={p || 0} color={getLevelColor(p ?? 0)} size="sm" radius="xl" />
+                        </Stack>
+                      );
+                    })()}
 
                     {/* Кол-во студентов (всегда отображается) */}
                     {(() => {
@@ -376,16 +441,33 @@ const UniversitiesSection = ({ progress }) => {
         overlayProps={{ backgroundOpacity: 0.45, blur: 3 }}
         transitionProps={{ transition: 'pop', duration: 200 }}
       >
-        {selectedUniversity && (
+            {selectedUniversity && (
           <Stack gap="md">
+            {(() => {
+              const src = getLogoSrc(selectedUniversity);
+              return src ? (
+                <Group justify="center">
+                  <Image src={src} alt={selectedUniversity.name} h={80} fit="contain" radius="md" withPlaceholder />
+                </Group>
+              ) : null;
+            })()}
             <Group>
               <IconMapPin size={16} />
               <Text>{selectedUniversity.city || '—'}</Text>
             </Group>
-            <Group>
-              <IconTrophy size={16} />
-              <Text>Сложность: {selectedUniversity.level || '—'}</Text>
-            </Group>
+            {(() => {
+              const p = parseLevelToPercent(selectedUniversity.level);
+              return (
+                <Stack gap={4} style={{ width: '100%' }}>
+                  <Group>
+                    <IconTrophy size={16} />
+                    <Text>Сложность</Text>
+                    <Text size="sm" c="dimmed">{p == null ? '—' : `${Math.round(p)}%`}</Text>
+                  </Group>
+                  <Progress value={p || 0} color={getLevelColor(p ?? 0)} size="sm" radius="xl" />
+                </Stack>
+              );
+            })()}
             
             <Group>
               <IconUsers size={16} />

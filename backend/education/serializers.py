@@ -15,6 +15,7 @@ class MajorSerializer(serializers.ModelSerializer):
 class UniversitySerializer(serializers.ModelSerializer):
     # University has related_name 'majors' to UniversityMajor; expose list of Major
     majors = serializers.SerializerMethodField()
+    logo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = University
@@ -26,6 +27,28 @@ class UniversitySerializer(serializers.ModelSerializer):
             return MajorSerializer(majors, many=True).data
         except Exception:
             return []
+
+    def get_logo_url(self, obj):
+        request = self.context.get('request')
+        try:
+            val = getattr(obj, 'logo', None)
+            if not val:
+                return ''
+            # When DB stores an absolute URL in the field, return it as-is
+            val_str = str(val)
+            if val_str.startswith('http://') or val_str.startswith('https://'):
+                return val_str
+            # Otherwise resolve via storage URL (MEDIA_URL) and absolutize
+            url = obj.logo.url
+            return request.build_absolute_uri(url) if request and url else url
+        except Exception:
+            # Last-resort fallback: if string looks like URL, return it, else empty
+            try:
+                val = getattr(obj, 'logo', None)
+                val_str = str(val) if val is not None else ''
+                return val_str if (val_str.startswith('http://') or val_str.startswith('https://')) else ''
+            except Exception:
+                return ''
 
 
 class UniversityMajorSerializer(serializers.ModelSerializer):
