@@ -180,34 +180,37 @@ export const authAPI = {
   },
   updateProfile: (data) => api.patch('/api/auth/profile/update/', data),
   updateProfileComplete: (data) => {
+    // Detect files; if present, use multipart; otherwise send JSON
+    const values = Object.values(data || {});
+    const hasFile = values.some((v) => v instanceof File || v instanceof Blob);
+
+    if (!hasFile) {
+      // Send as JSON for simple scalar updates (e.g., dates, strings, numbers)
+      return api.patch('/api/auth/profile/update-complete/', data, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const formData = new FormData();
-    
-    // Append all fields to FormData
-    Object.keys(data).forEach(key => {
-      const value = data[key];
+    Object.entries(data).forEach(([key, value]) => {
       if (value === undefined || value === null || value === '') return;
-      if (key === 'avatar' && value instanceof File) {
+      if (value instanceof File || value instanceof Blob) {
         formData.append(key, value);
         return;
       }
-      // JSON fields must be stringified for multipart
-      if (typeof value === 'object') {
-        // Dates to YYYY-MM-DD
-        if (value instanceof Date) {
-          const iso = value.toISOString().slice(0, 10);
-          formData.append(key, iso);
-        } else {
-          formData.append(key, JSON.stringify(value));
-        }
-      } else {
-        formData.append(key, value);
+      if (value instanceof Date) {
+        formData.append(key, value.toISOString().slice(0, 10));
+        return;
       }
+      if (typeof value === 'object') {
+        formData.append(key, JSON.stringify(value));
+        return;
+      }
+      formData.append(key, value);
     });
 
-    return api.patch("/api/auth/profile/update-complete/", formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    return api.patch('/api/auth/profile/update-complete/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
   
@@ -237,6 +240,22 @@ export const paymentAPI = {
 // Admin API
 export const adminAPI = {
   getStats: () => api.get('/api/admin/stats/'),
+};
+
+// Education API
+export const educationAPI = {
+  // Upload a user document (e.g., IELTS certificate)
+  uploadDocument: ({ file, name = 'IELTS Certificate', description = '' }) => {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('document_type', 'language_certificate');
+    formData.append('file', file);
+    if (description) formData.append('description', description);
+    return api.post('/api/education/documents/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  listDocuments: () => api.get('/api/education/documents/'),
 };
 
 // Helper functions

@@ -19,6 +19,8 @@ import {
   FileInput,
   Alert
 } from '@mantine/core';
+import { useEffect } from 'react';
+import { useDashboardStore } from '../../../../store/dashboardStore';
 import { 
   IconCreditCard, 
   IconPlayerPlay, 
@@ -76,6 +78,11 @@ const CodiceSection = ({ progress }) => {
   // Рассчитываем прогресс на основе реальных данных
   const completedSteps = steps.filter(step => step.completed).length;
   const codiceProgress = Math.round((completedSteps / steps.length) * 100);
+  // Синхронизируем прогресс Codice с глобальным стором
+  const updateProgress = useDashboardStore((s) => s.updateProgress);
+  useEffect(() => {
+    updateProgress('codice', codiceProgress);
+  }, [codiceProgress, updateProgress]);
   const documents = [
     {
       id: 1,

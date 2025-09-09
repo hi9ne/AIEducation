@@ -46,8 +46,8 @@ class UserLoginSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = '__all__'
-        read_only_fields = ('user', 'created_at', 'updated_at')
+    fields = '__all__'
+    read_only_fields = ('user', 'created_at', 'updated_at')
 
 
 class UserSerializer(serializers.ModelSerializer):
