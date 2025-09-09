@@ -335,7 +335,24 @@ def update_user_profile(request):
             profile, created = UserProfile.objects.get_or_create(user=user)
             profile_serializer = UserProfileSerializer(profile, data=profile_data, partial=True)
             if profile_serializer.is_valid():
-                profile_serializer.save()
+                # Если данные профиля включают ключевые поля, можно отметить онбординг завершенным
+                updated_profile = profile_serializer.save()
+                try:
+                    required_ok = all([
+                        bool(updated_profile.education_background),
+                        bool(updated_profile.budget_range),
+                        bool(updated_profile.study_duration),
+                        isinstance(updated_profile.interests, list) and len(updated_profile.interests) > 0,
+                        isinstance(updated_profile.goals, list) and len(updated_profile.goals) > 0,
+                        isinstance(updated_profile.language_levels, dict) and len(updated_profile.language_levels) > 0,
+                        bool(user.phone),
+                        bool(user.city),
+                    ])
+                    if required_ok and not updated_profile.onboarding_completed:
+                        updated_profile.onboarding_completed = True
+                        updated_profile.save(update_fields=['onboarding_completed'])
+                except Exception:
+                    pass
             else:
                 return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
