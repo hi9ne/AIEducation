@@ -43,8 +43,9 @@ const CentralContent = ({ activeSection, overallProgress, currentProgress }) => 
   return (
     <Box style={{ 
       height: '100%', 
-      backgroundColor: 'var(--mantine-color-gray-0)',
-      overflow: 'hidden'
+  backgroundColor: 'var(--mantine-color-gray-0)',
+  overflowY: 'auto',
+  overflowX: 'hidden'
     }}>
       <AnimatePresence mode="wait">
         <motion.div
