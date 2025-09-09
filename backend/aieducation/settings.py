@@ -1,26 +1,31 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-# CORS settings - prefer environment configuration for production
-# Set CORS_ALLOW_ALL_ORIGINS via env (default False in prod)
+
+# Base dir and dotenv
+BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(dotenv_path=BASE_DIR / '.env')
+
+# SECURITY: secret from env, fallback for local dev
+SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-secret-for-dev')
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+
+# Consolidated CORS/CSRF configuration (env-driven)
+# CORS_ALLOW_ALL_ORIGINS can be enabled in development via env
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() == 'true'
 CORS_ALLOW_CREDENTIALS = os.getenv('CORS_ALLOW_CREDENTIALS', 'True').lower() == 'true'
 
-# Build CORS_ALLOWED_ORIGINS from env or FRONTEND_URL (if provided)
-_raw_cors = os.getenv('CORS_ALLOWED_ORIGINS', '')
-if _raw_cors.strip():
+# Build CORS_ALLOWED_ORIGINS from env or FRONTEND_URL; allow common local dev origins when DEBUG
+_raw_cors = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
+if _raw_cors:
     CORS_ALLOWED_ORIGINS = [x.strip().rstrip('/') for x in _raw_cors.split(',') if x.strip()]
 else:
-    frontend_url = os.getenv('FRONTEND_URL', '').strip().rstrip('/')
-    # include common local dev origins for convenience
+    _frontend = os.getenv('FRONTEND_URL', '').strip().rstrip('/')
     local_origins = [
         'http://localhost:3000', 'http://127.0.0.1:3000',
         'http://localhost:5173', 'http://127.0.0.1:5173',
-        'http://localhost:5174', 'http://127.0.0.1:5174',
-        'http://localhost:5175', 'http://127.0.0.1:5175',
-        'http://localhost:5176', 'http://127.0.0.1:5176',
     ]
-    CORS_ALLOWED_ORIGINS = [*(local_origins if not frontend_url else []), *( [frontend_url] if frontend_url else [])]
+    CORS_ALLOWED_ORIGINS = [*(local_origins if DEBUG and not _frontend else []), *([_frontend] if _frontend else [])]
 
 # Allowed methods & headers
 CORS_ALLOW_METHODS = [
@@ -43,8 +48,9 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
-CORS_ALLOW_ALL_ORIGINS = True  # Only for development
-CORS_ALLOW_CREDENTIALS = True
+
+# CSRF trusted origins should mirror allowed CORS origins when using separate frontend host
+CSRF_TRUSTED_ORIGINS = [u.rstrip('/') for u in CORS_ALLOWED_ORIGINS if u]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -172,6 +178,7 @@ REST_FRAMEWORK = {
 # JWT Settings
 from datetime import timedelta
 
+# Celery Configuration
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -199,42 +206,7 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-# CORS settings - prefer environment configuration for production
-# Allow enabling wildcard for development via env
-CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'False').lower() == 'true'
-CORS_ALLOW_CREDENTIALS = os.getenv('CORS_ALLOW_CREDENTIALS', 'True').lower() == 'true'
-
-# Build CORS_ALLOWED_ORIGINS from env or FRONTEND_URL
-_raw_cors = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
-if _raw_cors:
-    CORS_ALLOWED_ORIGINS = [x.strip().rstrip('/') for x in _raw_cors.split(',') if x.strip()]
-else:
-    _frontend = os.getenv('FRONTEND_URL', '').strip().rstrip('/')
-    CORS_ALLOWED_ORIGINS = [_frontend] if _frontend else []
-
-# Allowed methods & headers
-CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
-]
-
-# Additional CORS headers
-CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
-]
-
+# Celery Configuration
 # Celery Configuration
 CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
