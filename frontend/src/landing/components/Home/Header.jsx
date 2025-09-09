@@ -204,15 +204,9 @@ const HeaderComponent = () => {
             )}
           </ul>
 
-          {/* Authentication buttons */}
+          {/* Authentication buttons: show only Login for guests; remove extra dashboard CTA */}
           {isAuthenticated ? (
             <div className="auth-buttons">
-              <button 
-                className="dashboard-button"
-                onClick={handleDashboardClick}
-              >
-                <span>Войти в личный кабинет</span>
-              </button>
               <button 
                 className="logout-button"
                 onClick={handleLogout}
