@@ -2,10 +2,10 @@
   "build": {
     "nixpacks": {
       "phases": {
-        "setup": {
-          "nixPkgs": ["python311", "nodejs_20"]
+          "setup": {
+            "nixPkgs": ["python311", "nodejs_22"]
+          }
         }
-      }
     }
   }
 }
