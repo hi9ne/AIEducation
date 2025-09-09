@@ -291,7 +291,7 @@ const MainPage = () => {
   // Show error state if there's an error
   if (error) {
     return (
-      <Alert color="red" title="Error" mb="xl">
+      <Alert color="red" title="Error" mb="xl" radius="md">
         {error}
         </Alert>
     );
@@ -301,7 +301,11 @@ const MainPage = () => {
           <Box>
       {/* Header with refresh button */}
       <Group justify="space-between" mb="xl">
-        <Text size="xl" fw={600}>Добро пожаловать, {user?.first_name || 'Пользователь'}!</Text>
+        <Text size="xl" fw={800} style={{
+          background: 'linear-gradient(90deg, #1e3a8a 0%, #0ea5e9 50%, #14b8a6 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
+        }}>Добро пожаловать, {user?.first_name || 'Пользователь'}!</Text>
         <ActionIcon
           variant="light"
           size="lg"
@@ -329,7 +333,7 @@ const MainPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
@@ -353,7 +357,7 @@ const MainPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
@@ -377,7 +381,7 @@ const MainPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
@@ -397,7 +401,7 @@ const MainPage = () => {
         </Grid>
 
       {/* Прогресс недели */}
-      <Card shadow="sm" padding="lg" radius="md" withBorder mb="xl">
+  <Card shadow="md" padding="lg" radius="lg" withBorder mb="xl" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
         <Text fw={600} size="lg" mb="md">Прогресс этой недели</Text>
         <Stack gap="md">
           <Group justify="space-between">
@@ -421,7 +425,7 @@ const MainPage = () => {
 
       {/* Последние достижения */}
       {displayStats?.recent_achievements?.length > 0 && (
-        <Card shadow="sm" padding="lg" radius="md" withBorder mb="xl">
+  <Card shadow="md" padding="lg" radius="lg" withBorder mb="xl" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
           <Text fw={600} size="lg" mb="md">Последние достижения</Text>
           <Stack gap="md">
             {displayStats?.recent_achievements?.map((achievement, index) => (
@@ -448,7 +452,7 @@ const MainPage = () => {
 
       {/* Предстоящие события */}
       {displayStats?.upcoming_events?.length > 0 && (
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
+  <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
           <Text fw={600} size="lg" mb="md">Предстоящие события</Text>
           <Stack gap="md">
             {displayStats?.upcoming_events?.map((event, index) => (

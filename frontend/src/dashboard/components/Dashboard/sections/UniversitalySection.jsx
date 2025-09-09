@@ -18,6 +18,8 @@ import {
   TextInput,
   FileInput
 } from '@mantine/core';
+import { useEffect } from 'react';
+import { useDashboardStore } from '../../../../store/dashboardStore';
 import { 
   IconFileText, 
   IconPlayerPlay, 
@@ -85,6 +87,11 @@ const UniversitalySection = ({ progress }) => {
   const completedSteps = steps.filter(step => step.completed).length;
   const totalSteps = steps.length;
   const progressPercentage = Math.round((completedSteps / totalSteps) * 100);
+  // Синхронизируем прогресс Universitaly с глобальным стором
+  const updateProgress = useDashboardStore((s) => s.updateProgress);
+  useEffect(() => {
+    updateProgress('universitaly', progressPercentage);
+  }, [progressPercentage, updateProgress]);
 
   return (
     <Box p="md">
@@ -92,20 +99,22 @@ const UniversitalySection = ({ progress }) => {
         {/* Заголовок секции */}
         <Group justify="space-between">
           <Box>
-            <Text size="xl" fw={700} c="blue">
-              Universitaly
-            </Text>
+            <Text size="xl" fw={800} style={{
+              background: 'linear-gradient(90deg, #1e3a8a 0%, #0ea5e9 50%, #14b8a6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}>Universitaly</Text>
             <Text size="sm" c="dimmed">
               Регистрация и подача документов
             </Text>
           </Box>
-          <Badge color="blue" variant="light" size="lg">
+          <Badge color="blue" variant="light" size="lg" radius="sm">
             {progressPercentage}% завершено
           </Badge>
         </Group>
 
         {/* Общий прогресс */}
-        <Card withBorder>
+  <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
           <Stack gap="md">
             <Group justify="space-between">
               <Text size="lg" fw={600}>
@@ -126,9 +135,9 @@ const UniversitalySection = ({ progress }) => {
         </Card>
 
         {/* Статистика */}
-        <Grid>
+    <Grid>
           <Grid.Col span={{ base: 12, md: 4 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-green-0)' }}>
+      <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-green-0)', border: '1px solid var(--mantine-color-green-2)' }} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconCheck size={48} color="var(--mantine-color-green-6)" />
                 <Text size="lg" fw={700} c="green">
@@ -142,7 +151,7 @@ const UniversitalySection = ({ progress }) => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 4 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-orange-0)' }}>
+            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-orange-0)', border: '1px solid var(--mantine-color-orange-2)' }} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconClock size={48} color="var(--mantine-color-orange-6)" />
                 <Text size="lg" fw={700} c="orange">
@@ -156,7 +165,7 @@ const UniversitalySection = ({ progress }) => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 4 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)' }}>
+            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)', border: '1px solid var(--mantine-color-blue-2)' }} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconFileText size={48} color="var(--mantine-color-blue-6)" />
                 <Text size="lg" fw={700} c="blue">
@@ -171,7 +180,7 @@ const UniversitalySection = ({ progress }) => {
         </Grid>
 
         {/* Список шагов */}
-        <Card withBorder>
+  <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
           <Stack gap="md">
             <Text size="lg" fw={600}>
               Пошаговый план
@@ -181,7 +190,9 @@ const UniversitalySection = ({ progress }) => {
                 <Paper
                   key={step.id}
                   p="md"
-                  withBorder
+      withBorder
+      radius="md"
+      shadow="xs"
                   style={{
                     backgroundColor: step.completed 
                       ? 'var(--mantine-color-green-0)' 
@@ -200,7 +211,7 @@ const UniversitalySection = ({ progress }) => {
                           {step.title}
                         </Text>
                         {step.required && (
-                          <Badge color="red" variant="light" size="sm">
+                          <Badge color="red" variant="light" size="sm" radius="sm">
                             Обязательно
                           </Badge>
                         )}
@@ -227,7 +238,7 @@ const UniversitalySection = ({ progress }) => {
                     </Box>
                     <Group gap="sm">
                       {step.completed ? (
-                        <Badge color="green" variant="light">
+                        <Badge color="green" variant="light" radius="sm">
                           Завершено
                         </Badge>
                       ) : (
@@ -235,6 +246,7 @@ const UniversitalySection = ({ progress }) => {
                           size="sm"
                           variant="light"
                           leftSection={<IconPlayerPlay size={16} />}
+                          radius="md"
                         >
                           Начать
                         </Button>
@@ -248,7 +260,7 @@ const UniversitalySection = ({ progress }) => {
         </Card>
 
         {/* Действия */}
-        <Card withBorder>
+  <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
           <Stack gap="md">
             <Text size="lg" fw={600}>
               Быстрые действия
@@ -257,18 +269,21 @@ const UniversitalySection = ({ progress }) => {
               <Button
                 leftSection={<IconUpload size={16} />}
                 onClick={() => setOpened(true)}
+    radius="md"
               >
                 Загрузить документы
               </Button>
               <Button
                 variant="light"
                 leftSection={<IconDownload size={16} />}
+    radius="md"
               >
                 Скачать шаблоны
               </Button>
               <Button
                 variant="light"
                 leftSection={<IconEye size={16} />}
+    radius="md"
               >
                 Просмотреть заявку
               </Button>
@@ -282,6 +297,9 @@ const UniversitalySection = ({ progress }) => {
           onClose={() => setOpened(false)}
           title="Загрузка документов"
           size="md"
+          centered
+          overlayProps={{ backgroundOpacity: 0.45, blur: 3 }}
+          transitionProps={{ transition: 'pop', duration: 200 }}
         >
           <Stack gap="md">
             <Text size="sm" c="dimmed">
@@ -294,10 +312,11 @@ const UniversitalySection = ({ progress }) => {
               onChange={setSelectedFile}
               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
             />
-            <Group justify="flex-end" gap="sm">
+      <Group justify="flex-end" gap="sm">
               <Button
                 variant="light"
                 onClick={() => setOpened(false)}
+        radius="md"
               >
                 Отмена
               </Button>
@@ -309,6 +328,7 @@ const UniversitalySection = ({ progress }) => {
                   setSelectedFile(null);
                 }}
                 disabled={!selectedFile}
+        radius="md"
               >
                 Загрузить
               </Button>

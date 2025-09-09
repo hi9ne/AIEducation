@@ -35,13 +35,15 @@ class UserProfile(models.Model):
     budget_range = models.CharField(max_length=50, blank=True)
     study_duration = models.CharField(max_length=50, blank=True)
     onboarding_completed = models.BooleanField(default=False)
+    # Дата экзамена/сертификата IELTS
+    ielts_exam_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Profile of {self.user.email}"
 
-
+    
 class EmailVerification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     token = models.CharField(max_length=100, unique=True)

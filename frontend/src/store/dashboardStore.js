@@ -24,6 +24,9 @@ export const useDashboardStore = create((set, get) => ({
     level: 'Продвинутый',
     ieltsCurrent: 5.5,
     ieltsTarget: 7.0,
+  // Локальный статус сертификата IELTS (UI-уровень)
+  // { number?: string, score?: number, date?: string, fileName?: string }
+  ieltsCertificate: null,
     tolcCurrent: 0,
     tolcTarget: 0
   },
@@ -47,7 +50,7 @@ export const useDashboardStore = create((set, get) => ({
     { title: 'IELTS тест', days: 45, priority: 'high', color: 'red' },
     { title: 'Подача документов', days: 60, priority: 'medium', color: 'yellow' },
     { title: 'TOLC тест', days: 30, priority: 'high', color: 'red' },
-    { title: 'Виза', days: 90, priority: 'low', color: 'green' }
+    { title: 'Виза', days: 90, priority: 'low', color: 'green' }    
   ],
 
   // Действия
@@ -102,5 +105,13 @@ export const useDashboardStore = create((set, get) => ({
 
   updateUserData: (data) => set((state) => ({
     userData: { ...state.userData, ...data }
+  })),
+
+  // Управление сертификатом IELTS (UI-хранилище)
+  setIELTSCertificate: (cert) => set((state) => ({
+    userData: { ...state.userData, ieltsCertificate: cert }
+  })),
+  removeIELTSCertificate: () => set((state) => ({
+    userData: { ...state.userData, ieltsCertificate: null }
   }))
 }));

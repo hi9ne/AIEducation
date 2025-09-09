@@ -13,7 +13,6 @@ import {
   Card,
   Grid,
   TextInput,
-  Progress,
   Select,
   NumberInput,
   Pagination,
@@ -21,109 +20,24 @@ import {
   Alert,
   ActionIcon,
   Modal,
-  Textarea,
 } from '@mantine/core';
 import {
   IconSearch,
-  IconFilter,
   IconMapPin,
-  IconStar,
   IconCurrencyEuro,
   IconUsers,
   IconCalendar,
-  IconBook,
-  IconBuilding,
-  IconArrowRight,
   IconEye,
   IconHeart,
   IconShare,
   IconDownload,
   IconExternalLink,
   IconPlus,
-  IconX,
-  IconCheck,
-  IconClock,
   IconAlertCircle,
+  IconTrophy,
 } from '@tabler/icons-react';
 
-// Тестовые данные для университетов
-const mockUniversities = [
-  {
-    id: 1,
-    name: "University of Bologna",
-    country: "Italy",
-    city: "Bologna",
-    description: "Старейший университет в мире, основанный в 1088 году. Один из ведущих университетов Италии.",
-    website: "https://www.unibo.it",
-    ranking: 167,
-    tuition: 2200,
-    currency: "EUR",
-    students: 87000,
-    founded_year: 1088,
-    programs: ["Computer Science", "Engineering", "Medicine", "Law", "Economics"],
-    deadline: "2024-07-15"
-  },
-  {
-    id: 2,
-    name: "Sapienza University of Rome",
-    country: "Italy",
-    city: "Rome",
-    description: "Крупнейший университет Европы по количеству студентов. Ведущий исследовательский университет.",
-    website: "https://www.uniroma1.it",
-    ranking: 171,
-    tuition: 2000,
-    currency: "EUR",
-    students: 112000,
-    founded_year: 1303,
-    programs: ["Architecture", "Engineering", "Medicine", "Psychology", "Literature"],
-    deadline: "2024-08-01"
-  },
-  {
-    id: 3,
-    name: "University of Milan",
-    country: "Italy",
-    city: "Milan",
-    description: "Один из крупнейших университетов Италии с сильными программами в области науки и технологий.",
-    website: "https://www.unimi.it",
-    ranking: 301,
-    tuition: 2500,
-    currency: "EUR",
-    students: 60000,
-    founded_year: 1924,
-    programs: ["Business", "Computer Science", "Medicine", "Pharmacy", "Law"],
-    deadline: "2024-06-30"
-  },
-  {
-    id: 4,
-    name: "Politecnico di Milano",
-    country: "Italy",
-    city: "Milan",
-    description: "Ведущий технический университет Италии, специализирующийся на инженерии, архитектуре и дизайне.",
-    website: "https://www.polimi.it",
-    ranking: 149,
-    tuition: 3800,
-    currency: "EUR",
-    students: 47000,
-    founded_year: 1863,
-    programs: ["Engineering", "Architecture", "Design", "Management", "Mathematics"],
-    deadline: "2024-07-20"
-  },
-  {
-    id: 5,
-    name: "University of Turin",
-    country: "Italy",
-    city: "Turin",
-    description: "Один из старейших университетов Италии с богатой историей и современными исследовательскими программами.",
-    website: "https://www.unito.it",
-    ranking: 401,
-    tuition: 1800,
-    currency: "EUR",
-    students: 80000,
-    founded_year: 1404,
-    programs: ["Medicine", "Law", "Economics", "Psychology", "Political Science"],
-    deadline: "2024-08-15"
-  }
-];
+// Статических данных больше нет; компонента полагается только на API
 
 const UniversitiesSection = ({ progress }) => {
   const dispatch = useDispatch();
@@ -134,9 +48,7 @@ const UniversitiesSection = ({ progress }) => {
   const loading = useSelector((state) => state.education.loading.universities);
   const error = useSelector((state) => state.education.error);
 
-  // Извлекаем значения из объекта progress
-  const universitiesProgress = progress?.currentProgress?.universities || 0;
-  const overallProgress = progress?.overallProgress || 0;
+  // Прогресс поиска убран
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
@@ -166,24 +78,34 @@ const UniversitiesSection = ({ progress }) => {
   console.log('UniversitiesSection - universities:', universities);
   console.log('UniversitiesSection - displayUniversities:', displayUniversities);
 
-  // Фильтрация университетов
+  // Фильтрация университетов (учитываем город/описание и отсутствие полей)
   const filteredUniversities = displayUniversities?.filter((university) => {
-    const matchesSearch = university.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         university.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (university.programs || []).some(program => 
-                           program.toLowerCase().includes(searchTerm.toLowerCase())
-                         );
-    
-    const matchesCountry = !selectedCountry || university.country === selectedCountry;
-    const matchesProgram = !selectedProgram || (university.programs || []).includes(selectedProgram);
-    const matchesTuition = (!minTuition || (university.tuition || 0) >= minTuition) &&
-                          (!maxTuition || (university.tuition || 0) <= maxTuition);
-    
+    const term = (searchTerm || '').toLowerCase().trim();
+    const name = (university.name || '').toLowerCase();
+    const country = (university.country || '').toLowerCase();
+    const city = (university.city || '').toLowerCase();
+    const description = (university.description || '').toLowerCase();
+    const programsList = (university.programs || []).map(p => (p || '').toLowerCase());
+    const tuitionVal = university.tuition ?? university.tuition_fee ?? 0;
+
+    const matchesSearch = !term ||
+      name.includes(term) ||
+      country.includes(term) ||
+      city.includes(term) ||
+      description.includes(term) ||
+      programsList.some(p => p.includes(term));
+
+    const matchesCountry = !selectedCountry || country === (selectedCountry || '').toLowerCase();
+    const matchesProgram = !selectedProgram || programsList.some(p => p === (selectedProgram || '').toLowerCase());
+    const matchesTuition = (minTuition === '' || (tuitionVal || 0) >= Number(minTuition)) &&
+                           (maxTuition === '' || (tuitionVal || 0) <= Number(maxTuition));
+
     return matchesSearch && matchesCountry && matchesProgram && matchesTuition;
   }) || [];
 
-  const countries = [...new Set(displayUniversities?.map(u => u.country) || [])];
-  const programs = [...new Set(displayUniversities?.flatMap(u => u.programs || []) || [])];
+  // Значения для выпадающих списков без пустых элементов
+  const countries = [...new Set((displayUniversities?.map(u => u.country)?.filter(Boolean)) || [])];
+  const programs = [...new Set((displayUniversities?.flatMap(u => u.programs || [])?.filter(Boolean)) || [])];
 
   const handleViewDetails = (university) => {
     setSelectedUniversity(university);
@@ -230,28 +152,43 @@ const UniversitiesSection = ({ progress }) => {
   }
 
   return (
-    <Box>
-      <Text size="xl" fw={600} mb="md">Поиск и выбор университетов</Text>
+    <Box style={{ padding: '4px' }}>
+      <Text
+        size="xl"
+        fw={800}
+        mb="sm"
+        style={{
+          background: 'linear-gradient(90deg, #1e3a8a 0%, #0ea5e9 50%, #14b8a6 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          letterSpacing: '0.2px'
+        }}
+      >
+        Поиск и выбор университетов
+      </Text>
       
-      {/* Прогресс */}
-      <Paper p="md" mb="md" withBorder>
-        <Group justify="space-between" mb="sm">
-          <Text fw={500}>Прогресс поиска университетов</Text>
-          <Text size="sm" c="dimmed">{universitiesProgress}%</Text>
-        </Group>
-        <Progress value={universitiesProgress} size="lg" radius="xl" />
-      </Paper>
+  {/* Блок прогресса поиска университетов удалён по требованию */}
 
       {/* Фильтры */}
-      <Paper p="md" mb="md" withBorder>
-        <Text fw={500} mb="sm">Фильтры поиска</Text>
-        <Grid>
+      <Paper p="md" mb="md" withBorder style={{
+        background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
+        borderRadius: 12,
+        boxShadow: '0 6px 18px rgba(15, 23, 42, 0.06)'
+      }}>
+        <Group justify="space-between" mb="sm">
+          <Text fw={600}>Фильтры поиска</Text>
+          <Badge variant="light" color="blue">{(universities || []).length} записей</Badge>
+        </Group>
+        <Grid gutter="md">
           <Grid.Col span={{ base: 12, md: 6 }}>
             <TextInput
               placeholder="Поиск по названию, стране или программе..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              leftSection={<IconSearch size={16} />}
+              leftSection={<IconSearch size={16} color="#2563eb" />}
+              size="md"
+              radius="md"
+              variant="filled"
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, md: 3 }}>
@@ -261,6 +198,9 @@ const UniversitiesSection = ({ progress }) => {
               onChange={setSelectedCountry}
               data={countries.map(country => ({ value: country, label: country }))}
               clearable
+              size="md"
+              radius="md"
+              variant="filled"
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, md: 3 }}>
@@ -270,6 +210,9 @@ const UniversitiesSection = ({ progress }) => {
               onChange={setSelectedProgram}
               data={programs.map(program => ({ value: program, label: program }))}
               clearable
+              size="md"
+              radius="md"
+              variant="filled"
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, md: 3 }}>
@@ -277,8 +220,11 @@ const UniversitiesSection = ({ progress }) => {
               placeholder="Мин. стоимость"
               value={minTuition}
               onChange={setMinTuition}
-              leftSection={<IconCurrencyEuro size={16} />}
+              leftSection={<IconCurrencyEuro size={16} color="#2563eb" />}
               min={0}
+              size="md"
+              radius="md"
+              variant="filled"
             />
           </Grid.Col>
           <Grid.Col span={{ base: 6, md: 3 }}>
@@ -286,8 +232,11 @@ const UniversitiesSection = ({ progress }) => {
               placeholder="Макс. стоимость"
               value={maxTuition}
               onChange={setMaxTuition}
-              leftSection={<IconCurrencyEuro size={16} />}
+              leftSection={<IconCurrencyEuro size={16} color="#2563eb" />}
               min={0}
+              size="md"
+              radius="md"
+              variant="filled"
             />
           </Grid.Col>
         </Grid>
@@ -310,17 +259,29 @@ const UniversitiesSection = ({ progress }) => {
         </Group>
 
         {filteredUniversities.length === 0 ? (
-          <Alert icon={<IconAlertCircle size={16} />} title="Университеты не найдены">
+          <Alert icon={<IconAlertCircle size={16} />} title="Университеты не найдены" color="blue" radius="md">
             Попробуйте изменить параметры поиска
           </Alert>
         ) : (
-          <Grid>
+          <Grid gutter="lg">
             {filteredUniversities.map((university) => (
               <Grid.Col key={university.id} span={{ base: 12, md: 6, lg: 4 }}>
-                <Card shadow="sm" padding="lg" radius="md" withBorder>
-                  <Card.Section withBorder inheritPadding py="xs">
+                <Card
+                  shadow="md"
+                  padding="lg"
+                  radius="lg"
+                  withBorder
+                  style={{
+                    background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
+                    borderColor: 'var(--mantine-color-gray-3)',
+                    transition: 'transform 150ms ease, box-shadow 150ms ease'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(2,6,23,0.08)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = ''; }}
+                >
+                  <Card.Section withBorder inheritPadding py="xs" style={{ backgroundColor: 'rgba(2,132,199,0.04)' }}>
                     <Group justify="space-between">
-                      <Text fw={500} size="lg">{university.name}</Text>
+                      <Text fw={700} size="lg">{university.name}</Text>
                       <ActionIcon
                         variant="subtle"
                         color={favorites.has(university.id) ? "red" : "gray"}
@@ -332,30 +293,51 @@ const UniversitiesSection = ({ progress }) => {
                   </Card.Section>
 
                   <Stack gap="xs" mt="md">
+                    {/* Местоположение (всегда отображается) */}
                     <Group gap="xs">
                       <IconMapPin size={16} />
-                      <Text size="sm" c="dimmed">{university.country}</Text>
+                      <Text size="sm" c="dimmed">{university.city || university.country || '—'}</Text>
                     </Group>
-                    
+
+                    {/* Стоимость (всегда отображается) */}
+                    {(() => {
+                      const val = university.tuition ?? university.tuition_fee;
+                      const shown = (val === null || val === undefined || val === '')
+                        ? '—'
+                        : (() => { const num = Number(val); return isNaN(num) ? String(val) : num.toLocaleString(); })();
+                      const curr = university.currency ? ` (${university.currency})` : '';
+                      return (
+                        <Group gap="xs">
+                          <IconCurrencyEuro size={16} />
+                          <Text size="sm" c="dimmed">{shown}{shown !== '—' ? ' / год' : ''}{curr}</Text>
+                        </Group>
+                      );
+                    })()}
+
+                    {/* Кол-во студентов (всегда отображается) */}
+                    {(() => {
+                      const val = university.students ?? university.student_count;
+                      const shown = (val === null || val === undefined)
+                        ? '—'
+                        : (() => { const num = Number(val); return isNaN(num) ? String(val) : num.toLocaleString(); })();
+                      return (
+                        <Group gap="xs">
+                          <IconUsers size={16} />
+                          <Text size="sm" c="dimmed">{shown} студентов</Text>
+                        </Group>
+                      );
+                    })()}
+
+                    {/* Рейтинг (всегда отображается) */}
                     <Group gap="xs">
-                      <IconCurrencyEuro size={16} />
-                      <Text size="sm" c="dimmed">
-                        {(university.tuition || 0).toLocaleString()} €/год
-                      </Text>
+                      <IconTrophy size={16} color="#f59e0b" />
+                      <Text size="sm" c="dimmed">Рейтинг: {university.ranking ?? '—'}</Text>
                     </Group>
-                    
+
+                    {/* Год основания (всегда отображается) */}
                     <Group gap="xs">
-                      <IconUsers size={16} />
-                      <Text size="sm" c="dimmed">
-                        {(university.students || 0).toLocaleString()} студентов
-                      </Text>
-                    </Group>
-                    
-                    <Group gap="xs">
-                      <IconCalendar size={16} />
-                      <Text size="sm" c="dimmed">
-                        Дедлайн: {university.deadline}
-                      </Text>
+                      <IconCalendar size={16} color="#0ea5e9" />
+                      <Text size="sm" c="dimmed">Основан: {university.founded_year ?? '—'}</Text>
                     </Group>
                   </Stack>
 
@@ -378,10 +360,22 @@ const UniversitiesSection = ({ progress }) => {
                       size="sm"
                       leftSection={<IconEye size={16} />}
                       onClick={() => handleViewDetails(university)}
+                      radius="md"
                     >
                       Подробнее
                     </Button>
                     <Group gap="xs">
+                      <Button
+                        variant="subtle"
+                        size="sm"
+                        leftSection={<IconExternalLink size={14} />}
+                        onClick={() => university.website && window.open(university.website, '_blank')}
+                        disabled={!university.website}
+                        title={university.website ? 'Открыть сайт' : 'Сайт не указан'}
+                        radius="md"
+                      >
+                        Сайт
+                      </Button>
                       <ActionIcon
                         variant="light"
                         size="sm"
@@ -411,6 +405,8 @@ const UniversitiesSection = ({ progress }) => {
               value={currentPage}
               onChange={setCurrentPage}
               total={Math.ceil(filteredUniversities.length / 12)}
+              color="blue"
+              radius="md"
             />
           </Group>
         )}
@@ -422,41 +418,48 @@ const UniversitiesSection = ({ progress }) => {
         onClose={() => setOpened(false)}
         title={selectedUniversity?.name}
         size="lg"
+        centered
+        overlayProps={{ backgroundOpacity: 0.45, blur: 3 }}
+        transitionProps={{ transition: 'pop', duration: 200 }}
       >
         {selectedUniversity && (
           <Stack gap="md">
             <Group>
               <IconMapPin size={16} />
-              <Text>{selectedUniversity.country}</Text>
+              <Text>{selectedUniversity.city || selectedUniversity.country || '—'}</Text>
             </Group>
             
             <Group>
               <IconCurrencyEuro size={16} />
-              <Text>{(selectedUniversity.tuition || 0).toLocaleString()} €/год</Text>
+              <Text>{(selectedUniversity.tuition ?? selectedUniversity.tuition_fee ?? 0).toLocaleString()} €/год</Text>
             </Group>
             
             <Group>
               <IconUsers size={16} />
-              <Text>{(selectedUniversity.students || 0).toLocaleString()} студентов</Text>
+              <Text>{(selectedUniversity.students ?? selectedUniversity.student_count ?? 0).toLocaleString()} студентов</Text>
             </Group>
             
             <Group>
               <IconCalendar size={16} />
-              <Text>Дедлайн: {selectedUniversity.deadline}</Text>
+              <Text>Дедлайн: {selectedUniversity.deadline || '—'}</Text>
             </Group>
             
-            <Text fw={500}>Программы:</Text>
-            <Group gap="xs">
-              {(selectedUniversity.programs || []).map((program, index) => (
-                <Badge key={index} variant="light">
-                  {program}
-                </Badge>
-              ))}
-            </Group>
+            {(selectedUniversity.programs && selectedUniversity.programs.length > 0) && (
+              <>
+                <Text fw={500}>Программы:</Text>
+                <Group gap="xs">
+                  {(selectedUniversity.programs || []).map((program, index) => (
+                    <Badge key={index} variant="light">
+                      {program}
+                    </Badge>
+                  ))}
+                </Group>
+              </>
+            )}
             
             <Text fw={500}>Описание:</Text>
             <Text size="sm" c="dimmed">
-              {selectedUniversity.description}
+              {selectedUniversity.description || 'Описание недоступно'}
             </Text>
             
             <Group justify="space-between" mt="md">
