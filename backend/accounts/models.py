@@ -34,6 +34,7 @@ class UserProfile(models.Model):
     preferred_countries = models.JSONField(default=list, blank=True)
     budget_range = models.CharField(max_length=50, blank=True)
     study_duration = models.CharField(max_length=50, blank=True)
+    onboarding_completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
