@@ -31,9 +31,18 @@ if _raw_csrf.strip():
     CSRF_TRUSTED_ORIGINS = [x.strip().rstrip('/') for x in _raw_csrf.split(',') if x.strip()]
 else:
     # add both http and https for convenience (Django requires absolute origins)
+    _csrf_hosts: list[str] = []
+    for h in ALLOWED_HOSTS:
+        if not h or h in ('localhost', '127.0.0.1'):
+            continue
+        if h.startswith('.'):
+            h_origin = f"*.{h.lstrip('.')}"
+        else:
+            h_origin = h
+        _csrf_hosts.append(h_origin)
     CSRF_TRUSTED_ORIGINS = [
-        *(f"https://{h}" for h in ALLOWED_HOSTS if h and h != 'localhost' and h != '127.0.0.1'),
-        *(f"http://{h}" for h in ALLOWED_HOSTS if h and h != 'localhost' and h != '127.0.0.1'),
+        *(f"https://{h}" for h in _csrf_hosts),
+        *(f"http://{h}" for h in _csrf_hosts),
     ]
 
 # CORS settings
