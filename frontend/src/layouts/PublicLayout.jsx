@@ -1,11 +1,13 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import HeaderComponent from '../landing/components/Home/Header';
 
 const PublicLayout = () => {
+  const location = useLocation();
+  const hideHeader = location.pathname === '/login' || location.pathname === '/register';
   return (
     <>
-      <HeaderComponent />
+      {!hideHeader && <HeaderComponent />}
       <main>
         <Outlet />
       </main>

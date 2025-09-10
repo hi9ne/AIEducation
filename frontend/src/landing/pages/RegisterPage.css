@@ -22,25 +22,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 0;
+  padding: 1.5rem 0;
 }
 
 .register-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
   align-items: center;
   width: 100%;
-  max-width: 1200px;
+  max-width: 720px;
 }
 
 .register-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: var(--app-color-surface);
+  backdrop-filter: none;
+  border: 1px solid var(--mantine-color-gray-2);
   max-width: 600px;
   margin: 0 auto;
   z-index: 3;
+  box-shadow: var(--app-shadow-sm);
+  padding: 24px; /* override Mantine p for consistency */
 }
 
 .back-button {
@@ -52,7 +54,7 @@
 }
 
 .register-title {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-indigo-5) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -119,7 +121,7 @@
 }
 
 .register-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-indigo-5) 100%);
   border: none;
   transition: all 0.3s ease;
   position: relative;
@@ -142,8 +144,15 @@
 }
 
 .register-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  transform: translateY(-0.5px);
+  box-shadow: 0 6px 14px rgba(102, 126, 234, 0.18);
+}
+
+/* Google button container */
+.social-google {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .social-button {

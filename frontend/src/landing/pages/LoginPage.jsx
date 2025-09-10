@@ -37,7 +37,7 @@ import {
   IconShield,
   IconStar
 } from '@tabler/icons-react';
-import { motion } from 'framer-motion';
+// animations removed for performance
 import './LoginPage.css';
 import { authAPI } from '../../shared/services/api';
 import { useRef } from 'react';
@@ -54,11 +54,12 @@ function LoginPage() {
   });
   const [twofaCode, setTwofaCode] = useState('');
 
-  const [showPassword, setShowPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [passwordStrength, setPasswordStrength] = useState(0);
+  // const [isVisible, setIsVisible] = useState(false);
+  // const [passwordStrength, setPasswordStrength] = useState(0);
   const googleBtnRef = useRef(null);
+  const emailRef = useRef(null);
 
   // Проверяем URL параметры
   useEffect(() => {
@@ -74,8 +75,7 @@ function LoginPage() {
       // Можно показать сообщение о успешной регистрации
     }
 
-    // Анимация появления
-    setIsVisible(true);
+    // init
 
     return () => {
       dispatch(clearError());
@@ -85,15 +85,36 @@ function LoginPage() {
 
   // Анимация появления
   useEffect(() => {
-    setIsVisible(true);
+    // Автофокус на email
+    emailRef.current?.focus?.();
   }, []);
 
   // Инициализация Google Identity Services: отрисуем официальную кнопку (устойчивее к FedCM)
   useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+    const host = window.location.hostname || '';
+    const proto = window.location.protocol || '';
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+    const isLanHost = host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.');
+    const isHttp = proto === 'http:';
+    const isDevLikeOrigin = isLocalHost || isLanHost || isHttp;
+    const enableDevGsi = (import.meta.env.VITE_ENABLE_GSI_DEV || '') === '1' || Boolean(import.meta.env.DEV);
+    const devId = import.meta.env.VITE_GOOGLE_CLIENT_ID_DEV || '';
+    const prodId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+    // По умолчанию отключаем GSI в dev/HTTP/LAN, чтобы не было 403. Включается флагом VITE_ENABLE_GSI_DEV=1
+    if (isDevLikeOrigin && !enableDevGsi) return;
+    const clientId = isDevLikeOrigin ? devId : prodId;
+    // Не инициализируем GSI, если для dev нет отдельного client_id — это уберёт 403 от GSI
     if (!clientId) return;
-    const google = window.google?.accounts?.id;
-    if (!google) return;
+    const ensureGsiLoaded = () => new Promise((resolve, reject) => {
+      if (window.google?.accounts?.id) return resolve(window.google.accounts.id);
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => resolve(window.google?.accounts?.id);
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
 
     const handleCredential = async (response) => {
       try {
@@ -115,41 +136,57 @@ function LoginPage() {
       }
     };
 
-    google.initialize({
-      client_id: clientId,
-      callback: handleCredential,
-      // Отключаем FedCM для prompt, чтобы избежать ошибок CORS/FedCM в локальной среде
-      use_fedcm_for_prompt: false,
-    });
+    (async () => {
+      const google = await ensureGsiLoaded();
+      if (!google) return;
+      try {
+        google.initialize({
+          client_id: clientId,
+          callback: handleCredential,
+          use_fedcm_for_prompt: false,
+        });
+      } catch (e) {
+        console.warn('GSI initialize blocked:', e);
+        return;
+      }
 
-    // Отрисуем фирменную кнопку в контейнере
-    if (googleBtnRef.current) {
-      google.renderButton(googleBtnRef.current, {
-        theme: 'filled_blue',
-        size: 'large',
-        text: 'signin_with',
-        shape: 'rectangular',
-        logo_alignment: 'left',
-        width: 320,
-      });
-    }
+      const renderGsiButton = () => {
+        const el = googleBtnRef.current;
+        if (!el) return;
+        el.innerHTML = '';
+        try {
+          google.renderButton(el, {
+            theme: 'filled_blue',
+            size: 'large',
+            text: 'signin_with',
+            shape: 'rectangular',
+            logo_alignment: 'left',
+            width: 320,
+          });
+        } catch (e) {
+          console.warn('GSI renderButton blocked:', e);
+        }
+      };
+
+      renderGsiButton();
+
+      // Фиксированная ширина, пересчёт не требуется
+    })();
   }, [dispatch, navigate]);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-
-    // Очищаем ошибку при изменении полей
-    if (error) {
-      dispatch(clearError());
-    }
-  };
+  // const handleChange = (e) => {
+  //   setFormData({
+  //     ...formData,
+  //     [e.target.name]: e.target.value
+  //   });
+  //   if (error) {
+  //     dispatch(clearError());
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Submitting login form...', formData.email);
+    // submit
     
     if (!formData.email || !formData.password) {
       console.log('Email or password is empty');
@@ -157,13 +194,13 @@ function LoginPage() {
     }
 
     try {
-      console.log('Dispatching loginUser...');
+      
       const payload = twofaCode ? { ...formData, code: twofaCode } : formData;
       const result = await dispatch(loginUser(payload));
-      console.log('Login result:', result);
+      
       
       if (loginUser.fulfilled.match(result)) {
-        console.log('Login successful, fetching profile...');
+        
         // Загружаем полный профиль
   const profileAction = await dispatch(fetchProfile());
   const fetchedUser = profileAction?.payload;
@@ -175,8 +212,6 @@ function LoginPage() {
         } else {
           navigate('/app/onboarding');
         }
-      } else {
-        console.log('Login not fulfilled:', result);
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -197,14 +232,10 @@ function LoginPage() {
         src="/images/bg-hero.jpg"
         className="login-background"
       >
+        <Overlay color="#000" opacity={0.22} zIndex={1} />
         
         <Container size="xl" className="login-container">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 50 }}
-            transition={{ duration: 0.6 }}
-            className="login-content"
-          >
+          <div className="login-content">
             <Paper className="login-card" p="xl" radius="xl" shadow="xl">
               {/* Header */}
               <Stack spacing="md" mb="xl">
@@ -276,18 +307,20 @@ function LoginPage() {
 
               {/* Form */}
               <form onSubmit={handleSubmit}>
-                <Stack spacing="lg">
+                <Stack spacing="md">
                   <TextInput
-                    label="Email или имя пользователя"
+                    label="Email"
                     placeholder="Введите ваш email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     leftSection={<IconMail size={20} />}
                     size="lg"
                     radius="md"
+                    ref={emailRef}
                     required
                     autoComplete="username"
                     className="form-input"
+                    disabled={loading}
                   />
 
                   <PasswordInput
@@ -304,6 +337,7 @@ function LoginPage() {
                     visibilityToggleIcon={({ reveal, size }) => (
                       reveal ? <IconEyeOff size={size} /> : <IconEye size={size} />
                     )}
+                    disabled={loading}
                   />
 
                   {/* 2FA code */}
@@ -316,6 +350,7 @@ function LoginPage() {
                     radius="md"
                     autoComplete="one-time-code"
                     className="form-input"
+                    disabled={loading}
                   />
 
                   <Group position="apart" align="center">
@@ -347,7 +382,7 @@ function LoginPage() {
 
                   <Button
                     type="submit"
-                    size="xl"
+                    size="lg"
                     fullWidth
                     loading={loading}
                     disabled={!canSubmit}
@@ -361,7 +396,7 @@ function LoginPage() {
 
                   <Stack spacing="sm">
                     {/* Контейнер официальной кнопки Google */}
-                    <div ref={googleBtnRef} />
+                    <div className="social-google" ref={googleBtnRef} />
                   </Stack>
 
                   <Center>
@@ -383,58 +418,8 @@ function LoginPage() {
               </form>
             </Paper>
 
-            {/* Features */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : 50 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="login-features"
-            >
-              <Stack spacing="lg">
-                <Title order={3} size="xl" weight={700} className="features-title">
-                  Почему выбирают нас?
-                </Title>
-                
-                <Stack spacing="md">
-                  <Group spacing="md">
-                    <ThemeIcon size="lg" color="blue" variant="light">
-                      <IconShield size={20} />
-                    </ThemeIcon>
-                    <Box>
-                      <Text weight={600}>Безопасность</Text>
-                      <Text size="sm" color="dimmed">
-                        Ваши данные защищены
-                      </Text>
-                    </Box>
-                  </Group>
-
-                  <Group spacing="md">
-                    <ThemeIcon size="lg" color="green" variant="light">
-                      <IconStar size={20} />
-                    </ThemeIcon>
-                    <Box>
-                      <Text weight={600}>Качество</Text>
-                      <Text size="sm" color="dimmed">
-                        Лучшие университеты Италии
-                      </Text>
-                    </Box>
-                  </Group>
-
-                  <Group spacing="md">
-                    <ThemeIcon size="lg" color="purple" variant="light">
-                      <IconRocket size={20} />
-                    </ThemeIcon>
-                    <Box>
-                      <Text weight={600}>Скорость</Text>
-                      <Text size="sm" color="dimmed">
-                        Быстрое поступление
-                      </Text>
-                    </Box>
-                  </Group>
-                </Stack>
-              </Stack>
-            </motion.div>
-          </motion.div>
+            
+          </div>
         </Container>
       </BackgroundImage>
     </Box>
