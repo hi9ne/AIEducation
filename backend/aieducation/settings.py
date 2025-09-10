@@ -10,13 +10,31 @@ load_dotenv(dotenv_path=BASE_DIR / '.env')
 SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-secret-for-dev')
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-# ALLOWED_HOSTS: support env override or allow Railway subdomains by default
+# ALLOWED_HOSTS: env-driven plus safe defaults; strip ports and ignore numeric entries
 _raw_hosts = os.getenv('ALLOWED_HOSTS', '').strip()
+
+def _normalize_host(h: str) -> str | None:
+    h = h.strip()
+    if not h:
+        return None
+    # Split out accidental port entries like "example.com:8000" or bare "8000"
+    if ':' in h:
+        h = h.split(':', 1)[0].strip()
+    # Ignore pure numeric leftovers
+    if h.isdigit():
+        return None
+    return h
+
+env_hosts = []
 if _raw_hosts:
-    ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(',') if h.strip()]
-else:
-    # Allow localhost for dev and any *.up.railway.app for Railway deployments
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.up.railway.app']
+    env_hosts = [x for x in (_normalize_host(h) for h in _raw_hosts.split(',')) if x]
+
+base_hosts = ['.up.railway.app']
+if DEBUG:
+    base_hosts += ['localhost', '127.0.0.1']
+
+# Merge env + base (preserve order, remove duplicates)
+ALLOWED_HOSTS = list(dict.fromkeys([*env_hosts, *base_hosts])) or ['localhost', '127.0.0.1']
 
 # Consolidated CORS/CSRF configuration (env-driven)
 # CORS_ALLOW_ALL_ORIGINS can be enabled in development via env
