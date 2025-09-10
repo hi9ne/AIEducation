@@ -25,6 +25,7 @@ const getApiUrl = () => {
 };
 
 const apiUrl = getApiUrl();
+export const API_BASE_URL = apiUrl; // <-- export base URL for building absolute media links
 console.log('API URL detected:', apiUrl);
 
 const api = axios.create({
@@ -173,6 +174,7 @@ export const authAPI = {
   register: (userData) => api.post('/api/auth/register/', userData),
   logout: () => api.post('/api/auth/logout/'),
   refreshToken: (refreshToken) => api.post('/api/auth/token/refresh/', { refresh: refreshToken }),
+  loginWithGoogle: (idToken) => api.post('/api/auth/login/google/', { id_token: idToken }),
   
   // Профиль
   getProfile: () => {
@@ -223,6 +225,16 @@ export const authAPI = {
   // Email верификация
   requestEmailVerify: () => api.post('/api/auth/email/verify/request/'),
   verifyEmail: (token) => api.post('/api/auth/verify-email/', { token }),
+
+  // Сессии/устройства
+  listDevices: () => api.get('/api/auth/devices/'),
+  revokeDevice: (deviceId) => api.post(`/api/auth/devices/${deviceId}/revoke/`),
+  revokeAllDevices: () => api.post('/api/auth/devices/revoke-all/'),
+
+  // 2FA
+  twofaSetup: (force = false) => api.post('/api/auth/2fa/setup/', { force }),
+  twofaEnable: (code) => api.post('/api/auth/2fa/enable/', { code }),
+  twofaDisable: () => api.post('/api/auth/2fa/disable/'),
 };
 
 // User profile API
@@ -269,7 +281,7 @@ export const apiHelpers = {
   // Проверка статуса соединения
   checkConnection: async () => {
     try {
-  await api.get('/api/auth/profile/', { timeout: 5000 });
+      await api.get('/api/auth/profile/', { timeout: 5000 });
       return true;
     } catch {
       return false;

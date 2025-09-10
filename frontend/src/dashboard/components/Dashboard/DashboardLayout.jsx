@@ -8,8 +8,6 @@ import CentralContent from './CentralContent';
 import RightPanel from './RightPanel';
 import { useDashboardStore } from '../../../store/dashboardStore';
 import './Dashboard.css';
-import './RightPanelFix.css';
-import './ForcedPanel.css';
 
 const DashboardLayout = () => {
   const [activeSection, setActiveSection] = useState('main');
@@ -26,22 +24,22 @@ const DashboardLayout = () => {
   }, [dispatch]);
 
   return (
-    <Box style={{
+    <Box className="dashboard-layout" style={{
       minHeight: '100vh',
       width: '100%',
       overflow: 'hidden',
       position: 'relative',
-      background: 'linear-gradient(180deg, #f8fafc 0%, #ffffff 40%, #f8fafc 100%)'
+      background: 'linear-gradient(180deg, var(--app-color-bg) 0%, var(--app-color-surface) 40%, var(--app-color-bg) 100%)'
     }}>
       <div style={{ display: 'flex', flexDirection: 'row', minHeight: '100vh', width: '100%' }}>
         {/* Левая панель навигации */}
-        <div style={{
+        <div className="left-navigation" style={{
           flex: '0 0 20%',
           maxWidth: '250px',
           borderRight: '1px solid var(--mantine-color-gray-3)',
-          backgroundColor: 'white',
+          backgroundColor: 'var(--app-color-surface)',
           minHeight: '100vh',
-          boxShadow: '0 6px 18px rgba(2,6,23,0.06)'
+          boxShadow: 'var(--app-shadow-md)'
         }}>
           <LeftNavigation 
             activeSection={activeSection}
@@ -54,7 +52,7 @@ const DashboardLayout = () => {
         </div>
 
         {/* Центральная зона контента */}
-        <div style={{
+        <div className="central-content" style={{
           flex: '1 1 auto',
           borderRight: '1px solid var(--mantine-color-gray-3)',
           backgroundColor: 'transparent',
@@ -71,14 +69,14 @@ const DashboardLayout = () => {
         </div>
 
         {/* Правая панель AI и дедлайнов - Desktop */}
-        <div className="right-panel-container desktop-panel" style={{ 
+        <div className="right-panel right-panel-container desktop-panel" style={{ 
           flex: '0 0 25%', 
           maxWidth: '300px', 
-          backgroundColor: 'white', 
+          backgroundColor: 'var(--app-color-surface)', 
           minHeight: '100vh', 
           overflow: 'auto', 
           border: '1px solid var(--mantine-color-gray-3)',
-          boxShadow: '0 6px 18px rgba(2,6,23,0.06)',
+          boxShadow: 'var(--app-shadow-md)',
           position: 'relative',
           zIndex: 1000,
           display: 'block'
@@ -98,9 +96,9 @@ const DashboardLayout = () => {
             right: '0',
             width: '300px',
             height: '100vh',
-            backgroundColor: 'white',
+            backgroundColor: 'var(--app-color-surface)',
             zIndex: 2000,
-            boxShadow: '-5px 0 15px rgba(0,0,0,0.2)',
+            boxShadow: 'var(--app-shadow-lg)',
             border: '1px solid var(--mantine-color-gray-3)',
             overflow: 'auto'
           }}>
