@@ -188,17 +188,6 @@
   transform: scale(1.05);
 }
 
-.testimonial-avatar {
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #e2e8f0;
-  transition: all 0.3s ease;
-}
-
-.testimonial-avatar:hover {
-  transform: scale(1.1);
-  border-color: #667eea;
-}
 
 .university-overlay {
   position: absolute;
@@ -208,36 +197,7 @@
   z-index: 2;
 }
 
-/* Testimonials Section */
-.testimonials-section {
-  padding: 6rem 0;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-}
-
-.testimonial-card {
-  border: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
-  background: white;
-  height: 100%;
-}
-
-.testimonial-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-}
-
-.testimonial-text {
-  font-style: italic;
-  position: relative;
-}
-
-.quote-icon {
-  position: absolute;
-  top: -0.5rem;
-  left: -1rem;
-  opacity: 0.3;
-}
+/* Testimonials section removed */
 
 /* CTA Section */
 .cta-section {
@@ -346,7 +306,6 @@
   
   .features-section,
   .universities-section,
-  .testimonials-section,
   .cta-section {
     padding: 3rem 0;
   }
@@ -381,15 +340,13 @@
   background: #0f172a;
 }
 
-[data-mantine-color-scheme="dark"] .features-section,
-[data-mantine-color-scheme="dark"] .testimonials-section {
+[data-mantine-color-scheme="dark"] .features-section {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
 [data-mantine-color-scheme="dark"] .stat-card,
 [data-mantine-color-scheme="dark"] .feature-card,
-[data-mantine-color-scheme="dark"] .university-card,
-[data-mantine-color-scheme="dark"] .testimonial-card {
+[data-mantine-color-scheme="dark"] .university-card {
   background: #1e293b;
   border: 1px solid #334155;
 }
