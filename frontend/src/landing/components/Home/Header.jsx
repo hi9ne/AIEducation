@@ -137,24 +137,7 @@ const HeaderComponent = () => {
                 Faculty
               </a>
             </li>
-            <li>
-              <a 
-                href="#reviews"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (location.pathname !== '/') {
-                    navigate('/');
-                    setTimeout(() => {
-                      document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                  } else {
-                    document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-              >
-                Reviews
-              </a>
-            </li>
+            {/* Reviews link removed */}
             <li>
               <a 
                 href="#contact"

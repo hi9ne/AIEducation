@@ -22,7 +22,8 @@ from .serializers import (
 class UniversityListView(generics.ListAPIView):
     queryset = University.objects.filter(is_active=True).prefetch_related('majors__major')
     serializer_class = UniversitySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    # Public for landing page consumption
+    permission_classes = [permissions.AllowAny]
     # Убрали фильтрацию по стране; оставили только город
     filterset_fields = ['city']
     search_fields = ['name', 'description']
@@ -43,7 +44,7 @@ class UniversityListView(generics.ListAPIView):
 class UniversityDetailView(generics.RetrieveAPIView):
     queryset = University.objects.filter(is_active=True)
     serializer_class = UniversitySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
 
 class MajorListView(generics.ListAPIView):

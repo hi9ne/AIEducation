@@ -4,7 +4,7 @@ import HeroSimple from '../components/Home/HeroSimple';
 import AboutSimple from '../components/Home/AboutSimple';
 import StepsSimple from '../components/Home/StepsSimple';
 import ProgramsSimple from '../components/Home/ProgramsSimple';
-import TestimonialsSimple from '../components/Home/TestimonialsSimple';
+import UniversitiesSlider from '../components/Home/UniversitiesSlider';
 import ContactSimple from '../components/Home/ContactSimple';
 import FooterSimple from '../components/Home/FooterSimple';
 import './HomePage.css';
@@ -17,7 +17,7 @@ const HomePage = () => {
   <AboutSimple />
   <StepsSimple />
   <ProgramsSimple />
-  <TestimonialsSimple />
+  <UniversitiesSlider />
   <ContactSimple />
   <FooterSimple />
     </Box>
