@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { registerUser, loginUser, fetchProfile, clearError, clearSuccess } from "../../store/authSlice";
+import { useState, useEffect, useRef } from "react";
+import { authAPI } from '../../shared/services/api';
+import { registerUser, fetchProfile, clearError, clearSuccess } from "../../store/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { notifications } from '@mantine/notifications';
@@ -38,7 +39,6 @@ import {
   IconCheck,
   IconAlertCircle,
   IconBrandGoogle,
-  IconBrandGithub,
   IconRocket,
   IconShield,
   IconStar,
@@ -63,20 +63,107 @@ function RegisterPage() {
   });
 
   const [errors, setErrors] = useState({});
-  const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
+  // const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const emailRef = useRef(null);
+  const googleBtnRef = useRef(null);
 
   // Очищаем ошибки при размонтировании
   useEffect(() => {
     setIsVisible(true);
+    // Автофокус на email в начале регистрации
+    emailRef.current?.focus?.();
     return () => {
       dispatch(clearError());
       dispatch(clearSuccess());
     };
   }, [dispatch]);
+
+  // Инициализация Google Identity Services для регистрации (та же кнопка, что и на логине)
+  useEffect(() => {
+    const host = window.location.hostname || '';
+    const proto = window.location.protocol || '';
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+    const isLanHost = host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.');
+    const isHttp = proto === 'http:';
+    const isDevLikeOrigin = isLocalHost || isLanHost || isHttp;
+    const enableDevGsi = (import.meta.env.VITE_ENABLE_GSI_DEV || '') === '1' || Boolean(import.meta.env.DEV);
+    const devId = import.meta.env.VITE_GOOGLE_CLIENT_ID_DEV || '';
+    const prodId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+    if (isDevLikeOrigin && !enableDevGsi) return;
+    const clientId = isDevLikeOrigin ? devId : prodId;
+    if (!clientId) return;
+
+    const ensureGsiLoaded = () => new Promise((resolve, reject) => {
+      if (window.google?.accounts?.id) return resolve(window.google.accounts.id);
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = () => resolve(window.google?.accounts?.id);
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+
+    const handleCredential = async (response) => {
+      try {
+        const idToken = response?.credential;
+        if (!idToken) return;
+        const res = await authAPI.loginWithGoogle(idToken);
+        const data = res.data;
+        if (data?.tokens) {
+          localStorage.setItem('accessToken', data.tokens.access);
+          localStorage.setItem('refreshToken', data.tokens.refresh);
+          localStorage.setItem('userInfo', JSON.stringify(data.user));
+          const profileAction = await dispatch(fetchProfile());
+          const fetchedUser = profileAction?.payload;
+          const done = fetchedUser?.profile?.onboarding_completed === true;
+          navigate(done ? '/app/dashboard' : '/app/onboarding');
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    (async () => {
+      const google = await ensureGsiLoaded();
+      if (!google) return;
+      try {
+        google.initialize({
+          client_id: clientId,
+          callback: handleCredential,
+          use_fedcm_for_prompt: false,
+        });
+      } catch {
+        return;
+      }
+
+      const renderGsiButton = () => {
+        const el = googleBtnRef.current;
+        if (!el) return;
+        el.innerHTML = '';
+        try {
+          google.renderButton(el, {
+            theme: 'filled_blue',
+            size: 'large',
+            text: 'signup_with',
+            shape: 'rectangular',
+            logo_alignment: 'left',
+            width: 320,
+          });
+        } catch {
+          // ignore
+        }
+      };
+
+      renderGsiButton();
+
+      // Фиксированная ширина — пересчёт не требуется
+    })();
+  }, [dispatch, navigate]);
 
   // Валидация в реальном времени
   const validateField = (name, value) => {
@@ -183,25 +270,15 @@ function RegisterPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (e) => {
-    let { name, value } = e.target;
-    // Разрешаем в пароле только ASCII символы (английские буквы, цифры, спец.)
-    if (name === 'password' || name === 'password2') {
-      value = value.replace(/[^\x20-\x7E]/g, '');
-    }
-    
-    setFormData(prev => ({ ...prev, [name]: value }));
-
-    // Валидация в реальном времени
-    if (value) {
-      validateField(name, value);
-    }
-
-    // Очищаем общую ошибку при изменении полей
-    if (error) {
-      dispatch(clearError());
-    }
-  };
+  // const handleChange = (e) => {
+  //   let { name, value } = e.target;
+  //   if (name === 'password' || name === 'password2') {
+  //     value = value.replace(/[^\x20-\x7E]/g, '');
+  //   }
+  //   setFormData(prev => ({ ...prev, [name]: value }));
+  //   if (value) { validateField(name, value); }
+  //   if (error) { dispatch(clearError()); }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -303,6 +380,7 @@ function RegisterPage() {
         src="/images/bg-hero.jpg"
         className="register-background"
       >
+        <Overlay color="#000" opacity={0.2} zIndex={1} />
         <Container size="xl" className="register-container">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -394,9 +472,11 @@ function RegisterPage() {
                           leftSection={<IconMail size={20} />}
                           size="lg"
                           radius="md"
+                          ref={emailRef}
                           required
                           error={errors.email}
                           className="form-input"
+                          disabled={loading}
                         />
 
                         <Grid gutter="md">
@@ -412,6 +492,7 @@ function RegisterPage() {
                               required
                               error={errors.first_name}
                               className="form-input"
+                              disabled={loading}
                             />
                           </Grid.Col>
                           <Grid.Col span={6}>
@@ -426,6 +507,7 @@ function RegisterPage() {
                               required
                               error={errors.last_name}
                               className="form-input"
+                              disabled={loading}
                             />
                           </Grid.Col>
                         </Grid>
@@ -478,6 +560,7 @@ function RegisterPage() {
                           visibilityToggleIcon={({ reveal, size }) => (
                             reveal ? <IconEyeOff size={size} /> : <IconEye size={size} />
                           )}
+                          disabled={loading}
                         />
 
                         {formData.password && (
@@ -528,6 +611,7 @@ function RegisterPage() {
                           visibilityToggleIcon={({ reveal, size }) => (
                             reveal ? <IconEyeOff size={size} /> : <IconEye size={size} />
                           )}
+                          disabled={loading}
                         />
 
                         <Button
@@ -630,26 +714,7 @@ function RegisterPage() {
                   <Divider label="или" labelPosition="center" />
 
                   <Stack spacing="sm">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      fullWidth
-                      leftSection={<IconBrandGoogle size={20} />}
-                      className="social-button"
-                      radius="md"
-                    >
-                      Зарегистрироваться через Google
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      fullWidth
-                      leftSection={<IconBrandGithub size={20} />}
-                      className="social-button"
-                      radius="md"
-                    >
-                      Зарегистрироваться через GitHub
-                    </Button>
+                    <div className="social-google" ref={googleBtnRef} />
                   </Stack>
 
                   <Center>
@@ -671,57 +736,7 @@ function RegisterPage() {
               </form>
             </Paper>
 
-            {/* Features */}
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: isVisible ? 1 : 0, x: isVisible ? 0 : 50 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="register-features"
-            >
-              <Stack spacing="lg">
-                <Title order={3} size="xl" weight={700} className="features-title">
-                  Преимущества регистрации
-                </Title>
-                
-                <Stack spacing="md">
-                  <Group spacing="md">
-                    <ThemeIcon size="lg" color="blue" variant="light">
-                      <IconChecklist size={20} />
-                    </ThemeIcon>
-                    <Box>
-                      <Text weight={600}>Персональный план</Text>
-                      <Text size="sm" color="dimmed">
-                        Индивидуальная стратегия поступления
-                      </Text>
-                    </Box>
-                  </Group>
-
-                  <Group spacing="md">
-                    <ThemeIcon size="lg" color="green" variant="light">
-                      <IconShield size={20} />
-                    </ThemeIcon>
-                    <Box>
-                      <Text weight={600}>Безопасность</Text>
-                      <Text size="sm" color="dimmed">
-                        Защита персональных данных
-                      </Text>
-                    </Box>
-                  </Group>
-
-                  <Group spacing="md">
-                    <ThemeIcon size="lg" color="purple" variant="light">
-                      <IconStar size={20} />
-                    </ThemeIcon>
-                    <Box>
-                      <Text weight={600}>Экспертная поддержка</Text>
-                      <Text size="sm" color="dimmed">
-                        24/7 помощь специалистов
-                      </Text>
-                    </Box>
-                  </Group>
-                </Stack>
-              </Stack>
-            </motion.div>
+            
           </motion.div>
         </Container>
       </BackgroundImage>

@@ -241,15 +241,6 @@ function ProfilePage() {
               <form onSubmit={handleProfileSave}>
                 <div className="form-row">
                   <div className="form-group">
-                    <label className="form-label">Имя пользователя</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={profileForm.username}
-                      onChange={(e) => setProfileForm({...profileForm, username: e.target.value})}
-                    />
-                  </div>
-                  <div className="form-group">
                     <label className="form-label">Email</label>
                     <div className="email-input-group">
                       <input
