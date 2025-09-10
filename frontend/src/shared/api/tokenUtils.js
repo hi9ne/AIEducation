@@ -1,5 +1,8 @@
 // Утилиты для работы с токенами
 const detectBaseUrl = () => {
+  const envUrl = (import.meta.env?.VITE_API_URL || '').trim().replace(/\/$/, '');
+  if (envUrl) return `${envUrl}/api/auth`;
+
   const host = window.location.hostname;
   if (
     host === 'localhost' || host === '127.0.0.1' ||
@@ -7,8 +10,7 @@ const detectBaseUrl = () => {
   ) {
     return `http://${host}:8000/api/auth`;
   }
-  if (host.includes('railway.app')) return 'https://backend-production-0046c.up.railway.app/api/auth';
-  return (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/auth';
+  return 'http://localhost:8000/api/auth';
 };
 
 const API_BASE_URL = detectBaseUrl();
