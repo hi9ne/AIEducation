@@ -105,7 +105,7 @@ body {
 .mantine-DateInput-input,
 .mantine-FileInput-input {
   border-radius: var(--app-radius-md);
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-size: 14px;
 }
 
@@ -119,6 +119,19 @@ body {
 .mantine-FileInput-input:focus,
 .mantine-Input-input:focus {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--mantine-color-indigo-6), transparent 90%);
+}
+
+/* Fix overlap when using leftSection/rightSection in inputs */
+.mantine-Input-wrapper [data-with-left-section] .mantine-Input-input,
+.mantine-TextInput-root [data-with-left-section] .mantine-TextInput-input,
+.mantine-PasswordInput-root [data-with-left-section] .mantine-PasswordInput-input {
+  padding-left: 42px; /* leave space for icon */
+}
+
+.mantine-Input-wrapper [data-with-right-section] .mantine-Input-input,
+.mantine-TextInput-root [data-with-right-section] .mantine-TextInput-input,
+.mantine-PasswordInput-root [data-with-right-section] .mantine-PasswordInput-input {
+  padding-right: 42px; /* leave space for toggles/icons */
 }
 
 .mantine-Progress-root {
