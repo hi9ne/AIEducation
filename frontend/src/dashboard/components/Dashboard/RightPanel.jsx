@@ -185,17 +185,13 @@ const RightPanel = () => {
   const deadlines = useDashboardStore((s) => s.deadlines);
 
   return (
-    <Box className={styles.rightPanel} style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+    <Box className={styles.rightPanel}>
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Text size="xl" fw={800} mb="xl" className={styles.gradientText} style={{
-          background: 'linear-gradient(90deg, #1e3a8a 0%, #0ea5e9 50%, #14b8a6 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
-        }}>
+        <Text size="xl" fw={800} mb="xl" className={styles.gradientText}>
           AI Ассистент
         </Text>
 
@@ -213,7 +209,7 @@ const RightPanel = () => {
 
         <Stack spacing="lg">
           {/* AI Assistant Card */}
-          <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+          <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'var(--app-color-surface)' }}>
             <Group position="apart" mb="md">
               <Text size="lg" fw={600}>AI Помощник</Text>
               <ThemeIcon 
@@ -281,21 +277,21 @@ const RightPanel = () => {
                 }}
               />
 
-        <Group position="apart">
+              <Group position="apart">
                 <Button
                   leftSection={<IconSend size={16} />}
                   onClick={handleSendMessage}
                   disabled={!aiMessage.trim() || isTyping}
-          size="sm"
-          radius="md"
+                  size="sm"
+                  radius="md"
                 >
                   {isTyping ? 'Печатает...' : 'Отправить'}
                 </Button>
                 <Button
                   variant="light"
                   onClick={() => setChatHistory([])}
-          size="sm"
-          radius="md"
+                  size="sm"
+                  radius="md"
                 >
                   Очистить чат
                 </Button>
@@ -309,10 +305,10 @@ const RightPanel = () => {
           </Card>
 
           {/* AI Recommendations Card */}
-      <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+          <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'var(--app-color-surface)' }}>
             <Group position="apart" mb="md">
               <Text size="lg" fw={600}>AI Рекомендации</Text>
-        <Badge radius="sm" variant="light" color="blue">{aiRecommendations.length}</Badge>
+              <Badge radius="sm" variant="light" color="blue">{aiRecommendations.length}</Badge>
             </Group>
 
             {isLoadingAI && aiRecommendations.length === 0 ? (
@@ -336,10 +332,10 @@ const RightPanel = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
                       >
-            <Box
+                        <Box
                           p="sm"
                           sx={(theme) => ({
-              backgroundColor: theme.colors.gray[0],
+                            backgroundColor: theme.colors.gray[0],
                             borderRadius: theme.radius.sm,
                             border: `1px solid ${theme.colors.gray[2]}`
                           })}
@@ -358,11 +354,11 @@ const RightPanel = () => {
           </Card>
 
           {/* Notifications Card */}
-      <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+          <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'var(--app-color-surface)' }}>
             <Group position="apart" mb="md">
               <Text size="lg" fw={600}>Уведомления</Text>
               <Group spacing="xs">
-        <Badge color="red" radius="sm" variant="light">{unreadCount}</Badge>
+                <Badge color="red" radius="sm" variant="light">{unreadCount}</Badge>
                 <ActionIcon 
                   size="sm" 
                   variant="light" 
@@ -434,7 +430,7 @@ const RightPanel = () => {
           </Card>
 
           {/* Deadlines Card */}
-          <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+          <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'var(--app-color-surface)' }}>
             <Group position="apart" mb="md">
               <Text size="lg" fw={600}>Дедлайны</Text>
               <Badge radius="sm" variant="light" color="violet">{deadlines?.length || 0}</Badge>
@@ -457,8 +453,6 @@ const RightPanel = () => {
               </Stack>
             </ScrollArea>
           </Card>
-
-          {/* Stats Card removed as requested */}
         </Stack>
       </motion.div>
     </Box>

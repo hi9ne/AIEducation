@@ -22,7 +22,7 @@ import {
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { 
-  IconPlayerPlay, 
+  IconPlayerPlay,   
   IconEye, 
   IconBook, 
   IconTarget, 
@@ -67,6 +67,26 @@ const IELTSSection = ({ progress }) => {
   useEffect(() => {
     updateProgress('ielts', ieltsProgress);
   }, [ieltsProgress, updateProgress]);
+
+  // Цветовая схема (для замены светлых градиентов на surface в dark)
+  const isDark = typeof document !== 'undefined' && document.documentElement.getAttribute('data-mantine-color-scheme') === 'dark';
+  const surfaceStyle = { background: 'var(--app-color-surface)' };
+  const greenCardStyle = {
+    backgroundColor: isDark ? 'color-mix(in srgb, var(--mantine-color-green-6), transparent 85%)' : 'var(--mantine-color-green-0)',
+    border: `1px solid ${isDark ? 'color-mix(in srgb, var(--mantine-color-green-6), transparent 60%)' : 'var(--mantine-color-green-2)'}`
+  };
+  const blueCardStyle = {
+    backgroundColor: isDark ? 'color-mix(in srgb, var(--mantine-color-blue-6), transparent 85%)' : 'var(--mantine-color-blue-0)',
+    border: `1px solid ${isDark ? 'color-mix(in srgb, var(--mantine-color-blue-6), transparent 60%)' : 'var(--mantine-color-blue-2)'}`
+  };
+  const orangeCardStyle = {
+    backgroundColor: isDark ? 'color-mix(in srgb, var(--mantine-color-orange-6), transparent 85%)' : 'var(--mantine-color-orange-0)',
+    border: `1px solid ${isDark ? 'color-mix(in srgb, var(--mantine-color-orange-6), transparent 60%)' : 'var(--mantine-color-orange-2)'}`
+  };
+  const purpleCardStyle = {
+    backgroundColor: isDark ? 'color-mix(in srgb, var(--mantine-color-violet-6, #7c3aed), transparent 85%)' : 'var(--mantine-color-purple-0)',
+    border: `1px solid ${isDark ? 'color-mix(in srgb, var(--mantine-color-violet-6, #7c3aed), transparent 60%)' : 'var(--mantine-color-violet-2, #e9d8fd)'}`
+  };
 
   // Генерируем тесты на основе данных пользователя
   const userTests = user?.profile ? [
@@ -153,7 +173,7 @@ const IELTSSection = ({ progress }) => {
         {/* Текущий и целевой уровень */}
         <Grid>
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+            <Card withBorder shadow="md" radius="lg" style={surfaceStyle}>
               <Stack gap="md">
                 <Text size="lg" fw={600}>Текущий уровень</Text>
                 <Group justify="space-between">
@@ -165,7 +185,7 @@ const IELTSSection = ({ progress }) => {
             </Card>
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+            <Card withBorder shadow="md" radius="lg" style={surfaceStyle}>
               <Stack gap="md">
                 <Text size="lg" fw={600}>Целевой уровень</Text>
                 <Group justify="space-between">
@@ -179,7 +199,7 @@ const IELTSSection = ({ progress }) => {
         </Grid>
 
         {/* Общий прогресс */}
-  <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+        <Card withBorder shadow="md" radius="lg" style={surfaceStyle}>
           <Stack gap="md">
             <Group justify="space-between">
               <Text size="lg" fw={600}>
@@ -200,7 +220,7 @@ const IELTSSection = ({ progress }) => {
         </Card>
 
         {/* Сертификат IELTS */}
-        <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+        <Card withBorder shadow="md" radius="lg" style={surfaceStyle}>
           <Stack gap="md">
             <Group justify="space-between">
               <Box>
@@ -264,7 +284,7 @@ const IELTSSection = ({ progress }) => {
         {/* Статистика */}
         <Grid>
           <Grid.Col span={{ base: 12, md: 3 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-green-0)', border: '1px solid var(--mantine-color-green-2)' }} radius="lg" shadow="sm">
+            <Card className="h-full" style={greenCardStyle} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconCheck size={48} color="var(--mantine-color-green-6)" />
                 <Text size="lg" fw={700} c="green">
@@ -278,7 +298,7 @@ const IELTSSection = ({ progress }) => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 3 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)', border: '1px solid var(--mantine-color-blue-2)' }} radius="lg" shadow="sm">
+            <Card className="h-full" style={blueCardStyle} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconBook size={48} color="var(--mantine-color-blue-6)" />
                 <Text size="lg" fw={700} c="blue">
@@ -292,7 +312,7 @@ const IELTSSection = ({ progress }) => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 3 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-orange-0)', border: '1px solid var(--mantine-color-orange-2)' }} radius="lg" shadow="sm">
+            <Card className="h-full" style={orangeCardStyle} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconClock size={48} color="var(--mantine-color-orange-6)" />
                 <Group gap={6} align="center">
@@ -309,7 +329,7 @@ const IELTSSection = ({ progress }) => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 3 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-purple-0)', border: '1px solid var(--mantine-color-violet-2, #e9d8fd)' }} radius="lg" shadow="sm">
+            <Card className="h-full" style={purpleCardStyle} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconTrophy size={48} color="var(--mantine-color-purple-6)" />
                 <Text size="lg" fw={700} c="purple">
@@ -324,7 +344,7 @@ const IELTSSection = ({ progress }) => {
         </Grid>
 
         {/* Список тестов */}
-        <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+        <Card withBorder shadow="md" radius="lg" style={surfaceStyle}>
           <Stack gap="md">
             <Text size="lg" fw={600}>
               Доступные тесты
@@ -339,10 +359,10 @@ const IELTSSection = ({ progress }) => {
                   shadow="xs"
                   style={{
                     backgroundColor: test.status === 'completed' 
-                      ? 'var(--mantine-color-green-0)' 
+                      ? (isDark ? 'color-mix(in srgb, var(--mantine-color-green-6), transparent 85%)' : 'var(--mantine-color-green-0)') 
                       : test.status === 'locked'
-                      ? 'var(--mantine-color-gray-1)'
-                      : 'var(--mantine-color-gray-0)'
+                      ? (isDark ? 'var(--mantine-color-dark-6)' : 'var(--mantine-color-gray-1)')
+                      : (isDark ? 'var(--mantine-color-dark-5)' : 'var(--mantine-color-gray-0)')
                   }}
                 >
                   <Group justify="space-between">

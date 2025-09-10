@@ -5,11 +5,11 @@
   overflow-y: auto;
   position: relative;
   z-index: 1000;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08);
-  padding: 1.5rem;
+  background: linear-gradient(135deg, var(--app-color-bg) 0%, var(--app-color-surface) 100%);
+  box-shadow: var(--app-shadow-md);
+  padding: var(--app-spacing-md);
   scrollbar-width: thin;
-  scrollbar-color: #90cdf4 #f0f9ff;
+  scrollbar-color: var(--mantine-color-blue-3) var(--mantine-color-blue-0);
 }
 
 .rightPanel::-webkit-scrollbar {
@@ -17,48 +17,48 @@
 }
 
 .rightPanel::-webkit-scrollbar-track {
-  background: #f0f9ff;
+  background: var(--mantine-color-blue-0);
   border-radius: 4px;
 }
 
 .rightPanel::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #90cdf4, #3182ce);
+  background: linear-gradient(135deg, var(--mantine-color-blue-3), var(--mantine-color-blue-7));
   border-radius: 4px;
   transition: all 0.2s ease;
 }
 
 .rightPanel::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #3182ce, #2c5aa0);
+  background: linear-gradient(135deg, var(--mantine-color-blue-7), var(--mantine-color-blue-9));
 }
 
 .aiAssistantCard {
-  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
-  border: 1px solid #90cdf4;
+  background: linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--app-color-surface) 100%);
+  border: 1px solid var(--mantine-color-blue-3);
   transition: all 0.3s ease;
 }
 
 .aiAssistantCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--app-shadow-md);
 }
 
 .messageInput {
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
+  border: 2px solid var(--mantine-color-gray-3);
+  border-radius: var(--app-radius-md);
   transition: all 0.2s ease;
 }
 
 .messageInput:focus {
-  border-color: #3182ce;
-  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.1);
+  border-color: var(--mantine-color-blue-6);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--mantine-color-blue-6), transparent 80%);
 }
 
 .aiResponse {
-  background: linear-gradient(135deg, #ebf8ff 0%, #f0f9ff 100%);
-  border-left: 4px solid #3182ce;
-  padding: 1rem;
-  margin-top: 1rem;
-  border-radius: 8px;
+  background: linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-blue-1) 100%);
+  border-left: 4px solid var(--mantine-color-blue-7);
+  padding: var(--app-spacing-sm);
+  margin-top: var(--app-spacing-sm);
+  border-radius: var(--app-radius-md);
   animation: slideIn 0.3s ease;
 }
 
@@ -74,38 +74,38 @@
 }
 
 .recommendationCard {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--app-color-surface);
+  border: 1px solid var(--mantine-color-gray-3);
   transition: all 0.3s ease;
 }
 
 .recommendationCard:hover {
-  background: #f7fafc;
+  background: var(--mantine-color-gray-0);
   transform: scale(1.01);
 }
 
 .notificationItem {
   padding: 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--app-radius-md);
   transition: all 0.2s ease;
 }
 
 .notificationItem:hover {
-  background-color: #f7fafc;
+  background-color: var(--mantine-color-gray-0);
 }
 
 .unreadNotification {
-  background-color: #ebf8ff;
-  border-left: 4px solid #3182ce;
+  background-color: var(--mantine-color-blue-0);
+  border-left: 4px solid var(--mantine-color-blue-7);
 }
 
 .achievementCard {
-  background: linear-gradient(135deg, #fffff0 0%, #ffffff 100%);
+  background: linear-gradient(135deg, #fffff0 0%, var(--app-color-surface) 100%);
   border: 1px solid #fbd38d;
 }
 
 .statsCard {
-  background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--mantine-color-gray-0) 0%, var(--app-color-surface) 100%);
 }
 
 .statsItem {
@@ -113,24 +113,24 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--app-radius-sm);
   transition: background-color 0.2s ease;
 }
 
 .statsItem:hover {
-  background-color: #f7fafc;
+  background-color: var(--mantine-color-gray-0);
 }
 
 /* Header Styles */
 .headerCard {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-violet-6) 100%);
   color: white;
   border: none;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px color-mix(in srgb, var(--mantine-color-indigo-6), transparent 70%);
 }
 
 .gradientText {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--mantine-color-indigo-6) 0%, var(--mantine-color-violet-6) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -154,27 +154,27 @@
 
 /* Tabs Styles */
 .tabsContainer {
-  margin-top: 1rem;
+  margin-top: var(--app-spacing-sm);
 }
 
 .tabsList {
-  background: white;
-  border-radius: 12px;
+  background: var(--app-color-surface);
+  border-radius: var(--app-radius-lg);
   padding: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
+  box-shadow: var(--app-shadow-sm);
+  border: 1px solid var(--mantine-color-gray-3);
 }
 
 /* Quick Actions */
 .quickActionsCard {
-  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
-  border: 1px solid #90cdf4;
+  background: linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--app-color-surface) 100%);
+  border: 1px solid var(--mantine-color-blue-3);
   transition: all 0.3s ease;
 }
 
 .quickActionsCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--app-shadow-md);
 }
 
 .quickActionChip {
@@ -184,25 +184,25 @@
 
 .quickActionChip:hover {
   transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--app-shadow-sm);
 }
 
 /* Chat Styles */
 .chatCard {
-  background: white;
-  border: 1px solid #e2e8f0;
+  background: var(--app-color-surface);
+  border: 1px solid var(--mantine-color-gray-3);
   transition: all 0.3s ease;
 }
 
 .chatCard:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--app-shadow-md);
 }
 
 .chatMessages {
-  background: #f8fafc;
-  border-radius: 8px;
-  padding: 1rem;
-  border: 1px solid #e2e8f0;
+  background: var(--mantine-color-gray-0);
+  border-radius: var(--app-radius-md);
+  padding: var(--app-spacing-sm);
+  border: 1px solid var(--mantine-color-gray-3);
 }
 
 .message {
@@ -215,14 +215,14 @@
 }
 
 .userMessage {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  border-left: 4px solid #3b82f6;
+  background: linear-gradient(135deg, var(--mantine-color-blue-1) 0%, var(--mantine-color-blue-2) 100%);
+  border-left: 4px solid var(--mantine-color-blue-7);
   margin-left: 2rem;
 }
 
 .aiMessage {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border-left: 4px solid #22c55e;
+  background: linear-gradient(135deg, var(--mantine-color-green-1) 0%, var(--mantine-color-green-2) 100%);
+  border-left: 4px solid var(--mantine-color-green-7);
   margin-right: 2rem;
 }
 
@@ -231,94 +231,94 @@
 }
 
 .messageInput {
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  border: 2px solid var(--mantine-color-gray-3);
+  border-radius: var(--app-radius-lg);
   transition: all 0.2s ease;
-  background: white;
+  background: var(--app-color-surface);
 }
 
 .messageInput:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--mantine-color-blue-6);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mantine-color-blue-6), transparent 90%);
   transform: translateY(-1px);
 }
 
 .sendButton {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, var(--mantine-color-blue-6) 0%, var(--mantine-color-blue-9) 100%);
   border: none;
   transition: all 0.2s ease;
 }
 
 .sendButton:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--mantine-color-blue-6), transparent 70%);
 }
 
 /* Recommendations */
 .recommendationsCard {
-  background: linear-gradient(135deg, #fef3c7 0%, #ffffff 100%);
-  border: 1px solid #f59e0b;
+  background: linear-gradient(135deg, var(--mantine-color-yellow-1) 0%, var(--app-color-surface) 100%);
+  border: 1px solid var(--mantine-color-yellow-6);
   transition: all 0.3s ease;
 }
 
 .recommendationsCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--mantine-color-yellow-6), transparent 80%);
 }
 
 .recommendationItem {
-  background: white;
-  border: 1px solid #f3f4f6;
+  background: var(--app-color-surface);
+  border: 1px solid var(--mantine-color-gray-3);
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .recommendationItem:hover {
-  background: #f9fafb;
+  background: var(--mantine-color-gray-0);
   transform: scale(1.02);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--app-shadow-sm);
 }
 
 /* Stats */
 .statsCard {
-  background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 100%);
-  border: 1px solid #10b981;
+  background: linear-gradient(135deg, var(--mantine-color-green-1) 0%, var(--app-color-surface) 100%);
+  border: 1px solid var(--mantine-color-green-6);
   transition: all 0.3s ease;
 }
 
 .statsCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--mantine-color-green-6), transparent 80%);
 }
 
 /* Notifications */
 .notificationsCard {
-  background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
-  border: 1px solid #ef4444;
+  background: linear-gradient(135deg, var(--mantine-color-red-1) 0%, var(--app-color-surface) 100%);
+  border: 1px solid var(--mantine-color-red-6);
   transition: all 0.3s ease;
 }
 
 .notificationsCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--mantine-color-red-6), transparent 80%);
 }
 
 .notificationItem {
-  background: white;
-  border: 1px solid #f3f4f6;
+  background: var(--app-color-surface);
+  border: 1px solid var(--mantine-color-gray-3);
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .notificationItem:hover {
-  background: #f9fafb;
+  background: var(--mantine-color-gray-0);
   transform: scale(1.01);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--app-shadow-sm);
 }
 
 .unreadNotification {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  border-left: 4px solid #3b82f6;
+  background: linear-gradient(135deg, var(--mantine-color-blue-1) 0%, var(--mantine-color-blue-2) 100%);
+  border-left: 4px solid var(--mantine-color-blue-7);
   animation: pulse 2s infinite;
 }
 
@@ -348,7 +348,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .rightPanel {
-    padding: 1rem;
+    padding: var(--app-spacing-sm);
   }
   
   .userMessage {
@@ -366,21 +366,21 @@
 
 /* Dark Mode Support */
 [data-mantine-color-scheme="dark"] .rightPanel {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  background: linear-gradient(135deg, var(--mantine-color-dark-7) 0%, var(--mantine-color-dark-6) 100%);
 }
 
 [data-mantine-color-scheme="dark"] .headerCard {
-  background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, var(--mantine-color-violet-7) 0%, var(--mantine-color-indigo-7) 100%);
 }
 
 [data-mantine-color-scheme="dark"] .chatMessages {
-  background: #374151;
-  border-color: #4b5563;
+  background: var(--mantine-color-dark-6);
+  border-color: var(--mantine-color-dark-4);
 }
 
 [data-mantine-color-scheme="dark"] .messageInput {
-  background: #374151;
-  border-color: #4b5563;
+  background: var(--mantine-color-dark-6);
+  border-color: var(--mantine-color-dark-4);
   color: white;
 }
 

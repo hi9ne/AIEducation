@@ -25,10 +25,18 @@ import {
   IconHelp
 } from '@tabler/icons-react';
 import { useDashboardStore } from '../../../store/dashboardStore';
+import { API_BASE_URL } from '../../../shared/services/api.js';
 
 const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
   const [showStudentCard, setShowStudentCard] = useState(false);
   const { currentProgress } = useDashboardStore();
+
+  const avatarRaw = user?.avatar || '';
+  const avatarSrc = avatarRaw
+    ? (avatarRaw.startsWith('http://') || avatarRaw.startsWith('https://')
+        ? avatarRaw
+        : `${API_BASE_URL}${avatarRaw.startsWith('/') ? '' : '/'}${avatarRaw}`)
+    : undefined;
 
   const navigationItems = [
     {
@@ -118,7 +126,7 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
   };
 
   return (
-    <Box style={{ height: '100%', backgroundColor: 'white', paddingTop: 24 }}>
+    <Box style={{ height: '100%', backgroundColor: 'var(--app-color-surface)', paddingTop: 24 }}>
       <Stack gap="xs" style={{ padding: '16px' }}>
         {/* Top spacer to avoid clipping under app frame */}
         <Box style={{ height: 8 }} />
@@ -130,19 +138,11 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
           onClick={() => setShowStudentCard(true)}
           style={{
             marginTop: 10,
-            backgroundColor: 'white',
+            backgroundColor: 'var(--app-color-surface)',
             borderColor: 'var(--mantine-color-gray-3)',
-            boxShadow: '0 6px 18px rgba(2,6,23,0.06)',
+            boxShadow: 'var(--app-shadow-sm)',
             cursor: 'pointer',
-            transition: 'transform 150ms ease, box-shadow 150ms ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = '0 12px 28px rgba(2,6,23,0.08)';
-            e.currentTarget.style.transform = 'translateY(-1px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = '0 6px 18px rgba(2,6,23,0.06)';
-            e.currentTarget.style.transform = 'translateY(0)';
+            transition: 'box-shadow 150ms ease, transform 150ms ease'
           }}
         >
           <Group>
@@ -150,7 +150,7 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
               size="md"
               color="blue"
               radius="xl"
-              src={user?.photo}
+              src={avatarSrc}
             >
               {user?.first_name?.[0]}{user?.last_name?.[0]}
             </Avatar>
@@ -192,6 +192,10 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
                 color={isActive ? item.color : 'gray'}
                 onClick={() => onSectionChange(item.id)}
                 justify="flex-start"
+                size="md"
+                radius="md"
+                aria-current={isActive ? 'page' : undefined}
+                title={item.description}
                 leftSection={
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Icon 
@@ -206,6 +210,7 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
                       size="xs" 
                       color={item.color} 
                       variant="light"
+                      radius="sm"
                     >
                       {itemProgress}%
                     </Badge>
@@ -213,14 +218,15 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
                 }
                 style={{
                   display: 'flex',
-                  alignItems: 'center',
+                  alignItems: 'flex-start',
                   height: 'auto',
-                  minHeight: 48,
+                  minHeight: 52,
                   padding: '10px 12px',
-                  borderRadius: '10px',
+                  borderRadius: 'var(--app-radius-md)',
                   backgroundColor: isActive ? getColorValue(item.color) : 'transparent',
                   borderLeft: isActive ? `3px solid ${getColorValue(item.color)}` : '3px solid transparent',
-                  transition: 'all 0.2s ease'
+                  transition: 'background-color 0.2s ease, transform 0.2s ease',
+                  boxShadow: isActive ? 'var(--app-shadow-sm)' : 'none'
                 }}
               >
                 <Box style={{ textAlign: 'left', lineHeight: 1.2 }}>
@@ -239,24 +245,29 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
         <Divider style={{ margin: '16px 0' }} />
 
         {/* Settings */}
-    <Button
+        <Button
           variant={activeSection === 'settings' ? 'filled' : 'subtle'}
           color={activeSection === 'settings' ? 'gray' : 'gray'}
           onClick={() => onSectionChange('settings')}
           justify="flex-start"
           leftSection={<IconSettings size={20} />}
+          size="md"
+          radius="md"
+          aria-current={activeSection === 'settings' ? 'page' : undefined}
           style={{
+            alignItems: 'flex-start',
             height: 'auto',
-      padding: '12px',
-      borderRadius: '10px',
-            transition: 'all 0.2s ease'
+            minHeight: 52,
+            padding: '12px',
+            borderRadius: 'var(--app-radius-md)',
+            transition: 'background-color 0.2s ease'
           }}
         >
-          <Box style={{ textAlign: 'left' }}>
+          <Box style={{ textAlign: 'left', lineHeight: 1.2 }}>
             <Text size="sm" fw={activeSection === 'settings' ? 600 : 500}>
               Настройки
             </Text>
-            <Text size="xs" c="dimmed">
+            <Text size="xs" c="dimmed" style={{ lineHeight: 1.2 }}>
               Профиль и предпочтения
             </Text>
           </Box>
@@ -264,45 +275,55 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
 
         {/* Help & Support */}
         <Stack gap="xs" style={{ marginTop: '16px' }}>
-      <Button
+          <Button
             variant="subtle"
             color="gray"
             justify="flex-start"
             leftSection={<IconHelp size={20} />}
+            size="md"
+            radius="md"
             style={{
+              alignItems: 'flex-start',
               height: 'auto',
-        padding: '12px',
-        borderRadius: '10px',
-              transition: 'all 0.2s ease'
+              minHeight: 52,
+              padding: '12px',
+              borderRadius: 'var(--app-radius-md)',
+              transition: 'background-color 0.2s ease'
             }}
+            onClick={() => onSectionChange('help')}
           >
-            <Box style={{ textAlign: 'left' }}>
+            <Box style={{ textAlign: 'left', lineHeight: 1.2 }}>
               <Text size="sm" fw={500}>
                 Помощь
               </Text>
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="dimmed" style={{ lineHeight: 1.2 }}>
                 FAQ и поддержка
               </Text>
             </Box>
           </Button>
 
-      <Button
+          <Button
             variant="subtle"
             color="gray"
             justify="flex-start"
             leftSection={<IconBell size={20} />}
+            size="md"
+            radius="md"
             style={{
+              alignItems: 'flex-start',
               height: 'auto',
-        padding: '12px',
-        borderRadius: '10px',
-              transition: 'all 0.2s ease'
+              minHeight: 52,
+              padding: '12px',
+              borderRadius: 'var(--app-radius-md)',
+              transition: 'background-color 0.2s ease'
             }}
+            onClick={() => onSectionChange('notifications')}
           >
-            <Box style={{ textAlign: 'left' }}>
+            <Box style={{ textAlign: 'left', lineHeight: 1.2 }}>
               <Text size="sm" fw={500}>
                 Уведомления
               </Text>
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c="dimmed" style={{ lineHeight: 1.2 }}>
                 Настройки уведомлений
               </Text>
             </Box>
@@ -328,23 +349,16 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
               width: 580,
               maxWidth: '100%',
               height: 260,
-              background: 'linear-gradient(135deg, #a5d8ff 0%, #74c0fc 100%)',
+              background: 'var(--app-color-surface)',
+              border: '1px solid var(--app-color-border)',
+              boxShadow: 'var(--app-shadow-lg)',
               borderRadius: 16,
               position: 'relative',
               overflow: 'hidden'
             }}
           >
-            {/* Decorative circles */}
-            <Box style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-              <Box style={{
-                position: 'absolute', width: 220, height: 220, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.15)', right: -40, top: -40
-              }} />
-              <Box style={{
-                position: 'absolute', width: 140, height: 140, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.12)', left: 60, bottom: -30
-              }} />
-            </Box>
+            {/* Decorative overlay with subtle gradient depending on theme */}
+            <Box style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(135deg, color-mix(in srgb, var(--mantine-color-blue-6) 10%, transparent), transparent 60%)' }} />
 
             <Group justify="space-between" style={{ padding: 24, position: 'relative', zIndex: 1 }}>
               <Box>
@@ -353,39 +367,37 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
                     width: 30,
                     height: 30,
                     borderRadius: 8,
-                    background: 'white',
+                    background: 'var(--app-color-surface)',
+                    border: '1px solid var(--app-color-border)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    <Text fw={800} c="#1971c2">U</Text>
+                    <Text fw={800} c="var(--mantine-color-blue-6)">U</Text>
                   </Box>
-                  <Text fw={700} c="white">University Card</Text>
+                  <Text fw={700}>University Card</Text>
                 </Group>
               </Box>
-              <Avatar src={user?.photo} radius="md" size={84} alt="student" />
+              <Avatar src={avatarSrc} radius="md" size={84} alt="student" />
             </Group>
 
-            <Group style={{ padding: '0 24px' }}>
+            <Group style={{ padding: '0 24px', position: 'relative', zIndex: 1 }}>
               <Box style={{ flex: 1 }}>
-                <Text size="lg" fw={700} c="white" style={{ lineHeight: 1.1 }}>
+                <Text size="lg" fw={700} style={{ lineHeight: 1.1 }}>
                   {user?.first_name || 'Jane'} {user?.last_name || 'Doe'}
                 </Text>
-                <Text size="sm" c="rgba(255,255,255,0.9)" style={{ marginTop: 4 }}>
+                <Text size="sm" c="dimmed" style={{ marginTop: 4 }}>
                   Computer Science
                 </Text>
               </Box>
-              <Button size="md" radius="xl" color="green" variant="filled">
-                LEARN MORE
-              </Button>
             </Group>
 
-            <Group style={{ padding: 24, marginTop: 16 }}>
+            <Group style={{ padding: 24, marginTop: 16, position: 'relative', zIndex: 1 }}>
               <Badge
                 size="lg"
                 color="blue"
                 variant="light"
-                style={{ background: 'rgba(255,255,255,0.85)', color: '#1c7ed6', fontWeight: 700, border: 'none' }}
+                style={{ background: 'color-mix(in srgb, var(--mantine-color-blue-6) 15%, var(--app-color-surface))', color: 'var(--mantine-color-blue-6)', fontWeight: 700, border: '1px solid color-mix(in srgb, var(--mantine-color-blue-6) 30%, var(--app-color-border))' }}
               >
                 STUDENT ID: {user?.student_id || '123456'}
               </Badge>

@@ -11,6 +11,8 @@ import CodiceSection from './sections/CodiceSection.jsx';
 import DOVSection from './sections/DOVSection.jsx';
 import VisaSection from './sections/VisaSection.jsx';
 import SettingsSection from './sections/SettingsSection.jsx';
+import HelpSection from './sections/HelpSection.jsx';
+import NotificationsSection from './sections/NotificationsSection.jsx';
 
 const CentralContent = ({ activeSection, overallProgress, currentProgress }) => {
   const getSectionComponent = () => {
@@ -35,6 +37,10 @@ const CentralContent = ({ activeSection, overallProgress, currentProgress }) => 
         return <VisaSection progress={progress} />;
       case 'settings':
         return <SettingsSection progress={progress} />;
+      case 'help':
+        return <HelpSection />;
+      case 'notifications':
+        return <NotificationsSection />;
       default:
         return <MainPage />;
     }
@@ -46,7 +52,7 @@ const CentralContent = ({ activeSection, overallProgress, currentProgress }) => 
       background: 'transparent',
       overflowY: 'auto',
       overflowX: 'hidden',
-      padding: '16px'
+      padding: 'var(--app-spacing-md)'
     }}>
       <AnimatePresence mode="wait">
         <motion.div

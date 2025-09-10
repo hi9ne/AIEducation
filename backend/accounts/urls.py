@@ -15,4 +15,14 @@ urlpatterns = [
     path('confirm-password-reset/', views.confirm_password_reset, name='confirm_password_reset'),
     path('verify-email/', views.verify_email, name='verify_email'),
     path('email/verify/request/', views.request_email_verification, name='request_email_verification'),
+    # devices / sessions
+    path('devices/', views.list_devices, name='list_devices'),
+    path('devices/revoke-all/', views.revoke_all_devices, name='revoke_all_devices'),
+    path('devices/<uuid:device_id>/revoke/', views.revoke_device, name='revoke_device'),
+    # 2FA
+    path('2fa/setup/', views.twofa_setup, name='twofa_setup'),
+    path('2fa/enable/', views.twofa_enable, name='twofa_enable'),
+    path('2fa/disable/', views.twofa_disable, name='twofa_disable'),
+    # OAuth
+    path('login/google/', views.login_google, name='login_google'),
 ]

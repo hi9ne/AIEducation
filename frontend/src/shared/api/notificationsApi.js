@@ -121,6 +121,10 @@ class NotificationsAPI {
     });
   }
 
+  async getUnreadCount() {
+    return this.request('/unread-count/');
+  }
+
   async createNotification(data) {
     return this.request('/create/', {
       method: 'POST',
