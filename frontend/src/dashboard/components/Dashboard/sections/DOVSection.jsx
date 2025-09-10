@@ -167,7 +167,7 @@ const DOVSection = ({ progress }) => {
         </Alert>
 
         {/* Progress Overview */}
-        <Paper className="p-6" shadow="sm">
+        <Paper className="p-6" shadow="sm" style={{ background: 'var(--app-color-surface)' }}>
           <Grid>
             <Grid.Col span={{ base: 12, md: 8 }}>
               <Stack gap="md">
@@ -191,7 +191,7 @@ const DOVSection = ({ progress }) => {
               </Stack>
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}>
-              <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)' }}>
+              <Card className="h-full" style={{ backgroundColor: 'color-mix(in srgb, var(--mantine-color-blue-6), transparent 85%)', border: '1px solid color-mix(in srgb, var(--mantine-color-blue-6), transparent 60%)' }}>
                 <Stack align="center" gap="sm">
                   <IconFileText size={48} color="var(--mantine-color-blue-6)" />
                   <Text size="lg" fw={700} c="blue">
@@ -207,13 +207,13 @@ const DOVSection = ({ progress }) => {
         </Paper>
 
         {/* Steps */}
-        <Paper className="p-6" shadow="sm">
+        <Paper className="p-6" shadow="sm" style={{ background: 'var(--app-color-surface)' }}>
           <Text size="lg" fw={600} className="mb-4">
             Пошаговый план
           </Text>
           <Stack gap="md">
             {steps.map((step, index) => (
-              <Card key={step.id} shadow="sm" padding="lg" radius="md" withBorder>
+              <Card key={step.id} shadow="sm" padding="lg" radius="md" withBorder style={{ background: 'var(--app-color-surface)' }}>
                 <Group justify="space-between" align="flex-start">
                   <Group>
                     <ActionIcon
@@ -224,7 +224,7 @@ const DOVSection = ({ progress }) => {
                       {step.completed ? <IconCheck size={20} /> : <IconClock size={20} />}
                     </ActionIcon>
                     <Box>
-                      <Text size="md" fw={600} c="dark">
+                      <Text size="md" fw={600}>
                         {step.title}
                       </Text>
                       <Text size="sm" c="dimmed" className="mb-2">
@@ -266,7 +266,7 @@ const DOVSection = ({ progress }) => {
         </Paper>
 
         {/* Documents */}
-        <Paper className="p-6" shadow="sm">
+        <Paper className="p-6" shadow="sm" style={{ background: 'var(--app-color-surface)' }}>
           <Group justify="space-between" align="center" className="mb-4">
             <Text size="lg" fw={600}>
               Документы
@@ -281,12 +281,12 @@ const DOVSection = ({ progress }) => {
           
           <Stack gap="sm">
             {documents.map((doc) => (
-              <Card key={doc.id} shadow="sm" padding="md" radius="md" withBorder>
+              <Card key={doc.id} shadow="sm" padding="md" radius="md" withBorder style={{ background: 'var(--app-color-surface)' }}>
                 <Group justify="space-between" align="center">
                   <Group>
                     <IconFileText size={20} color="var(--mantine-color-gray-6)" />
                     <Box>
-                      <Text size="md" fw={500} c="dark">
+                      <Text size="md" fw={500}>
                         {doc.name}
                       </Text>
                       {doc.uploadedAt && (
@@ -334,13 +334,13 @@ const DOVSection = ({ progress }) => {
         </Paper>
 
         {/* Video Instructions */}
-        <Paper className="p-6" shadow="sm">
+        <Paper className="p-6" shadow="sm" style={{ background: 'var(--app-color-surface)' }}>
           <Text size="lg" fw={600} className="mb-4">
             Видео-инструкции
           </Text>
           <Grid>
             <Grid.Col span={{ base: 12, md: 6 }}>
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Card shadow="sm" padding="lg" radius="md" withBorder style={{ background: 'var(--app-color-surface)' }}>
                 <Stack gap="md">
                   <Group>
                     <IconPlayerPlay size={24} color="var(--mantine-color-blue-6)" />
@@ -358,7 +358,7 @@ const DOVSection = ({ progress }) => {
               </Card>
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 6 }}>
-              <Card shadow="sm" padding="lg" radius="md" withBorder>
+              <Card shadow="sm" padding="lg" radius="md" withBorder style={{ background: 'var(--app-color-surface)' }}>
                 <Stack gap="md">
                   <Group>
                     <IconPlayerPlay size={24} color="var(--mantine-color-green-6)" />
@@ -379,7 +379,7 @@ const DOVSection = ({ progress }) => {
         </Paper>
 
         {/* External Links */}
-        <Paper className="p-6" shadow="sm">
+        <Paper className="p-6" shadow="sm" style={{ background: 'var(--app-color-surface)' }}>
           <Text size="lg" fw={600} className="mb-4">
             Полезные ссылки
           </Text>

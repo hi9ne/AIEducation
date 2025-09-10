@@ -114,7 +114,7 @@ const UniversitalySection = ({ progress }) => {
         </Group>
 
         {/* Общий прогресс */}
-  <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+        <Card withBorder shadow="md" radius="lg" style={{ background: 'var(--app-color-surface)' }}>
           <Stack gap="md">
             <Group justify="space-between">
               <Text size="lg" fw={600}>
@@ -135,9 +135,9 @@ const UniversitalySection = ({ progress }) => {
         </Card>
 
         {/* Статистика */}
-    <Grid>
+        <Grid>
           <Grid.Col span={{ base: 12, md: 4 }}>
-      <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-green-0)', border: '1px solid var(--mantine-color-green-2)' }} radius="lg" shadow="sm">
+            <Card className="h-full" style={{ backgroundColor: 'color-mix(in srgb, var(--mantine-color-green-6), transparent 85%)', border: '1px solid color-mix(in srgb, var(--mantine-color-green-6), transparent 60%)' }} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconCheck size={48} color="var(--mantine-color-green-6)" />
                 <Text size="lg" fw={700} c="green">
@@ -151,7 +151,7 @@ const UniversitalySection = ({ progress }) => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 4 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-orange-0)', border: '1px solid var(--mantine-color-orange-2)' }} radius="lg" shadow="sm">
+            <Card className="h-full" style={{ backgroundColor: 'color-mix(in srgb, var(--mantine-color-orange-6), transparent 85%)', border: '1px solid color-mix(in srgb, var(--mantine-color-orange-6), transparent 60%)' }} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconClock size={48} color="var(--mantine-color-orange-6)" />
                 <Text size="lg" fw={700} c="orange">
@@ -165,7 +165,7 @@ const UniversitalySection = ({ progress }) => {
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 4 }}>
-            <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)', border: '1px solid var(--mantine-color-blue-2)' }} radius="lg" shadow="sm">
+            <Card className="h-full" style={{ backgroundColor: 'color-mix(in srgb, var(--mantine-color-blue-6), transparent 85%)', border: '1px solid color-mix(in srgb, var(--mantine-color-blue-6), transparent 60%)' }} radius="lg" shadow="sm">
               <Stack align="center" gap="sm">
                 <IconFileText size={48} color="var(--mantine-color-blue-6)" />
                 <Text size="lg" fw={700} c="blue">
@@ -180,7 +180,7 @@ const UniversitalySection = ({ progress }) => {
         </Grid>
 
         {/* Список шагов */}
-  <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+        <Card withBorder shadow="md" radius="lg" style={{ background: 'var(--app-color-surface)' }}>
           <Stack gap="md">
             <Text size="lg" fw={600}>
               Пошаговый план
@@ -190,13 +190,13 @@ const UniversitalySection = ({ progress }) => {
                 <Paper
                   key={step.id}
                   p="md"
-      withBorder
-      radius="md"
-      shadow="xs"
+                  withBorder
+                  radius="md"
+                  shadow="xs"
                   style={{
                     backgroundColor: step.completed 
-                      ? 'var(--mantine-color-green-0)' 
-                      : 'var(--mantine-color-gray-0)'
+                      ? 'color-mix(in srgb, var(--mantine-color-green-6), transparent 85%)' 
+                      : 'var(--app-color-surface)'
                   }}
                 >
                   <Group justify="space-between">
@@ -260,7 +260,7 @@ const UniversitalySection = ({ progress }) => {
         </Card>
 
         {/* Действия */}
-  <Card withBorder shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+        <Card withBorder shadow="md" radius="lg" style={{ background: 'var(--app-color-surface)' }}>
           <Stack gap="md">
             <Text size="lg" fw={600}>
               Быстрые действия
@@ -269,21 +269,21 @@ const UniversitalySection = ({ progress }) => {
               <Button
                 leftSection={<IconUpload size={16} />}
                 onClick={() => setOpened(true)}
-    radius="md"
+                radius="md"
               >
                 Загрузить документы
               </Button>
               <Button
                 variant="light"
                 leftSection={<IconDownload size={16} />}
-    radius="md"
+                radius="md"
               >
                 Скачать шаблоны
               </Button>
               <Button
                 variant="light"
                 leftSection={<IconEye size={16} />}
-    radius="md"
+                radius="md"
               >
                 Просмотреть заявку
               </Button>

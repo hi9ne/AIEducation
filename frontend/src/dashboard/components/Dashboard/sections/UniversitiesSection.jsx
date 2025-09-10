@@ -51,7 +51,7 @@ const UniversitiesSection = ({ progress }) => {
   const error = useSelector((state) => state.education.error);
 
   // Прогресс поиска убран
-
+    
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProgram, setSelectedProgram] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('');
@@ -128,13 +128,6 @@ const UniversitiesSection = ({ progress }) => {
     }
   }, [dispatch, isAuthenticated]);
 
-  // Отладочная информация
-  console.log('UniversitiesSection - isAuthenticated:', isAuthenticated);
-  console.log('UniversitiesSection - loading:', loading);
-  console.log('UniversitiesSection - error:', error);
-  console.log('UniversitiesSection - universities:', universities);
-  console.log('UniversitiesSection - displayUniversities:', displayUniversities);
-
   // Фильтрация университетов (учитываем город/описание и отсутствие полей)
   const filteredUniversities = displayUniversities?.filter((university) => {
     const term = (searchTerm || '').toLowerCase().trim();
@@ -142,7 +135,7 @@ const UniversitiesSection = ({ progress }) => {
     const city = (university.city || '').toLowerCase();
     const description = (university.description || '').toLowerCase();
     const programsList = (university.programs || []).map(p => (p || '').toLowerCase());
-  const level = (university.level || '').toLowerCase();
+    const level = (university.level || '').toLowerCase();
 
     const matchesSearch = !term ||
       name.includes(term) ||
@@ -191,7 +184,7 @@ const UniversitiesSection = ({ progress }) => {
 
   if (loading) {
     return (
-      <Box>
+      <Box style={{ padding: 'var(--app-spacing-md)' }}>
         <Text size="xl" fw={600} mb="md">Поиск и выбор университетов</Text>
         <Grid>
           {[1, 2, 3, 4].map((i) => (
@@ -205,7 +198,7 @@ const UniversitiesSection = ({ progress }) => {
   }
 
   return (
-    <Box style={{ padding: '4px' }}>
+    <Box style={{ padding: 'var(--app-spacing-md)' }}>
       <Text
         size="xl"
         fw={800}
@@ -220,13 +213,12 @@ const UniversitiesSection = ({ progress }) => {
         Поиск и выбор университетов
       </Text>
       
-  {/* Блок прогресса поиска университетов удалён по требованию */}
-
       {/* Фильтры */}
-      <Paper p="md" mb="md" withBorder style={{
-        background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
-        borderRadius: 12,
-        boxShadow: '0 6px 18px rgba(15, 23, 42, 0.06)'
+      <Paper p="var(--app-spacing-md)" mb="var(--app-spacing-md)" withBorder style={{
+        background: 'var(--app-color-surface)',
+        borderRadius: 'var(--app-radius-lg)',
+        boxShadow: 'var(--app-shadow-sm)',
+        borderColor: 'var(--app-color-border)'
       }}>
         <Group justify="space-between" mb="sm">
           <Text fw={600}>Фильтры поиска</Text>
@@ -296,28 +288,29 @@ const UniversitiesSection = ({ progress }) => {
             {filteredUniversities.map((university) => (
               <Grid.Col key={university.id} span={{ base: 12, md: 6, lg: 4 }}>
                 <Card
-                  shadow="md"
-                  padding="lg"
-                  radius="lg"
+                  shadow="var(--app-shadow-md)"
+                  padding="var(--app-spacing-lg)"
+                  radius="var(--app-radius-lg)"
                   withBorder
                   style={{
-                    background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
-                    borderColor: 'var(--mantine-color-gray-3)',
-                    transition: 'transform 150ms ease, box-shadow 150ms ease'
+                    background: 'var(--app-color-surface)',
+                    borderColor: 'var(--app-color-border)',
+                    transition: 'transform 150ms ease, box-shadow 150ms ease',
+                    boxShadow: 'var(--app-shadow-sm)'
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(2,6,23,0.08)'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--app-shadow-md)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = ''; }}
                 >
-                  <Card.Section withBorder inheritPadding py="xs" style={{ backgroundColor: 'rgba(2,132,199,0.04)' }}>
-                    <Group justify="space-between">
-                      <Group gap="sm" align="center">
+                  <Card.Section withBorder inheritPadding py="var(--app-spacing-xs)" style={{ backgroundColor: 'color-mix(in srgb, var(--mantine-color-blue-6) 4%, transparent)' }}>
+                    <Group justify="space-between" style={{ minHeight: 40 }}>
+                      <Group gap="sm" align="center" style={{ flex: 1, minWidth: 0 }}>
                         {(() => {
                           const src = getLogoSrc(university);
                           return src ? (
                             <Avatar src={src} alt={university.name} radius="sm" size={28} />
                           ) : null;
                         })()}
-                        <Text fw={700} size="lg">{university.name}</Text>
+                        <Text fw={700} size="lg" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{university.name}</Text>
                       </Group>
                       <ActionIcon
                         variant="subtle"
@@ -330,13 +323,13 @@ const UniversitiesSection = ({ progress }) => {
                   </Card.Section>
 
                   <Stack gap="xs" mt="md">
-                    {/* Местоположение (всегда отображается) */}
+                    {/* Местоположение */}
                     <Group gap="xs">
                       <IconMapPin size={16} />
                       <Text size="sm" c="dimmed">{university.city || '—'}</Text>
                     </Group>
 
-                    {/* Сложность поступления как прогресс-бар */}
+                    {/* Сложность поступления */}
                     {(() => {
                       const p = parseLevelToPercent(university.level);
                       return (
@@ -351,7 +344,7 @@ const UniversitiesSection = ({ progress }) => {
                       );
                     })()}
 
-                    {/* Кол-во студентов (всегда отображается) */}
+                    {/* Кол-во студентов */}
                     {(() => {
                       const val = university.students ?? university.student_count;
                       const shown = (val === null || val === undefined)
@@ -365,9 +358,9 @@ const UniversitiesSection = ({ progress }) => {
                       );
                     })()}
 
-                    {/* Дедлайн подачи документов (всегда отображается) */}
+                    {/* Дедлайн */}
                     <Group gap="xs">
-                      <IconCalendar size={16} color="#0ea5e9" />
+                      <IconCalendar size={16} color="var(--mantine-color-blue-6)" />
                       <Text size="sm" c="dimmed">Дедлайн: {formatDate(university.deadline) || '—'}</Text>
                     </Group>
                   </Stack>
@@ -453,7 +446,7 @@ const UniversitiesSection = ({ progress }) => {
         overlayProps={{ backgroundOpacity: 0.45, blur: 3 }}
         transitionProps={{ transition: 'pop', duration: 200 }}
       >
-            {selectedUniversity && (
+        {selectedUniversity && (
           <Stack gap="md">
             {(() => {
               const src = getLogoSrc(selectedUniversity);

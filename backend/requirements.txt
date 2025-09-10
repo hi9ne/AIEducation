@@ -17,3 +17,6 @@ dj-database-url
 openpyxl
 gunicorn
 whitenoise
+pyotp
+google-auth
+requests

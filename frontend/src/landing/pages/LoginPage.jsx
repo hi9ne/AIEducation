@@ -33,14 +33,14 @@ import {
   IconCheck,
   IconAlertCircle,
   IconBrandGoogle,
-  IconBrandGithub,
-  IconBrandDiscord,
   IconRocket,
   IconShield,
   IconStar
 } from '@tabler/icons-react';
 import { motion } from 'framer-motion';
 import './LoginPage.css';
+import { authAPI } from '../../shared/services/api';
+import { useRef } from 'react';
 
 function LoginPage() {
   const dispatch = useDispatch();
@@ -52,11 +52,13 @@ function LoginPage() {
     email: '',
     password: ''
   });
+  const [twofaCode, setTwofaCode] = useState('');
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const googleBtnRef = useRef(null);
 
   // Проверяем URL параметры
   useEffect(() => {
@@ -86,6 +88,53 @@ function LoginPage() {
     setIsVisible(true);
   }, []);
 
+  // Инициализация Google Identity Services: отрисуем официальную кнопку (устойчивее к FedCM)
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+    if (!clientId) return;
+    const google = window.google?.accounts?.id;
+    if (!google) return;
+
+    const handleCredential = async (response) => {
+      try {
+        const idToken = response?.credential;
+        if (!idToken) return;
+        const res = await authAPI.loginWithGoogle(idToken);
+        const data = res.data;
+        if (data?.tokens) {
+          localStorage.setItem('accessToken', data.tokens.access);
+          localStorage.setItem('refreshToken', data.tokens.refresh);
+          localStorage.setItem('userInfo', JSON.stringify(data.user));
+          const profileAction = await dispatch(fetchProfile());
+          const fetchedUser = profileAction?.payload;
+          const done = fetchedUser?.profile?.onboarding_completed === true;
+          navigate(done ? '/app/dashboard' : '/app/onboarding');
+        }
+      } catch (e) {
+        console.error('Google login error', e);
+      }
+    };
+
+    google.initialize({
+      client_id: clientId,
+      callback: handleCredential,
+      // Отключаем FedCM для prompt, чтобы избежать ошибок CORS/FedCM в локальной среде
+      use_fedcm_for_prompt: false,
+    });
+
+    // Отрисуем фирменную кнопку в контейнере
+    if (googleBtnRef.current) {
+      google.renderButton(googleBtnRef.current, {
+        theme: 'filled_blue',
+        size: 'large',
+        text: 'signin_with',
+        shape: 'rectangular',
+        logo_alignment: 'left',
+        width: 320,
+      });
+    }
+  }, [dispatch, navigate]);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -109,7 +158,8 @@ function LoginPage() {
 
     try {
       console.log('Dispatching loginUser...');
-      const result = await dispatch(loginUser(formData));
+      const payload = twofaCode ? { ...formData, code: twofaCode } : formData;
+      const result = await dispatch(loginUser(payload));
       console.log('Login result:', result);
       
       if (loginUser.fulfilled.match(result)) {
@@ -256,6 +306,18 @@ function LoginPage() {
                     )}
                   />
 
+                  {/* 2FA code */}
+                  <TextInput
+                    label="Код 2FA (если включён)"
+                    placeholder="123456"
+                    value={twofaCode}
+                    onChange={(e) => setTwofaCode(e.target.value)}
+                    size="lg"
+                    radius="md"
+                    autoComplete="one-time-code"
+                    className="form-input"
+                  />
+
                   <Group position="apart" align="center">
                     <Checkbox
                       label="Запомнить меня"
@@ -298,26 +360,8 @@ function LoginPage() {
                   <Divider label="или" labelPosition="center" />
 
                   <Stack spacing="sm">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      fullWidth
-                      leftSection={<IconBrandGoogle size={20} />}
-                      className="social-button"
-                      radius="md"
-                    >
-                      Войти через Google
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      fullWidth
-                      leftSection={<IconBrandGithub size={20} />}
-                      className="social-button"
-                      radius="md"
-                    >
-                      Войти через GitHub
-                    </Button>
+                    {/* Контейнер официальной кнопки Google */}
+                    <div ref={googleBtnRef} />
                   </Stack>
 
                   <Center>

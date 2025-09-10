@@ -9,12 +9,12 @@ export const loginUser = createAsyncThunk(
       const response = await authAPI.login(credentials);
       
       // Сохраняем токены
-    localStorage.setItem('accessToken', response.data.tokens.access);
-    localStorage.setItem('refreshToken', response.data.tokens.refresh);
+      localStorage.setItem('accessToken', response.data.tokens.access);
+      localStorage.setItem('refreshToken', response.data.tokens.refresh);
       
-  // Сохраняем базовую информацию о пользователе
-  const userInfo = response.data.user;
-  localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      // Сохраняем базовую информацию о пользователе
+      const userInfo = response.data.user;
+      localStorage.setItem('userInfo', JSON.stringify(userInfo));
       
       return response.data;
     } catch (error) {
@@ -177,6 +177,86 @@ export const verifyEmail = createAsyncThunk(
   }
 );
 
+// Devices / Sessions
+export const fetchDevices = createAsyncThunk(
+  'auth/fetchDevices',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await authAPI.listDevices();
+      return res.data?.devices || [];
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+
+export const revokeDevice = createAsyncThunk(
+  'auth/revokeDevice',
+  async (deviceId, { rejectWithValue }) => {
+    try {
+      await authAPI.revokeDevice(deviceId);
+      return deviceId;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+
+export const revokeAllDevices = createAsyncThunk(
+  'auth/revokeAllDevices',
+  async (_, { rejectWithValue }) => {
+    try {
+      await authAPI.revokeAllDevices();
+      return true;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+
+// 2FA
+export const twofaSetup = createAsyncThunk(
+  'auth/twofaSetup',
+  async (force = false, { rejectWithValue }) => {
+    try {
+      const res = await authAPI.twofaSetup(force);
+      return res.data; // { secret, otpauth_url }
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+
+export const twofaEnable = createAsyncThunk(
+  'auth/twofaEnable',
+  async (code, { rejectWithValue }) => {
+    try {
+      const res = await authAPI.twofaEnable(code);
+      return res.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+
+export const twofaDisable = createAsyncThunk(
+  'auth/twofaDisable',
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await authAPI.twofaDisable();
+      return res.data;
+    } catch (error) {
+      const errorMessage = apiHelpers.handleError(error);
+      return rejectWithValue({ error: errorMessage, details: error.response?.data });
+    }
+  }
+);
+
 // Восстановление состояния из localStorage
 const getInitialState = () => {
   const hasToken = Boolean(localStorage.getItem('accessToken'));
@@ -195,6 +275,12 @@ const getInitialState = () => {
     emailVerificationSent: false,
     profileUpdating: false,
     passwordChanging: false,
+    
+    // Устройства/сессии
+    devices: [],
+    devicesLoading: false,
+    
+    twofa: { secret: null, otpauth_url: null, loading: false },
     
     // Статистика
     loginAttempts: 0,
@@ -258,7 +344,7 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.isAuthenticated = true;
-  state.user = action.payload?.user || null;
+        state.user = action.payload?.user || null;
         state.error = null;
         state.success = 'Вход выполнен успешно!';
       })
@@ -364,6 +450,29 @@ const authSlice = createSlice({
         state.error = action.payload?.error || 'Ошибка при обновлении профиля';
       })
       
+      // Update Profile Complete (multipart / комплексные поля)
+      .addCase(updateProfileComplete.pending, (state) => {
+        state.profileUpdating = true;
+        state.error = null;
+      })
+      .addCase(updateProfileComplete.fulfilled, (state, action) => {
+        state.profileUpdating = false;
+        state.success = action.payload?.message || 'Профиль успешно обновлен';
+        const updatedUser = action.payload?.user;
+        if (updatedUser) {
+          state.user = updatedUser;
+          try {
+            localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+          } catch (e) {
+            // ignore quota errors
+          }
+        }
+      })
+      .addCase(updateProfileComplete.rejected, (state, action) => {
+        state.profileUpdating = false;
+        state.error = action.payload?.error || 'Ошибка при обновлении профиля';
+      })
+      
       // Change Password
       .addCase(changePassword.pending, (state) => {
         state.passwordChanging = true;
@@ -406,6 +515,56 @@ const authSlice = createSlice({
       .addCase(verifyEmail.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.error || 'Ошибка подтверждения email';
+      })
+
+      // Devices / Sessions
+      .addCase(fetchDevices.pending, (state) => {
+        state.devicesLoading = true;
+      })
+      .addCase(fetchDevices.fulfilled, (state, action) => {
+        state.devicesLoading = false;
+        state.devices = action.payload;
+      })
+      .addCase(fetchDevices.rejected, (state, action) => {
+        state.devicesLoading = false;
+        state.error = action.payload?.error || 'Не удалось получить список устройств';
+      })
+      .addCase(revokeDevice.fulfilled, (state, action) => {
+        const id = action.payload;
+        state.devices = state.devices.filter((d) => d.id !== id);
+      })
+      .addCase(revokeAllDevices.fulfilled, (state) => {
+        state.devices = [];
+      })
+
+      // 2FA
+      .addCase(twofaSetup.pending, (state) => {
+        state.twofa.loading = true;
+      })
+      .addCase(twofaSetup.fulfilled, (state, action) => {
+        state.twofa.loading = false;
+        state.twofa.secret = action.payload?.secret || null;
+        state.twofa.otpauth_url = action.payload?.otpauth_url || null;
+      })
+      .addCase(twofaSetup.rejected, (state, action) => {
+        state.twofa.loading = false;
+        state.error = action.payload?.error || 'Не удалось получить секрет 2FA';
+      })
+      .addCase(twofaEnable.fulfilled, (state) => {
+        if (state.user) {
+          state.user.two_factor_enabled = true;
+          localStorage.setItem('userInfo', JSON.stringify(state.user));
+        }
+        state.success = '2FA включена';
+      })
+      .addCase(twofaDisable.fulfilled, (state) => {
+        if (state.user) {
+          state.user.two_factor_enabled = false;
+          localStorage.setItem('userInfo', JSON.stringify(state.user));
+        }
+        state.twofa.secret = null;
+        state.twofa.otpauth_url = null;
+        state.success = '2FA отключена';
       });
   }
 });

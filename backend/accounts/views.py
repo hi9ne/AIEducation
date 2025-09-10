@@ -3,6 +3,11 @@ from rest_framework.decorators import api_view, permission_classes
 from datetime import datetime
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
+import pyotp
+import base64
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.mail import send_mail
@@ -10,7 +15,7 @@ from django.conf import settings
 import secrets
 import uuid
 
-from .models import UserProfile, EmailVerification, PasswordResetToken
+from .models import UserProfile, EmailVerification, PasswordResetToken, UserDevice
 from .serializers import (
     UserRegistrationSerializer, UserLoginSerializer, UserSerializer,
     UserProfileSerializer, PasswordChangeSerializer, PasswordResetRequestSerializer,
@@ -70,9 +75,42 @@ def login(request):
     serializer = UserLoginSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.validated_data['user']
-        
+
+        # Если включена 2FA — требуем код
+        if getattr(user, 'two_factor_enabled', False):
+            provided_code = str(request.data.get('code', '')).strip()
+            secret = getattr(user, 'two_factor_secret', '')
+            if not provided_code or not secret:
+                return Response({'require_2fa': True, 'message': 'Требуется код 2FA'}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                totp = pyotp.TOTP(secret)
+                if not totp.verify(provided_code, valid_window=1):
+                    return Response({'require_2fa': True, 'error': 'Неверный код 2FA'}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception:
+                return Response({'require_2fa': True, 'error': 'Ошибка проверки 2FA'}, status=status.HTTP_400_BAD_REQUEST)
+
         # Создаем JWT токены
         refresh = RefreshToken.for_user(user)
+
+        # Регистрируем/обновляем устройство (refresh_jti)
+        try:
+            ua = request.META.get('HTTP_USER_AGENT', '')
+            ip = request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR') or ''
+            jti = str(refresh.get('jti')) if hasattr(refresh, 'get') else refresh.get('jti', '')
+            # fallback for simplejwt token attr
+            if not jti:
+                try:
+                    jti = refresh.get('jti')
+                except Exception:
+                    jti = ''
+            UserDevice.objects.create(
+                user=user,
+                user_agent=ua or '',
+                ip_address=(ip.split(',')[0].strip() if isinstance(ip, str) else str(ip)),
+                refresh_jti=str(jti or '')
+            )
+        except Exception:
+            pass
         
         return Response({
             'user': UserSerializer(user).data,
@@ -93,6 +131,13 @@ def logout(request):
         if refresh_token:
             token = RefreshToken(refresh_token)
             token.blacklist()
+            # помечаем устройство как просроченное по jti
+            try:
+                jti = token.get('jti')
+                if jti:
+                    UserDevice.objects.filter(user=request.user, refresh_jti=str(jti)).delete()
+            except Exception:
+                pass
         return Response({'message': 'Успешный выход'})
     except Exception as e:
         return Response({'error': 'Неверный токен'}, status=status.HTTP_400_BAD_REQUEST)
@@ -444,3 +489,147 @@ def update_user_profile(request):
             {'error': f'Ошибка при обновлении профиля: {str(e)}'}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+
+
+# --------- 2FA (TOTP) ---------
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def twofa_setup(request):
+    """Генерирует секрет и otpauth URL для подключения в приложении-автентификаторе.
+    Если уже включено, перегенерирует секрет только по запросу параметра force=true.
+    """
+    user = request.user
+    force = str(request.data.get('force', 'false')).lower() == 'true'
+    if user.two_factor_enabled and not force and user.two_factor_secret:
+        secret = user.two_factor_secret
+    else:
+        # 32 random base32 secret
+        secret = pyotp.random_base32()
+        user.two_factor_secret = secret
+        user.save(update_fields=['two_factor_secret'])
+    issuer = 'AIEducation'
+    otp_uri = pyotp.totp.TOTP(secret).provisioning_uri(name=user.email, issuer_name=issuer)
+    return Response({'secret': secret, 'otpauth_url': otp_uri})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def twofa_enable(request):
+    """Проверяет введённый код и включает 2FA."""
+    user = request.user
+    code = str(request.data.get('code', ''))
+    secret = user.two_factor_secret
+    if not secret:
+        return Response({'error': 'Сначала выполните настройку 2FA'}, status=status.HTTP_400_BAD_REQUEST)
+    totp = pyotp.TOTP(secret)
+    if not totp.verify(code, valid_window=1):
+        return Response({'error': 'Неверный код'}, status=status.HTTP_400_BAD_REQUEST)
+    user.two_factor_enabled = True
+    user.save(update_fields=['two_factor_enabled'])
+    return Response({'message': '2FA включена'})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def twofa_disable(request):
+    user = request.user
+    user.two_factor_enabled = False
+    user.two_factor_secret = ''
+    user.save(update_fields=['two_factor_enabled', 'two_factor_secret'])
+    return Response({'message': '2FA отключена'})
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def login_google(request):
+    """Логин через Google: принимает id_token, валидирует, создаёт/находит пользователя и выдаёт JWT."""
+    token = request.data.get('id_token')
+    if not token:
+        return Response({'error': 'id_token обязателен'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        client_id = getattr(settings, 'GOOGLE_CLIENT_ID', None)
+        idinfo = google_id_token.verify_oauth2_token(token, google_requests.Request(), audience=client_id)
+        if idinfo.get('iss') not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise ValueError('Неверный issuer')
+        email = idinfo.get('email')
+        given_name = idinfo.get('given_name') or ''
+        family_name = idinfo.get('family_name') or ''
+        if not email:
+            return Response({'error': 'В токене отсутствует email'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Создаём/находим пользователя
+        user, created = User.objects.get_or_create(email=email, defaults={
+            'username': email,
+            'first_name': given_name,
+            'last_name': family_name,
+            'is_verified': True,
+        })
+
+        # Выдаём JWT
+        refresh = RefreshToken.for_user(user)
+
+        # Регистрируем устройство
+        try:
+            ua = request.META.get('HTTP_USER_AGENT', '')
+            ip = request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR') or ''
+            jti = str(refresh.get('jti')) if hasattr(refresh, 'get') else refresh.get('jti', '')
+            UserDevice.objects.create(user=user, user_agent=ua or '', ip_address=(ip.split(',')[0].strip() if isinstance(ip, str) else str(ip)), refresh_jti=str(jti or ''))
+        except Exception:
+            pass
+
+        return Response({
+            'user': UserSerializer(user).data,
+            'tokens': {
+                'access': str(refresh.access_token),
+                'refresh': str(refresh)
+            }
+        })
+    except Exception as e:
+        return Response({'error': f'Ошибка проверки Google токена: {e}'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# --------- Устройства / Сессии ---------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_devices(request):
+    devices = UserDevice.objects.filter(user=request.user).order_by('-last_seen')
+    data = [
+        {
+            'id': str(d.id),
+            'user_agent': d.user_agent,
+            'ip_address': d.ip_address,
+            'created_at': d.created_at.isoformat(),
+            'last_seen': d.last_seen.isoformat(),
+        }
+        for d in devices
+    ]
+    return Response({'devices': data})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def revoke_device(request, device_id: str):
+    try:
+        device = UserDevice.objects.get(user=request.user, id=device_id)
+    except UserDevice.DoesNotExist:
+        return Response({'error': 'Устройство не найдено'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Удаляем устройство и, если есть jti, также пытаемся добавить в blacklist
+    try:
+        if device.refresh_jti:
+            # simplejwt не предоставляет прямой API для blacklist по jti без токена,
+            # поэтому просто удаляем запись устройства. Новый refresh по jti не выпустится.
+            pass
+    except Exception:
+        pass
+
+    device.delete()
+    return Response({'message': 'Сессия завершена'})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def revoke_all_devices(request):
+    UserDevice.objects.filter(user=request.user).delete()
+    return Response({'message': 'Все сессии завершены'})
