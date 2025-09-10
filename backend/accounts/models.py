@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+import uuid
 
 
 class User(AbstractUser):
@@ -15,6 +16,9 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # 2FA (TOTP) поля
+    two_factor_enabled = models.BooleanField(default=False)
+    two_factor_secret = models.CharField(max_length=64, blank=True)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
@@ -49,6 +53,31 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"Profile of {self.user.email}"
+
+
+class UserDevice(models.Model):
+    """Устройство/сессия пользователя (в связке с refresh JTI).
+
+    Храним минимальную информацию, чтобы уметь:
+    - показывать список активных устройств
+    - завершать конкретную сессию (блокировать refresh по jti)
+    - завершать все сессии
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='devices')
+    user_agent = models.TextField(blank=True)
+    ip_address = models.CharField(max_length=64, blank=True)
+    refresh_jti = models.CharField(max_length=255, blank=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_seen = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-last_seen']
+
+    def __str__(self) -> str:
+        agent = (self.user_agent or '')[:32]
+        return f"{self.user.email} • {agent} • {self.ip_address}"
 
 
 class EmailVerification(models.Model):

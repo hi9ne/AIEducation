@@ -59,6 +59,14 @@ const TOLCSection = ({ progress }) => {
     updateProgress('tolc', tolcProgress);
   }, [tolcProgress, updateProgress]);
 
+  // Тёмная тема: нейтральные surface-стили и палитры
+  const isDark = typeof document !== 'undefined' && document.documentElement.getAttribute('data-mantine-color-scheme') === 'dark';
+  const surfaceStyle = { background: 'var(--app-color-surface)' };
+  const blueCardStyle = {
+    backgroundColor: isDark ? 'color-mix(in srgb, var(--mantine-color-blue-6), transparent 85%)' : 'var(--mantine-color-blue-0)',
+    border: `1px solid ${isDark ? 'color-mix(in srgb, var(--mantine-color-blue-6), transparent 60%)' : 'var(--mantine-color-blue-2)'}`
+  };
+
   // Генерируем тесты на основе данных пользователя
   const userTests = user?.profile ? [
     {
@@ -145,7 +153,7 @@ const TOLCSection = ({ progress }) => {
         </Box>
 
         {/* Progress Overview */}
-    <Paper className="p-6" shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+        <Paper className="p-6" shadow="md" radius="lg" style={surfaceStyle}>
           <Grid>
             <Grid.Col span={{ base: 12, md: 8 }}>
               <Stack gap="md">
@@ -158,7 +166,7 @@ const TOLCSection = ({ progress }) => {
                     color="blue"
                     onClick={() => setOpened(true)}
                     leftSection={<IconTarget size={16} />}
-        radius="md"
+                    radius="md"
                   >
                     Установить цели
                   </Button>
@@ -175,7 +183,7 @@ const TOLCSection = ({ progress }) => {
               </Stack>
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}>
-      <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)', border: '1px solid var(--mantine-color-blue-2)' }} radius="lg" shadow="sm">
+              <Card className="h-full" style={blueCardStyle} radius="lg" shadow="sm">
                 <Stack align="center" gap="sm">
                   <IconCalculator size={48} color="var(--mantine-color-blue-6)" />
                   <Text size="lg" fw={700} c="blue">
@@ -191,16 +199,16 @@ const TOLCSection = ({ progress }) => {
         </Paper>
 
         {/* Skills Breakdown */}
-  <Paper className="p-6" shadow="md" radius="lg" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+        <Paper className="p-6" shadow="md" radius="lg" style={surfaceStyle}>
           <Text size="lg" fw={600} className="mb-4">
             Прогресс по разделам
           </Text>
           <Grid>
             {skills.map((skill, index) => (
               <Grid.Col key={index} span={{ base: 12, sm: 6, md: 4 }}>
-    <Card shadow="sm" padding="lg" radius="lg" withBorder style={{ background: 'white' }}>
+                <Card shadow="sm" padding="lg" radius="lg" withBorder style={surfaceStyle}>
                   <Stack gap="md">
-                    <Text size="md" fw={600} c="dark">
+                    <Text size="md" fw={600}>
                       {skill.name}
                     </Text>
                     <Box>
@@ -232,7 +240,7 @@ const TOLCSection = ({ progress }) => {
         </Paper>
 
         {/* Tabs for different content */}
-  <Tabs defaultValue="tests">
+        <Tabs defaultValue="tests">
           <Tabs.List>
             <Tabs.Tab value="tests" leftSection={<IconBook size={16} />}>
               Mock-тесты
@@ -253,11 +261,11 @@ const TOLCSection = ({ progress }) => {
               <Grid>
                 {userTests.map((test) => (
                   <Grid.Col key={test.id} span={{ base: 12, md: 6 }}>
-        <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+                    <Card shadow="md" padding="lg" radius="lg" withBorder style={surfaceStyle}>
                       <Stack gap="md">
                         <Group justify="space-between" align="flex-start">
                           <Box>
-                            <Text size="md" fw={600} c="dark">
+                            <Text size="md" fw={600}>
                               {test.title}
                             </Text>
                             <Text size="sm" c="dimmed">
@@ -268,12 +276,11 @@ const TOLCSection = ({ progress }) => {
                             </Text>
                           </Box>
                           {test.score && (
-          <Badge color="green" variant="light" radius="sm">
+                            <Badge color="green" variant="light" radius="sm">
                               {test.score} баллов
                             </Badge>
                           )}
                         </Group>
-                        
                         {test.status === 'completed' && (
                           <Group>
                             <IconCheck size={16} color="green" />
@@ -282,14 +289,13 @@ const TOLCSection = ({ progress }) => {
                             </Text>
                           </Group>
                         )}
-                        
                         <Button
                           leftSection={test.status === 'completed' ? <IconEye size={16} /> : <IconPlayerPlay size={16} />}
                           color={test.status === 'completed' ? 'blue' : 'green'}
                           variant={test.status === 'completed' ? 'outline' : 'filled'}
                           disabled={test.status === 'locked'}
                           fullWidth
-        radius="md"
+                          radius="md"
                         >
                           {test.status === 'completed' ? 'Просмотреть результаты' :
                            test.status === 'locked' ? 'Заблокировано' : 'Начать тест'}
@@ -309,7 +315,7 @@ const TOLCSection = ({ progress }) => {
               </Text>
               <Stack gap="sm">
                 {videoLessons.map((lesson) => (
-      <Card key={lesson.id} shadow="sm" padding="md" radius="lg" withBorder style={{ background: 'white' }}>
+                  <Card key={lesson.id} shadow="sm" padding="md" radius="lg" withBorder style={surfaceStyle}>
                     <Group justify="space-between" align="center">
                       <Group>
                         <ActionIcon
@@ -320,7 +326,7 @@ const TOLCSection = ({ progress }) => {
                           {lesson.completed ? <IconCheck size={20} /> : <IconPlayerPlay size={20} />}
                         </ActionIcon>
                         <Box>
-                          <Text size="md" fw={500} c="dark">
+                          <Text size="md" fw={500}>
                             {lesson.title}
                           </Text>
                           <Text size="sm" c="dimmed">
@@ -333,7 +339,7 @@ const TOLCSection = ({ progress }) => {
                         color="blue"
                         variant="outline"
                         size="sm"
-      radius="md"
+                        radius="md"
                       >
                         Просмотреть
                       </Button>
@@ -351,7 +357,7 @@ const TOLCSection = ({ progress }) => {
               </Text>
               <Grid>
                 <Grid.Col span={{ base: 12, md: 6 }}>
-          <Card shadow="sm" padding="lg" radius="lg" withBorder style={{ background: 'white' }}>
+                  <Card shadow="sm" padding="lg" radius="lg" withBorder style={surfaceStyle}>
                     <Stack gap="md">
                       <Group>
                         <IconBook size={24} color="var(--mantine-color-blue-6)" />
@@ -362,14 +368,14 @@ const TOLCSection = ({ progress }) => {
                       <Text size="sm" c="dimmed">
                         Практические задания по алгебре, геометрии и анализу
                       </Text>
-            <Button color="blue" variant="outline" fullWidth radius="md">
+                      <Button color="blue" variant="outline" fullWidth radius="md">
                         Начать практику
                       </Button>
                     </Stack>
                   </Card>
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, md: 6 }}>
-          <Card shadow="sm" padding="lg" radius="lg" withBorder style={{ background: 'white' }}>
+                  <Card shadow="sm" padding="lg" radius="lg" withBorder style={surfaceStyle}>
                     <Stack gap="md">
                       <Group>
                         <IconTarget size={24} color="var(--mantine-color-green-6)" />
@@ -380,14 +386,14 @@ const TOLCSection = ({ progress }) => {
                       <Text size="sm" c="dimmed">
                         Упражнения на развитие логического мышления
                       </Text>
-            <Button color="green" variant="outline" fullWidth radius="md">
+                      <Button color="green" variant="outline" fullWidth radius="md">
                         Начать практику
                       </Button>
                     </Stack>
                   </Card>
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, md: 6 }}>
-          <Card shadow="sm" padding="lg" radius="lg" withBorder style={{ background: 'white' }}>
+                  <Card shadow="sm" padding="lg" radius="lg" withBorder style={surfaceStyle}>
                     <Stack gap="md">
                       <Group>
                         <IconCalculator size={24} color="var(--mantine-color-purple-6)" />
@@ -398,14 +404,14 @@ const TOLCSection = ({ progress }) => {
                       <Text size="sm" c="dimmed">
                         Задачи по физике, химии и биологии
                       </Text>
-            <Button color="purple" variant="outline" fullWidth radius="md">
+                      <Button color="purple" variant="outline" fullWidth radius="md">
                         Начать практику
                       </Button>
                     </Stack>
                   </Card>
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, md: 6 }}>
-          <Card shadow="sm" padding="lg" radius="lg" withBorder style={{ background: 'white' }}>
+                  <Card shadow="sm" padding="lg" radius="lg" withBorder style={surfaceStyle}>
                     <Stack gap="md">
                       <Group>
                         <IconClock size={24} color="var(--mantine-color-orange-6)" />
@@ -416,7 +422,7 @@ const TOLCSection = ({ progress }) => {
                       <Text size="sm" c="dimmed">
                         Стратегии эффективного использования времени на тесте
                       </Text>
-            <Button color="orange" variant="outline" fullWidth radius="md">
+                      <Button color="orange" variant="outline" fullWidth radius="md">
                         Изучить стратегии
                       </Button>
                     </Stack>
@@ -429,14 +435,14 @@ const TOLCSection = ({ progress }) => {
       </Stack>
 
       {/* Modal for setting goals */}
-    <Modal
+      <Modal
         opened={opened}
         onClose={() => setOpened(false)}
         title="Установить цели TOLC"
-    size="md"
-    centered
-    overlayProps={{ backgroundOpacity: 0.45, blur: 3 }}
-    transitionProps={{ transition: 'pop', duration: 200 }}
+        size="md"
+        centered
+        overlayProps={{ backgroundOpacity: 0.45, blur: 3 }}
+        transitionProps={{ transition: 'pop', duration: 200 }}
       >
         <Stack gap="md">
           <NumberInput

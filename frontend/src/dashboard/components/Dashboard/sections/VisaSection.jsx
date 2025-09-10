@@ -154,11 +154,11 @@ const VisaSection = ({ progress }) => {
   const totalSteps = steps.length;
 
   return (
-    <Box className="p-6">
+      <Box p="var(--app-spacing-md)">
       <Stack gap="xl">
         {/* Header */}
         <Box>
-          <Text size="xl" fw={700} c="dark">
+          <Text size="xl" fw={700}>
             Визовая поддержка
           </Text>
           <Text size="md" c="dimmed">
@@ -177,7 +177,7 @@ const VisaSection = ({ progress }) => {
         </Alert>
 
         {/* Progress Overview */}
-        <Paper className="p-6" shadow="sm">
+        <Paper p="var(--app-spacing-md)" shadow="sm" style={{ background: 'var(--app-color-surface)' }}>
           <Grid>
             <Grid.Col span={{ base: 12, md: 8 }}>
               <Stack gap="md">
@@ -201,7 +201,7 @@ const VisaSection = ({ progress }) => {
               </Stack>
             </Grid.Col>
             <Grid.Col span={{ base: 12, md: 4 }}>
-              <Card className="h-full" style={{ backgroundColor: 'var(--mantine-color-blue-0)' }}>
+              <Card className="h-full" style={{ backgroundColor: 'color-mix(in srgb, var(--mantine-color-blue-6), transparent 85%)', border: '1px solid color-mix(in srgb, var(--mantine-color-blue-6), transparent 60%)' }}>
                 <Stack align="center" gap="sm">
                   <IconPlane size={48} color="var(--mantine-color-blue-6)" />
                   <Text size="lg" fw={700} c="blue">
@@ -217,13 +217,13 @@ const VisaSection = ({ progress }) => {
         </Paper>
 
         {/* Steps */}
-        <Paper className="p-6" shadow="sm">
+        <Paper p="var(--app-spacing-md)" shadow="sm" style={{ background: 'var(--app-color-surface)' }}>
           <Text size="lg" fw={600} className="mb-4">
             Пошаговый план
           </Text>
           <Stack gap="md">
             {steps.map((step, index) => (
-              <Card key={step.id} shadow="sm" padding="lg" radius="md" withBorder>
+              <Card key={step.id} shadow="sm" padding="lg" radius="md" withBorder style={{ background: 'var(--app-color-surface)' }}>
                 <Group justify="space-between" align="flex-start">
                   <Group>
                     <ActionIcon
@@ -234,7 +234,7 @@ const VisaSection = ({ progress }) => {
                       {step.completed ? <IconCheck size={20} /> : <IconClock size={20} />}
                     </ActionIcon>
                     <Box>
-                      <Text size="md" fw={600} c="dark">
+                      <Text size="md" fw={600}>
                         {step.title}
                       </Text>
                       <Text size="sm" c="dimmed" className="mb-2">
@@ -265,17 +265,17 @@ const VisaSection = ({ progress }) => {
         </Paper>
 
         {/* Documents */}
-        <Paper className="p-6" shadow="sm">
+        <Paper p="var(--app-spacing-md)" shadow="sm" style={{ background: 'var(--app-color-surface)' }}>
           <Text size="lg" fw={600} className="mb-4">
             Документы
           </Text>
           <Stack gap="md">
             {documents.map((doc) => (
-              <Card key={doc.id} shadow="sm" padding="lg" radius="md" withBorder>
+              <Card key={doc.id} shadow="sm" padding="lg" radius="md" withBorder style={{ background: 'var(--app-color-surface)' }}>
                 <Group justify="space-between" align="flex-start">
                   <Group>
                     <Box>
-                      <Text size="md" fw={600} c="dark">
+                      <Text size="md" fw={600}>
                         {doc.name}
                       </Text>
                       {doc.uploadedAt && (

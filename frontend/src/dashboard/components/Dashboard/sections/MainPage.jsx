@@ -333,7 +333,7 @@ const MainPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+              <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'var(--app-color-surface)' }}>
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
@@ -357,7 +357,7 @@ const MainPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+              <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'var(--app-color-surface)' }}>
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
@@ -381,7 +381,7 @@ const MainPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+              <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'var(--app-color-surface)' }}>
               <Group justify="space-between">
                 <div>
                   <Text size="sm" c="dimmed" tt="uppercase" fw={700}>
@@ -401,7 +401,7 @@ const MainPage = () => {
         </Grid>
 
       {/* Прогресс недели */}
-  <Card shadow="md" padding="lg" radius="lg" withBorder mb="xl" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+  <Card shadow="md" padding="lg" radius="lg" withBorder mb="xl" style={{ background: 'var(--app-color-surface)' }}>
         <Text fw={600} size="lg" mb="md">Прогресс этой недели</Text>
         <Stack gap="md">
           <Group justify="space-between">
@@ -425,7 +425,7 @@ const MainPage = () => {
 
       {/* Последние достижения */}
       {displayStats?.recent_achievements?.length > 0 && (
-  <Card shadow="md" padding="lg" radius="lg" withBorder mb="xl" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+  <Card shadow="md" padding="lg" radius="lg" withBorder mb="xl" style={{ background: 'var(--app-color-surface)' }}>
           <Text fw={600} size="lg" mb="md">Последние достижения</Text>
           <Stack gap="md">
             {displayStats?.recent_achievements?.map((achievement, index) => (
@@ -452,7 +452,7 @@ const MainPage = () => {
 
       {/* Предстоящие события */}
       {displayStats?.upcoming_events?.length > 0 && (
-  <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)' }}>
+  <Card shadow="md" padding="lg" radius="lg" withBorder style={{ background: 'var(--app-color-surface)' }}>
           <Text fw={600} size="lg" mb="md">Предстоящие события</Text>
           <Stack gap="md">
             {displayStats?.upcoming_events?.map((event, index) => (

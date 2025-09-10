@@ -14,7 +14,7 @@
 
 .nav-item {
   transition: all 0.2s ease;
-  border-radius: 8px;
+  border-radius: var(--app-radius-md);
   margin: 4px 0;
 }
 
@@ -29,19 +29,19 @@
 
 /* Central Content Styles */
 .central-content {
-  background-color: white;
+  background-color: var(--app-color-surface);
   height: 100vh;
   overflow-y: auto;
 }
 
 .content-section {
-  padding: 24px;
+  padding: var(--app-spacing-lg);
   min-height: 100%;
 }
 
 /* Right Panel Styles */
 .right-panel {
-  background-color: white !important;
+  background-color: var(--app-color-surface) !important;
   border-left: 1px solid var(--mantine-color-gray-3);
   height: auto !important;
   min-height: 100vh !important;
@@ -63,22 +63,25 @@
 .status-card {
   transition: all 0.2s ease;
   cursor: pointer;
+  border-radius: var(--app-radius-lg);
+  box-shadow: var(--app-shadow-sm);
 }
 
 .status-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--app-shadow-md);
 }
 
 /* University Card Styles */
 .university-card {
   transition: all 0.2s ease;
   height: 100%;
+  border-radius: var(--app-radius-lg);
 }
 
 .university-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--app-shadow-md);
 }
 
 .suitability-high {
@@ -151,11 +154,31 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+  @media (max-width: 992px) {
   .dashboard-layout {
     flex-direction: column;
   }
-  
+
+  .left-navigation {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    border-right: none;
+    border-bottom: 1px solid var(--mantine-color-gray-3);
+  }
+
+  .central-content {
+    flex: 1 1 100% !important;
+    height: auto;
+    min-height: auto;
+  }
+
+  .right-panel {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
   .left-navigation,
   .right-panel {
     height: auto;
@@ -186,6 +209,21 @@
 
 [data-mantine-color-scheme="dark"] .university-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Dark gradients adjustments */
+[data-mantine-color-scheme="dark"] .headerCard,
+[data-mantine-color-scheme="dark"] .recommendationsCard,
+[data-mantine-color-scheme="dark"] .statsCard,
+[data-mantine-color-scheme="dark"] .notificationsCard {
+  filter: brightness(0.9) contrast(1.05);
+}
+
+[data-mantine-color-scheme="dark"] .text-gradient {
+  background: linear-gradient(45deg, var(--mantine-color-blue-4), var(--mantine-color-purple-4));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Custom Scrollbar */
@@ -230,15 +268,15 @@
 
 .btn-hover:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--app-shadow-sm);
 }
 
 /* Form Styles */
 .form-section {
   background-color: var(--mantine-color-gray-0);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
+  border-radius: var(--app-radius-md);
+  padding: var(--app-spacing-md);
+  margin-bottom: var(--app-spacing-md);
 }
 
 /* Badge Styles */
@@ -248,7 +286,7 @@
 
 /* Modal Styles */
 .modal-content {
-  border-radius: 12px;
+  border-radius: var(--app-radius-lg);
 }
 
 /* Timeline Styles */
@@ -273,8 +311,8 @@
 /* File Upload Styles */
 .file-upload-area {
   border: 2px dashed var(--mantine-color-gray-4);
-  border-radius: 8px;
-  padding: 24px;
+  border-radius: var(--app-radius-md);
+  padding: var(--app-spacing-lg);
   text-align: center;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -315,13 +353,13 @@
 }
 
 .shadow-soft {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--app-shadow-sm);
 }
 
 .shadow-medium {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--app-shadow-md);
 }
 
 .shadow-strong {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--app-shadow-lg);
 }
