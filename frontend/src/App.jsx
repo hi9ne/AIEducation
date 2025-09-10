@@ -12,6 +12,7 @@ import UserProfileForm from './dashboard/components/Onboarding/UserProfileForm';
 import PublicLayout from './layouts/PublicLayout';
 import PrivateLayout from './layouts/PrivateLayout';
 import './App.css';
+import './landing/pages/landing-overrides.css';
 
 function App() {
   const { isAuthenticated } = useAuth();
