@@ -70,8 +70,8 @@ const DashboardLayout = () => {
 
         {/* Правая панель AI и дедлайнов - Desktop */}
         <div className="right-panel right-panel-container desktop-panel" style={{ 
-          flex: '0 0 25%', 
-          maxWidth: '300px', 
+          flex: '0 0 30%', 
+          maxWidth: '360px', 
           backgroundColor: 'var(--app-color-surface)', 
           minHeight: '100vh', 
           overflow: 'auto', 

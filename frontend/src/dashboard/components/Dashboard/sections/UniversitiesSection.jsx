@@ -85,7 +85,7 @@ const UniversitiesSection = ({ progress }) => {
     if (level === null || level === undefined) return null;
     if (typeof level === 'number') {
       let v = level;
-      if (v <= 1) v = v * 100; // 0-1 scale
+  if (v < 1) v = v * 100; // 0-1 scale (strictly <1)
       else if (v <= 10) v = v * 10; // 0-10 scale
       // else assume 0-100
       return Math.max(0, Math.min(100, v));
@@ -95,7 +95,7 @@ const UniversitiesSection = ({ progress }) => {
     const m = s.match(/(\d+(?:[\.,]\d+)?)/);
     if (m) {
       let v = parseFloat(m[1].replace(',', '.'));
-      if (v <= 1) v = v * 100; // 0-1
+  if (v < 1) v = v * 100; // 0-1 (strictly <1)
       else if (v <= 10) v = v * 10; // 0-10
       return Math.max(0, Math.min(100, v));
     }
@@ -301,26 +301,45 @@ const UniversitiesSection = ({ progress }) => {
                   onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--app-shadow-md)'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = ''; }}
                 >
-                  <Card.Section withBorder inheritPadding py="var(--app-spacing-xs)" style={{ backgroundColor: 'color-mix(in srgb, var(--mantine-color-blue-6) 4%, transparent)' }}>
-                    <Group justify="space-between" style={{ minHeight: 40 }}>
-                      <Group gap="sm" align="center" style={{ flex: 1, minWidth: 0 }}>
-                        {(() => {
-                          const src = getLogoSrc(university);
-                          return src ? (
-                            <Avatar src={src} alt={university.name} radius="sm" size={28} />
-                          ) : null;
-                        })()}
-                        <Text fw={700} size="lg" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{university.name}</Text>
-                      </Group>
-                      <ActionIcon
-                        variant="subtle"
-                        color={favorites.has(university.id) ? "red" : "gray"}
-                        onClick={() => handleToggleFavorite(university.id)}
+                  {(() => {
+                    const src = getLogoSrc(university);
+                    return (
+                      <Card.Section
+                        inheritPadding={false}
+                        style={{
+                          position: 'relative',
+                          height: 140,
+                          backgroundImage: src ? `url(${src})` : 'linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 50%, #14b8a6 100%)',
+                          backgroundSize: 'cover',
+                          backgroundPosition: 'center',
+                          borderTopLeftRadius: 'var(--app-radius-lg)',
+                          borderTopRightRadius: 'var(--app-radius-lg)',
+                          overflow: 'hidden'
+                        }}
                       >
-                        <IconHeart size={16} />
-                      </ActionIcon>
-                    </Group>
-                  </Card.Section>
+                        <Box style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.45) 100%)' }} />
+                        <Group justify="space-between" style={{ position: 'absolute', left: 12, right: 12, bottom: 10 }}>
+                          <Group gap="sm" align="center" style={{ flex: 1, minWidth: 0 }}>
+                            <Text fw={800} size="lg" style={{ color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                              {university.name}
+                            </Text>
+                          </Group>
+                          <ActionIcon
+                            variant="light"
+                            onClick={() => handleToggleFavorite(university.id)}
+                            style={{
+                              background: 'rgba(255,255,255,0.2)',
+                              color: '#fff',
+                              border: '1px solid rgba(255,255,255,0.35)'
+                            }}
+                            title={favorites.has(university.id) ? 'Убрать из избранного' : 'В избранное'}
+                          >
+                            <IconHeart size={16} color={favorites.has(university.id) ? '#ef4444' : '#ffffff'} />
+                          </ActionIcon>
+                        </Group>
+                      </Card.Section>
+                    );
+                  })()}
 
                   <Stack gap="xs" mt="md">
                     {/* Местоположение */}

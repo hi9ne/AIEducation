@@ -13,13 +13,13 @@ import './landing-overrides.css';
 const HomePage = () => {
   return (
     <Box className="home-page">
-  <HeroSimple />
-  <AboutSimple />
-  <StepsSimple />
-  <ProgramsSimple />
-  <UniversitiesSlider />
-  <ContactSimple />
-  <FooterSimple />
+      <HeroSimple />
+      <AboutSimple />
+      <StepsSimple />
+      <ProgramsSimple />
+      <UniversitiesSlider />
+      <ContactSimple />
+      <FooterSimple />
     </Box>
   );
 };

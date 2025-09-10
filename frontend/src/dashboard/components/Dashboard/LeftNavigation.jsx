@@ -126,7 +126,7 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
   };
 
   return (
-    <Box style={{ height: '100%', backgroundColor: 'var(--app-color-surface)', paddingTop: 24 }}>
+    <Box style={{ height: '100%', backgroundColor: 'var(--app-color-surface)', }}>
       <Stack gap="xs" style={{ padding: '16px' }}>
         {/* Top spacer to avoid clipping under app frame */}
         <Box style={{ height: 8 }} />
@@ -137,7 +137,6 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
           p="md"
           onClick={() => setShowStudentCard(true)}
           style={{
-            marginTop: 10,
             backgroundColor: 'var(--app-color-surface)',
             borderColor: 'var(--mantine-color-gray-3)',
             boxShadow: 'var(--app-shadow-sm)',
