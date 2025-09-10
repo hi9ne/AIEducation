@@ -41,7 +41,6 @@ import {
 import { updateProfileComplete, fetchProfile, requestEmailVerification, changePassword, updateProfile, fetchDevices, revokeDevice, revokeAllDevices, twofaSetup, twofaEnable, twofaDisable } from '../../../../store/authSlice';
 import { useTheme } from '../../../../shared/components/Theme/ThemeProvider.jsx';
 import { API_BASE_URL } from '../../../../shared/services/api.js';
-import QRCode from 'qrcode';
 
 const SettingsSection = () => {
   const dispatch = useDispatch();
@@ -424,6 +423,7 @@ const SettingsSection = () => {
                   const url = res?.payload?.otpauth_url;
                   if (url) {
                     try {
+                      const { default: QRCode } = await import('qrcode/lib/browser');
                       const dataUrl = await QRCode.toDataURL(url);
                       setQrDataUrl(dataUrl);
                     } catch (e) {

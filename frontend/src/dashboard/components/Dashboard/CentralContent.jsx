@@ -2,17 +2,17 @@ import React from 'react';
 import { Box } from '@mantine/core';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageTransition from '../../../shared/components/Animations/PageTransition.jsx';
-import MainPage from './sections/MainPage.jsx';
-import IELTSSection from './sections/IELTSSection.jsx';
-import TOLCSection from './sections/TOLCSection.jsx';
-import UniversitiesSection from './sections/UniversitiesSection';
-import UniversitalySection from './sections/UniversitalySection.jsx';
-import CodiceSection from './sections/CodiceSection.jsx';
-import DOVSection from './sections/DOVSection.jsx';
-import VisaSection from './sections/VisaSection.jsx';
-import SettingsSection from './sections/SettingsSection.jsx';
-import HelpSection from './sections/HelpSection.jsx';
-import NotificationsSection from './sections/NotificationsSection.jsx';
+const MainPage = React.lazy(() => import('./sections/MainPage.jsx'));
+const IELTSSection = React.lazy(() => import('./sections/IELTSSection.jsx'));
+const TOLCSection = React.lazy(() => import('./sections/TOLCSection.jsx'));
+const UniversitiesSection = React.lazy(() => import('./sections/UniversitiesSection.jsx'));
+const UniversitalySection = React.lazy(() => import('./sections/UniversitalySection.jsx'));
+const CodiceSection = React.lazy(() => import('./sections/CodiceSection.jsx'));
+const DOVSection = React.lazy(() => import('./sections/DOVSection.jsx'));
+const VisaSection = React.lazy(() => import('./sections/VisaSection.jsx'));
+const SettingsSection = React.lazy(() => import('./sections/SettingsSection.jsx'));
+const HelpSection = React.lazy(() => import('./sections/HelpSection.jsx'));
+const NotificationsSection = React.lazy(() => import('./sections/NotificationsSection.jsx'));
 
 const CentralContent = ({ activeSection, overallProgress, currentProgress }) => {
   const getSectionComponent = () => {
@@ -66,9 +66,11 @@ const CentralContent = ({ activeSection, overallProgress, currentProgress }) => 
           }}
           style={{ height: '100%' }}
         >
-          <PageTransition direction="right">
-            {getSectionComponent()}
-          </PageTransition>
+          <React.Suspense fallback={<div />}> 
+            <PageTransition direction="right">
+              {getSectionComponent()}
+            </PageTransition>
+          </React.Suspense>
         </motion.div>
       </AnimatePresence>
     </Box>

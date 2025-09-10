@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import './AuthShared.css';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { verifyReset, clearError, clearSuccess } from '../../store/authSlice';
