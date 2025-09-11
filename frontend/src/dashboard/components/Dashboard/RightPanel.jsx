@@ -192,12 +192,14 @@ const RightPanel = () => {
       const firstName = (user?.first_name || fullName.split(' ')[0] || 'Студент').trim();
       // age
       let age = undefined;
+      let birthDateStr = undefined;
       if (user?.date_of_birth) {
         const dob = new Date(user.date_of_birth);
         if (!isNaN(dob.getTime())) {
           const diffMs = Date.now() - dob.getTime();
           const ageDate = new Date(diffMs);
           age = Math.abs(ageDate.getUTCFullYear() - 1970);
+          birthDateStr = dob.toLocaleDateString('ru-RU');
         }
       }
       const ieltsCurrent = prof?.ielts_current_score ?? undefined;
@@ -240,6 +242,7 @@ const RightPanel = () => {
       return [
         'Контекст студента:',
         `- Имя: ${fullName} (обращайся только по имени: ${firstName})`,
+  ...(birthDateStr ? [`- Дата рождения: ${birthDateStr}`] : []),
         ...(age !== undefined ? [`- Возраст: ${age}`] : []),
         `- IELTS текущий: ${ieltsCurrent ?? 'не указано'}`,
         `- IELTS цель: ${ieltsTarget ?? 'не указано'}`,
