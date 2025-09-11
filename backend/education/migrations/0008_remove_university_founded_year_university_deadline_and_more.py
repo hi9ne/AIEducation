@@ -10,18 +10,23 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='university',
-            name='founded_year',
-        ),
-        migrations.AddField(
-            model_name='university',
-            name='deadline',
-            field=models.DateField(blank=True, null=True),
-        ),
-        migrations.AlterField(
-            model_name='studentprogress',
-            name='updated_at',
-            field=models.DateTimeField(auto_now_add=True),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[],
+            state_operations=[
+                migrations.RemoveField(
+                    model_name='university',
+                    name='founded_year',
+                ),
+                migrations.AddField(
+                    model_name='university',
+                    name='deadline',
+                    field=models.DateField(blank=True, null=True),
+                ),
+                migrations.AlterField(
+                    model_name='studentprogress',
+                    name='updated_at',
+                    field=models.DateTimeField(auto_now_add=True),
+                ),
+            ],
         ),
     ]

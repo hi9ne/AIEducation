@@ -83,10 +83,15 @@ if _raw_cors_regex:
     # support comma-separated regex list from env
     CORS_ALLOWED_ORIGIN_REGEXES = [r.strip() for r in _raw_cors_regex.split(',') if r.strip()]
 else:
+    # Default regexes for common dev and deployment hosts, including local LAN ranges
     CORS_ALLOWED_ORIGIN_REGEXES = [
         r"^https?://.*\.up\.railway\.app(:\d+)?$",
         r"^https?://localhost(:\d+)?$",
         r"^https?://127\.0\.0\.1(:\d+)?$",
+        # Private LAN ranges to support dev from another device on the network
+        r"^https?://10(?:\.\d+){3}(:\d+)?$",
+        r"^https?://192\.168(?:\.\d+){2}(:\d+)?$",
+        r"^https?://172\.(1[6-9]|2\d|3[0-1])(?:\.\d+){2}(:\d+)?$",
     ]
 
 INSTALLED_APPS = [
@@ -141,17 +146,47 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'aieducation.wsgi.application'
 
-# Database - prefer Railway PG* envs, fallback to Supabase-style names
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('PGDATABASE') or os.getenv('dbname', 'postgres'),
-        'USER': os.getenv('PGUSER') or os.getenv('user', 'postgres'),
-        'PASSWORD': os.getenv('PGPASSWORD') or os.getenv('password', ''),
-        'HOST': os.getenv('PGHOST') or os.getenv('host', 'localhost'),
-        'PORT': os.getenv('PGPORT') or os.getenv('port', '5432'),
+# Database configuration
+# - USE_SQLITE=True in .env to force local SQLite for development
+# - Otherwise, use Postgres from env (Railway PG* or Supabase-style env names)
+def _env(name: str, default: str | None = None) -> str | None:
+    # support both UPPER and lower case keys present in some env templates
+    return os.getenv(name) or os.getenv(name.lower(), default)
+
+USE_SQLITE = (_env('USE_SQLITE', 'False').lower() == 'true') or False
+
+pg_name = _env('PGDATABASE', _env('dbname'))
+pg_user = _env('PGUSER', _env('user'))
+pg_password = _env('PGPASSWORD', _env('password'))
+pg_host = _env('PGHOST', _env('host'))
+pg_port = _env('PGPORT', _env('port', '5432'))
+
+DATABASES = {}
+
+if USE_SQLITE or not (pg_name and pg_user and pg_host):
+    # Local development default when env is incomplete or forced
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-}
+else:
+    # Remote/local Postgres with optional SSL
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': pg_name or 'postgres',
+        'USER': pg_user or 'postgres',
+        'PASSWORD': pg_password or '',
+        'HOST': pg_host or 'localhost',
+        'PORT': pg_port or '5432',
+        'OPTIONS': {},
+    }
+
+    # Enable SSL by default for non-local hosts (e.g., Supabase pooler)
+    host_norm = (pg_host or '').strip().lower()
+    is_local_host = host_norm in ('localhost', '127.0.0.1', '') or host_norm.endswith('.local')
+    sslmode = _env('DB_SSLMODE') or (_env('PGSSLMODE')) or (None if is_local_host else 'require')
+    if sslmode:
+        DATABASES['default']['OPTIONS']['sslmode'] = sslmode
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
