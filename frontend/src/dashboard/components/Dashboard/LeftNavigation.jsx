@@ -95,6 +95,14 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
       icon: IconPlane,
       color: 'pink'
     }
+    ,
+    {
+      id: 'aimentor',
+      label: 'Чат с AIMentor',
+      description: 'Общение с ИИ‑наставником',
+      icon: IconHelp,
+      color: 'purple'
+    }
   ];
 
   const getColorValue = (colorName) => {
@@ -181,6 +189,7 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
               codice: currentProgress?.codice ?? 0,
               dov: currentProgress?.dov ?? 0,
               visa: currentProgress?.visa ?? 0,
+              aimentor: undefined,
             };
             const itemProgress = liveProgressMap[item.id];
 

@@ -28,11 +28,13 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField()
 
     def validate(self, attrs):
-        email = attrs.get('email')
-        password = attrs.get('password')
+        # Normalize inputs
+        email = (attrs.get('email') or '').strip().lower()
+        password = (attrs.get('password') or '')
 
         if email and password:
-            user = authenticate(username=email, password=password)
+            # Try authenticate using USERNAME_FIELD-aware kwargs
+            user = authenticate(email=email, password=password) or authenticate(username=email, password=password)
             if not user:
                 raise serializers.ValidationError('Неверные учетные данные')
             if not user.is_active:

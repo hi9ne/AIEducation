@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import (
     University, Major, UniversityMajor, Course, Enrollment, Application,
     Achievement, UserAchievement, AIRecommendation, StudyPlan, StudyPlanItem,
-    Document
+    Document, UserEvent
 )
 
 
@@ -170,3 +170,10 @@ class DocumentSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(url) if request and url else url
         except Exception:
             return ''
+
+
+class UserEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserEvent
+        fields = ('id', 'title', 'date', 'created_at')
+        read_only_fields = ('id', 'created_at')

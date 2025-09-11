@@ -42,5 +42,8 @@ urlpatterns = [
     # Dashboard
     path('dashboard/stats/', views.dashboard_stats, name='dashboard-stats'),
     path('dashboard/deadlines/', views.dashboard_deadlines, name='dashboard-deadlines'),
+    # User Events
+    path('events/', views.UserEventListCreateView.as_view(), name='user-event-list-create'),
+    path('events/<int:pk>/', views.UserEventDetailView.as_view(), name='user-event-detail'),
     path('ai/chat/', ai_views.chat, name='ai-chat'),
 ]

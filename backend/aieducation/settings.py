@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import logging
 
 # Base dir and dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -188,6 +189,22 @@ else:
     if sslmode:
         DATABASES['default']['OPTIONS']['sslmode'] = sslmode
 
+    # Prefer DATABASE_URL if provided (e.g., from Railway/Supabase console)
+    _db_url = _env('DATABASE_URL')
+    if _db_url:
+        try:
+            import dj_database_url  # type: ignore
+            parsed = dj_database_url.parse(_db_url, conn_max_age=600, ssl_require=True)
+            # Keep explicit OPTIONS.sslmode if already set, otherwise use parsed
+            existing_opts = DATABASES['default'].get('OPTIONS', {})
+            parsed_opts = parsed.get('OPTIONS', {})
+            merged_opts = {**parsed_opts, **existing_opts}
+            parsed['OPTIONS'] = merged_opts
+            DATABASES['default'] = parsed
+        except Exception as e:
+            # Don't crash on bad URLs; fall back to explicit settings
+            logging.getLogger(__name__).warning(f"DATABASE_URL parse failed: {e}")
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -329,3 +346,13 @@ LOGGING = {
         },
     },
 }
+
+# Helpful startup hint in development: log selected DB engine/host (no secrets)
+if DEBUG:
+    try:
+        _db = DATABASES.get('default', {})
+        _engine = _db.get('ENGINE', '')
+        _host = _db.get('HOST', '') if isinstance(_db, dict) else ''
+        logging.getLogger(__name__).info(f"DB engine: {_engine} host: {_host or 'local/sqlite'}")
+    except Exception:
+        pass
