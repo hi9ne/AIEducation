@@ -70,6 +70,7 @@ import {
 import { motion } from 'framer-motion';
 import api, { API_BASE_URL } from '../../../shared/services/api';
 import { useDashboardStore } from '../../../store/dashboardStore';
+import AIMentorChat from './components/AIMentorChat.jsx';
 
 const RightPanel = () => {
   const dispatch = useDispatch();
@@ -360,110 +361,7 @@ const RightPanel = () => {
         )}
 
         <Stack spacing="lg">
-          {/* AI Assistant Card */}
-          <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'var(--app-color-surface)' }}>
-            <Group position="apart" mb="md">
-              <Text size="lg" fw={600}>AI Помощник</Text>
-              <Group gap="xs">
-                <Tooltip label="Очистить чат" withArrow>
-                  <ActionIcon variant="subtle" onClick={() => setChatHistory([])} aria-label="Очистить чат">
-                    <IconX size={18} />
-                  </ActionIcon>
-                </Tooltip>
-                <ThemeIcon size="lg" variant="gradient" gradient={{ from: 'blue', to: 'cyan' }}>
-                  <IconBulb size={20} />
-                </ThemeIcon>
-              </Group>
-            </Group>
-
-            {/* Chat container with input inside */}
-            <Box className={styles.chatContainer} style={{ display: 'flex', flexDirection: 'column', height: 520 }}>
-              <ScrollArea offsetScrollbars className={styles.chatMessages} style={{ flex: 1 }}>
-                <Stack spacing="sm">
-                  {chatHistory.length === 0 && (
-                    <Text size="sm" c="dimmed" ta="center">
-                      Начните диалог — задайте вопрос в поле ниже
-                    </Text>
-                  )}
-                  {chatHistory.map((msg) => (
-                    <div key={msg.id} className={`${styles.messageRow} ${msg.role === 'user' ? styles.messageRight : styles.messageLeft}`}>
-                      {msg.role !== 'user' && (
-                        <div className={styles.msgAvatar}>
-                          <Avatar radius="xl" size={32} color="green" src={null} style={{ background:'#e0f7fa' }}>
-                            <IconRobot size={20} />
-                          </Avatar>
-                        </div>
-                      )}
-                      <Box className={`${styles.bubble} ${msg.role === 'user' ? styles.userMessage : styles.aiMessage}`} p="sm">
-                        <Text size="sm" style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{msg.content}</Text>
-                        <Group gap={6} align="center" style={{ marginTop: 4, justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                          {msg.role !== 'user' && <IconRobot size={14} color="#16a34a" />}
-                          <Text size="xs" c="dimmed">
-                            {new Date(msg.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </Text>
-                          {msg.role === 'user' && <IconChecks size={14} color="#60a5fa" />}
-                        </Group>
-                      </Box>
-                      {msg.role === 'user' && (
-                        <div className={styles.msgAvatar}>
-                          <Avatar radius="xl" size={32} color="blue" src={userAvatarSrc} style={{ background:'#e3f2fd' }}>
-                            <IconMessageCircle size={20} />
-                          </Avatar>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  {isTyping && (
-                    <Group position="left" spacing={8} align="flex-end">
-                      <Avatar radius="xl" size={32} color="green" src={null} style={{ background:'#e0f7fa' }}>
-                        <IconRobot size={20} />
-                      </Avatar>
-                      <Box className={styles.aiMessage} p="sm">
-                        <Text size="sm" c="dimmed">Печатает…</Text>
-                      </Box>
-                    </Group>
-                  )}
-                  <div ref={messagesEndRef} />
-                </Stack>
-              </ScrollArea>
-
-              <Group className={styles.chatInputBar} gap="xs" align="flex-end">
-                <Textarea
-                  value={aiMessage}
-                  onChange={(e) => setAiMessage(e.target.value)}
-                  placeholder="Напишите сообщение..."
-                  autosize
-                  minRows={1}
-                  maxRows={4}
-                  size="sm"
-                  classNames={{ input: styles.messageInput }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  style={{ flex: 1 }}
-                />
-                <ActionIcon
-                  size="lg"
-                  radius="md"
-                  className={styles.sendButton}
-                  onClick={handleSendMessage}
-                  disabled={!aiMessage.trim() || isTyping}
-                  aria-label="Отправить"
-                >
-                  <IconSend size={16} color="#fff" />
-                </ActionIcon>
-              </Group>
-            </Box>
-
-            {chatError && (
-              <Text size="xs" c="red" mt="xs">
-                {chatError}
-              </Text>
-            )}
-          </Card>
+          {/* Убрали чат из правой панели по запросу */}
 
           {/* AI Recommendations Card */}
           <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'var(--app-color-surface)' }}>
@@ -590,30 +488,7 @@ const RightPanel = () => {
             )}
           </Card>
 
-          {/* Deadlines Card */}
-          <Card shadow="md" p="lg" radius="lg" withBorder style={{ background: 'var(--app-color-surface)' }}>
-            <Group position="apart" mb="md">
-              <Text size="lg" fw={600}>Дедлайны</Text>
-              <Badge radius="sm" variant="light" color="violet">{deadlines?.length || 0}</Badge>
-            </Group>
-            <ScrollArea h={200} offsetScrollbars>
-              <Stack spacing="sm">
-                {!deadlines || deadlines.length === 0 ? (
-                  <Text c="dimmed" ta="center" size="sm">Нет ближайших дедлайнов</Text>
-                ) : (
-                  deadlines.map((d) => (
-                    <Group key={d.id} position="apart" p="sm" style={{ border: '1px solid var(--mantine-color-gray-3)', borderRadius: 8 }}>
-                      <Box>
-                        <Text size="sm" fw={500}>{d.title}</Text>
-                        <Text size="xs" c="dimmed">До: {new Date(d.due_date).toLocaleDateString()}</Text>
-                      </Box>
-                      <Badge color={d.color || 'gray'} variant="light" radius="sm">{d.days} дн.</Badge>
-                    </Group>
-                  ))
-                )}
-              </Stack>
-            </ScrollArea>
-          </Card>
+          {/* Deadlines card удалён по запросу */}
         </Stack>
       </motion.div>
       </Box>

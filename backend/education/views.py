@@ -9,13 +9,14 @@ from django.db.models.functions import Coalesce
 from .models import (
     University, Major, Course, Enrollment, Application, Achievement,
     UserAchievement, AIRecommendation, StudyPlan, StudyPlanItem, Document,
-    StudentProgress
+    StudentProgress, UserEvent
 )
 from .serializers import (
     UniversitySerializer, MajorSerializer, CourseSerializer, EnrollmentSerializer,
     ApplicationSerializer, ApplicationCreateSerializer, AchievementSerializer,
     UserAchievementSerializer, AIRecommendationSerializer, StudyPlanSerializer,
-    StudyPlanItemSerializer, DocumentSerializer, DashboardStatsSerializer
+    StudyPlanItemSerializer, DocumentSerializer, DashboardStatsSerializer,
+    UserEventSerializer
 )
 
 
@@ -289,6 +290,25 @@ def dashboard_deadlines(request):
         })
 
     return Response(results)
+
+
+class UserEventListCreateView(generics.ListCreateAPIView):
+    serializer_class = UserEventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return UserEvent.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class UserEventDetailView(generics.DestroyAPIView):
+    serializer_class = UserEventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return UserEvent.objects.filter(user=self.request.user)
 
 
 @api_view(['POST'])

@@ -272,6 +272,10 @@ export const educationAPI = {
   deleteDocument: (id) => api.delete(`/api/education/documents/${id}/`),
   getDashboardStats: () => api.get('/api/education/dashboard/stats/'),
   getDeadlines: () => api.get('/api/education/dashboard/deadlines/'),
+  // User events (notes)
+  listEvents: () => api.get('/api/education/events/'),
+  createEvent: (data) => api.post('/api/education/events/', data),
+  deleteEvent: (id) => api.delete(`/api/education/events/${id}/`),
 };
 
 // Helper functions

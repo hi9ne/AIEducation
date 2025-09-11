@@ -10,6 +10,7 @@ const UniversitalySection = React.lazy(() => import('./sections/UniversitalySect
 const CodiceSection = React.lazy(() => import('./sections/CodiceSection.jsx'));
 const DOVSection = React.lazy(() => import('./sections/DOVSection.jsx'));
 const VisaSection = React.lazy(() => import('./sections/VisaSection.jsx'));
+const AIMentorSection = React.lazy(() => import('./sections/AIMentorSection.jsx'));
 const SettingsSection = React.lazy(() => import('./sections/SettingsSection.jsx'));
 const HelpSection = React.lazy(() => import('./sections/HelpSection.jsx'));
 const NotificationsSection = React.lazy(() => import('./sections/NotificationsSection.jsx'));
@@ -35,6 +36,8 @@ const CentralContent = ({ activeSection, overallProgress, currentProgress }) => 
         return <DOVSection progress={progress} />;
       case 'visa':
         return <VisaSection progress={progress} />;
+      case 'aimentor':
+        return <AIMentorSection />;
       case 'settings':
         return <SettingsSection progress={progress} />;
       case 'help':

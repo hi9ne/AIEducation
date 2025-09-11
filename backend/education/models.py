@@ -242,3 +242,16 @@ class Document(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.name}"
+
+
+class UserEvent(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
+    title = models.CharField(max_length=200)
+    date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['date', 'id']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.title} ({self.date})"
