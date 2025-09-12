@@ -295,7 +295,7 @@ const ProgressSection = ({ user, deadlines = [], deadlinesLoading = false, deadl
                   value={safeSelectedDate}
                   onChange={(v) => setSelectedDate(v ?? new Date())}
                   locale="ru"
-                  fullWidth
+                  style={{ width: '100%' }}
                   minDate={startOfToday}
                   getDayProps={(date) => {
                     const value = date instanceof Date ? date : new Date(date);
@@ -401,7 +401,7 @@ const ProgressSection = ({ user, deadlines = [], deadlinesLoading = false, deadl
               <Text size="lg" weight={700}>Прогресс профиля</Text>
               <Badge color="green">{calculateStatusText(overallProgress)}</Badge>
             </Group>
-            <Group align="center" spacing="md" noWrap>
+            <Group align="center" spacing="md" wrap="nowrap">
               <CircularProgress value={overallProgress} size={220} strokeWidth={14} color="#37B34A" />
               <Stack spacing={6} style={{ minWidth: 220 }}>
                 <Group position="apart">

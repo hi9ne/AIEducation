@@ -7,7 +7,6 @@ import HomePage from './landing/pages/HomePage';
 import LoginPage from './landing/pages/LoginPage';
 import RegisterPage from './landing/pages/RegisterPage';
 import DashboardPage from './dashboard/pages/DashboardPage';
-import ProfilePage from './dashboard/pages/ProfilePage';
 import UserProfileForm from './dashboard/components/Onboarding/UserProfileForm';
 import PublicLayout from './layouts/PublicLayout';
 import PrivateLayout from './layouts/PrivateLayout';
@@ -49,10 +48,7 @@ function App() {
                 path="dashboard" 
                 element={<DashboardPage />} 
               />
-              <Route 
-                path="profile" 
-                element={<ProfilePage />} 
-              />
+              {/* Страница профиля удалена; используйте настройки в /app/dashboard */}
             </Route>
 
             {/* Redirects */}
