@@ -251,8 +251,9 @@ export const paymentAPI = {
 };
 
 // Admin API
+// Placeholder: admin API отключен до появления эндпоинтов на бэкенде
 export const adminAPI = {
-  getStats: () => api.get('/api/admin/stats/'),
+  // getStats: () => api.get('/api/admin/stats/'),
 };
 
 // Education API

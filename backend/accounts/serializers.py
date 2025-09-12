@@ -1,7 +1,12 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
+from django.utils import timezone
 from .models import User, UserProfile, EmailVerification, PasswordResetToken
+try:
+    from payments.models import UserSubscription
+except Exception:  # payments app might be unavailable in some contexts
+    UserSubscription = None  # type: ignore
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -56,6 +61,10 @@ class UserSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer(read_only=True)
     phone = serializers.CharField(required=False, allow_blank=True)
     date_of_birth = serializers.DateField(required=False, allow_null=True)
+    # Совместимость с фронтендом
+    is_email_verified = serializers.SerializerMethodField()
+    email_verified = serializers.SerializerMethodField()
+    subscription = serializers.SerializerMethodField()
     
     class Meta:
         model = User
@@ -63,7 +72,9 @@ class UserSerializer(serializers.ModelSerializer):
             'id', 'email', 'username', 'first_name', 'last_name', 'phone',
             'date_of_birth', 'country', 'city', 'avatar', 'is_verified',
             'two_factor_enabled',
-            'created_at', 'updated_at', 'profile'
+            'created_at', 'updated_at', 'profile',
+            # Дополнительные удобные поля
+            'is_email_verified', 'email_verified', 'subscription'
         )
         read_only_fields = ('id', 'is_verified', 'created_at', 'updated_at')
         
@@ -71,6 +82,49 @@ class UserSerializer(serializers.ModelSerializer):
         if value and not value.startswith('+'):
             value = '+' + value
         return value
+
+    def get_is_email_verified(self, obj: User) -> bool:
+        # Дзеркалим is_verified в поле, которого ждёт фронт
+        return bool(getattr(obj, 'is_verified', False))
+
+    def get_email_verified(self, obj: User) -> bool:
+        return bool(getattr(obj, 'is_verified', False))
+
+    def get_subscription(self, obj: User):
+        """Возвращает компактную информацию о подписке, ожидаемую фронтом.
+        Формат:
+        {
+          plan: str,
+          is_active: bool,
+          starts_at: iso,
+          expires_at: iso,
+          days_left: int
+        }
+        """
+        try:
+            if UserSubscription is None:
+                return None
+            qs = UserSubscription.objects.filter(user=obj, is_active=True, end_date__gt=timezone.now())
+            sub = qs.order_by('-start_date').first()
+            if not sub:
+                return None
+            starts_at = getattr(sub, 'start_date', None)
+            expires_at = getattr(sub, 'end_date', None)
+            now = timezone.now()
+            days_left = None
+            if expires_at:
+                delta = expires_at - now
+                days_left = max(0, delta.days)
+            plan_name = getattr(getattr(sub, 'plan', None), 'name', '') or ''
+            return {
+                'plan': plan_name,
+                'is_active': bool(getattr(sub, 'is_active', False) and (expires_at is None or expires_at > now)),
+                'starts_at': starts_at.isoformat() if starts_at else None,
+                'expires_at': expires_at.isoformat() if expires_at else None,
+                'days_left': days_left,
+            }
+        except Exception:
+            return None
 
 
 class PasswordChangeSerializer(serializers.Serializer):
