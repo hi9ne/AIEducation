@@ -251,9 +251,14 @@ export const paymentAPI = {
 };
 
 // Admin API
+<<<<<<< HEAD
+export const adminAPI = {
+  getStats: () => api.get('/api/admin/stats/'),
+=======
 // Placeholder: admin API отключен до появления эндпоинтов на бэкенде
 export const adminAPI = {
   // getStats: () => api.get('/api/admin/stats/'),
+>>>>>>> 3a6ad37a5b8f0b33ef0b023d03369c41df21894b
 };
 
 // Education API
