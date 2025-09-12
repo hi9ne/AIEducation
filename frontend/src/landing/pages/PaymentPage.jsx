@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useDispatch } from "react-redux";
-import { fetchProfile } from "../store/authSlice";
+import { fetchProfile } from "../../store/authSlice";
 import './PaymentPage.css';
 import { paymentAPI } from '../../shared/services/api';
 
