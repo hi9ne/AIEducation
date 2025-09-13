@@ -30,6 +30,8 @@ class UniversityListView(generics.ListAPIView):
     search_fields = ['name', 'description']
     ordering_fields = ['name']
     ordering = ['name']
+    # Убираем пагинацию для получения всех университетов
+    pagination_class = None
 
     def get_queryset(self):
         queryset = super().get_queryset()

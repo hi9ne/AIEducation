@@ -16,6 +16,8 @@ class University(models.Model):
     student_count = models.IntegerField(null=True, blank=True)
     # Application submission deadline (replaces founded_year)
     deadline = models.DateField(null=True, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

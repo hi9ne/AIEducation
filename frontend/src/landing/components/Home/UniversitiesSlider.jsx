@@ -27,7 +27,7 @@ const UniversitiesSlider = () => {
     const load = async () => {
       try {
         setLoading(true);
-        const url = `${API_BASE_URL}/api/education/universities/?is_active=true`;
+        const url = `${API_BASE_URL}/api/education/universities/?is_active=true&limit=1000`;
         const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
         if (!res.ok) {
           // On 401/403 or any error, don't redirect — just render nothing
