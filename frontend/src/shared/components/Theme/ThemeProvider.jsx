@@ -1,78 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { MantineProvider, createTheme } from '@mantine/core';
-
-// Создаем кастомную тему
-const theme = createTheme({
-  primaryColor: 'blue',
-  fontFamily: 'Inter, system-ui, sans-serif',
-  fontFamilyMonospace: 'Monaco, Courier, monospace',
-  headings: { fontFamily: 'Inter, system-ui, sans-serif' },
-  defaultRadius: 'md',
-  colors: {
-    brand: [
-      '#e7f5ff',
-      '#d0ebff',
-      '#a5d8ff',
-      '#74c0fc',
-      '#4dabf7',
-      '#339af0',
-      '#228be6',
-      '#1c7ed6',
-      '#1971c2',
-      '#1864ab'
-    ]
-  },
-  components: {
-    Button: {
-      defaultProps: {
-        radius: 'md',
-      },
-    },
-    Paper: {
-      defaultProps: {
-        radius: 'md',
-        shadow: 'sm',
-      },
-    },
-    Card: {
-      defaultProps: {
-        radius: 'md',
-        shadow: 'sm',
-      },
-    },
-    TextInput: {
-      defaultProps: {
-        radius: 'md',
-      },
-    },
-    Select: {
-      defaultProps: {
-        radius: 'md',
-      },
-    },
-    Textarea: {
-      defaultProps: {
-        radius: 'md',
-      },
-    },
-    Progress: {
-      defaultProps: {
-        radius: 'md',
-      },
-    },
-    Notification: {
-      defaultProps: {
-        radius: 'md',
-      },
-    },
-    Modal: {
-      defaultProps: {
-        radius: 'md',
-      },
-    },
-  },
-});
-
+import { MantineProvider } from '@mantine/core';
+import theme from './themeConfig.js';
 // Контекст для темы
 const ThemeContext = createContext();
 
@@ -85,14 +13,33 @@ export const useTheme = () => {
 };
 
 const ThemeProvider = ({ children }) => {
-  const [colorScheme, setColorScheme] = useState('light');
+  // colorScheme может быть 'light' | 'dark' | 'system'
+  const [colorScheme, setColorScheme] = useState('system');
+  const [systemScheme, setSystemScheme] = useState('light');
   const [primaryColor, setPrimaryColor] = useState('blue');
   const [fontSize, setFontSize] = useState('md');
   const [animations, setAnimations] = useState(true);
 
+  // Подписка на системную тему
+  useEffect(() => {
+    try {
+      const mql = window.matchMedia('(prefers-color-scheme: dark)');
+      const update = () => setSystemScheme(mql.matches ? 'dark' : 'light');
+      update();
+      if (mql.addEventListener) mql.addEventListener('change', update);
+      else if (mql.addListener) mql.addListener(update);
+      return () => {
+        if (mql.removeEventListener) mql.removeEventListener('change', update);
+        else if (mql.removeListener) mql.removeListener(update);
+      };
+    } catch {
+      // no-op in non-browser
+    }
+  }, []);
+
   // Загружаем настройки из localStorage
   useEffect(() => {
-    const savedColorScheme = localStorage.getItem('colorScheme') || 'light';
+    const savedColorScheme = localStorage.getItem('colorScheme') || 'system';
     const savedPrimaryColor = localStorage.getItem('primaryColor') || 'blue';
     const savedFontSize = localStorage.getItem('fontSize') || 'md';
     const savedAnimations = localStorage.getItem('animations') !== 'false';
@@ -125,8 +72,11 @@ const ThemeProvider = ({ children }) => {
   };
 
   const toggleColorScheme = () => {
-    updateColorScheme(colorScheme === 'light' ? 'dark' : 'light');
+    const effective = colorScheme === 'system' ? systemScheme : colorScheme;
+    updateColorScheme(effective === 'light' ? 'dark' : 'light');
   };
+
+  const effectiveScheme = colorScheme === 'system' ? systemScheme : colorScheme;
 
   const value = {
     colorScheme,
@@ -154,7 +104,7 @@ const ThemeProvider = ({ children }) => {
             xl: '1.25rem'
           }
         }}
-        forceColorScheme={colorScheme}
+        forceColorScheme={effectiveScheme}
       >
         {children}
       </MantineProvider>
