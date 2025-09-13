@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, ScrollArea, Text, Button, useMatches, Drawer } from '@mantine/core';
 import { useDisclosure, useViewportSize } from '@mantine/hooks';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { fetchProfile } from '../../../store/authSlice';
 import LeftNavigation from './LeftNavigation';
 import CentralContent from './CentralContent';
@@ -21,11 +22,30 @@ const DashboardLayout = () => {
   const { width } = useViewportSize();
   const user = useSelector(state => state.auth.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Определяем тип устройства
   const isMobile = width < 768;
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
+
+  // Проверка завершения анкеты
+  useEffect(() => {
+    if (user) {
+      const forceCompleted = localStorage.getItem('onboarding_force_completed');
+      
+      // Если есть флаг принудительного завершения, очищаем его и не редиректим
+      if (forceCompleted) {
+        localStorage.removeItem('onboarding_force_completed');
+        return;
+      }
+      
+      // Обычная проверка завершения анкеты
+      if (!user.profile?.onboarding_completed) {
+        navigate('/app/onboarding', { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     dispatch(fetchProfile());

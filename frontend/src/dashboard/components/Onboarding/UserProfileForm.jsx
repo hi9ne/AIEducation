@@ -49,8 +49,6 @@ import {
   IconBriefcase,
   IconTarget,
   IconLanguage,
-  IconCurrencyDollar,
-  IconClock,
   IconCheck,
   IconArrowRight,
   IconArrowLeft,
@@ -126,9 +124,6 @@ const UserProfileForm = () => {
 	// География обучения
 	preferred_countries: [],
     
-  // Предпочтения по обучению
-    budget_range: '',
-    study_duration: '',
     // Внутренние поля для сертификатов
     exams: {
       ielts: { status: 'no', date: '', score: '', target: '', file: null },
@@ -160,8 +155,6 @@ const UserProfileForm = () => {
     interests: useRef(null),
     goals: useRef(null),
     preferred_countries: useRef(null),
-    budget_range: useRef(null),
-    study_duration: useRef(null),
     exams: useRef(null),
   };
 
@@ -242,9 +235,7 @@ const UserProfileForm = () => {
       profile.education_background &&
       profile.interests?.length > 0 &&
       profile.goals?.length > 0 &&
-      Object.keys(profile.language_levels || {}).length > 0 &&
-      profile.budget_range &&
-      profile.study_duration
+      Object.keys(profile.language_levels || {}).length > 0
     );
   };
 
@@ -266,8 +257,10 @@ const UserProfileForm = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('UserProfileForm: User updated, onboarding_completed:', user.profile?.onboarding_completed);
       // Если анкета уже заполнена, сразу редиректим в кабинет
       if (user.profile?.onboarding_completed) {
+        console.log('UserProfileForm: Redirecting to dashboard due to completed onboarding');
         navigate('/app/dashboard', { replace: true });
         return;
       }
@@ -288,8 +281,6 @@ const UserProfileForm = () => {
         goals: toArray(user.profile?.goals),
         language_levels: toObject(user.profile?.language_levels),
         preferred_countries: toArray(user.profile?.preferred_countries),
-        budget_range: user.profile?.budget_range || '',
-        study_duration: user.profile?.study_duration || '',
         exams: {
           ...prev.exams,
           ielts: {
@@ -315,7 +306,6 @@ const UserProfileForm = () => {
     { title: 'Сертификаты', icon: IconCertificate },
     { title: 'География', icon: IconMap },
     { title: 'Желаемая специальность', icon: IconTarget },
-    { title: 'Предпочтения', icon: IconMapPin },
     { title: 'Завершение', icon: IconCheck },
   ];
 
@@ -374,25 +364,6 @@ const UserProfileForm = () => {
     'Великобритания','Ирландия','США','Канада','Турция','ОАЭ'
   ];
 
-
-  const budgetRanges = [
-    'До 5,000€ в год',
-    '5,000€ - 10,000€ в год',
-    '10,000€ - 20,000€ в год',
-    '20,000€ - 30,000€ в год',
-    '30,000€ - 50,000€ в год',
-    'Более 50,000€ в год'
-  ];
-
-  const studyDurations = [
-    '1 семестр',
-    '1 год',
-    '2 года',
-    '3 года',
-    '4 года',
-    '5+ лет'
-  ];
-
   // Валидация по шагу без побочных эффектов
   const getStepErrors = (step) => {
     const newErrors = {};
@@ -433,10 +404,6 @@ const UserProfileForm = () => {
       case 4:
         if (!formData.interests || !String(formData.interests).trim()) newErrors.interests = 'Выберите специальность';
         if ((formData.goals || []).length === 0) newErrors.goals = 'Выберите хотя бы одну цель';
-        break;
-      case 5:
-        if (!formData.budget_range) newErrors.budget_range = 'Укажите бюджет';
-        if (!formData.study_duration) newErrors.study_duration = 'Укажите продолжительность обучения';
         break;
     }
     return newErrors;
@@ -533,8 +500,6 @@ const UserProfileForm = () => {
         goals: formData.goals,
         language_levels: formData.language_levels,
         preferred_countries: formData.preferred_countries,
-        budget_range: formData.budget_range,
-  study_duration: formData.study_duration,
   onboarding_completed: true,
   // Передаем результаты экзаменов, если есть
   exams: {
@@ -554,7 +519,11 @@ const UserProfileForm = () => {
   }
       };
 
-      await dispatch(updateProfileComplete(payload)).unwrap();
+      console.log('Sending payload with onboarding_completed:', payload.onboarding_completed);
+      const result = await dispatch(updateProfileComplete(payload)).unwrap();
+      console.log('Server response:', result);
+      console.log('Updated user from server:', result.user);
+      console.log('User onboarding_completed:', result.user?.profile?.onboarding_completed);
 
       // Upload attached exam certificates (IELTS/TOLC) to Documents so they show up in sections
       const uploads = [];
@@ -598,8 +567,20 @@ const UserProfileForm = () => {
 	  try { localStorage.removeItem(draftKey); } catch {
 		/* ignore draft remove error */
 	  }
-  navigate('/app/dashboard', { replace: true });
-  dispatch(fetchProfile());
+  
+      // Устанавливаем флаг завершения анкеты в localStorage
+      localStorage.setItem('onboarding_force_completed', 'true');
+      
+      // Обновляем профиль и принудительно редиректим
+      console.log('Updating profile before redirect...');
+      await dispatch(fetchProfile());
+      console.log('Profile updated, redirecting to dashboard...');
+      
+      // Принудительный редирект - форма была успешно отправлена
+      setTimeout(() => {
+        console.log('Executing navigation to dashboard...');
+        navigate('/app/dashboard', { replace: true });
+      }, 500);
     } catch (error) {
       console.error('Error updating profile:', error);
       // Если сервер вернул ошибки по полям — отобразим их
@@ -816,7 +797,7 @@ const UserProfileForm = () => {
                           </>
                         ) : (
                           <>
-                            <IconClock size={12} />
+                            <IconAlertCircle size={12} />
                             В процессе
                           </>
                         )}
@@ -1091,15 +1072,7 @@ const UserProfileForm = () => {
           </Stack>
         );
 
-      case 5: // Предпочтения
-        return (
-          <Stack spacing="md" className={styles.slideIn}>
-            <Select label="Бюджет на обучение" placeholder="Выберите бюджет" data={budgetRanges} value={formData.budget_range} onChange={(value) => handleInputChange('budget_range', value)} error={errors.budget_range} icon={<IconCurrencyDollar size={16} />} ref={refs.budget_range} />
-            <Select label="Планируемая продолжительность обучения" placeholder="Выберите продолжительность" data={studyDurations} value={formData.study_duration} onChange={(value) => handleInputChange('study_duration', value)} error={errors.study_duration} icon={<IconClock size={16} />} ref={refs.study_duration} />
-          </Stack>
-        );
-
-      case 6: // Завершение
+      case 5: // Завершение
         return (
           <Stack spacing="md" className={styles.slideIn}>
             <Alert color="green" icon={<IconCheck size={16} />}>
@@ -1350,8 +1323,6 @@ const UserProfileForm = () => {
                               interests: 'Желаемая специальность',
                               goals: 'Цели',
                               university: 'Университет',
-                              budget_range: 'Бюджет',
-                              study_duration: 'Продолжительность',
                               exams: 'Сертификаты',
                               avatar: 'Аватар',
                               ielts_file: 'IELTS файл',
