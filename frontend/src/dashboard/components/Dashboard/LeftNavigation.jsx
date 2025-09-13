@@ -9,7 +9,9 @@ import {
   Badge,
   Divider,
   Modal,
-  Paper
+  Paper,
+  ActionIcon,
+  useMantineTheme
 } from '@mantine/core';
 import { 
   IconHome, 
@@ -17,18 +19,20 @@ import {
   IconSchool, 
   IconBuilding, 
   IconFileText, 
-  IconCreditCard, 
   IconFile, 
   IconPlane, 
   IconSettings,
   IconBell,
-  IconHelp
+  IconHelp,
+  IconX
 } from '@tabler/icons-react';
 import { useDashboardStore } from '../../../store/dashboardStore';
 import { API_BASE_URL } from '../../../shared/services/api.js';
 
-const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
+const LeftNavigation = ({ activeSection, onSectionChange, user, isMobile = false, isDrawer = false, onClose }) => {
   const [showStudentCard, setShowStudentCard] = useState(false);
+  const theme = useMantineTheme();
+  const isDark = theme.colorScheme === 'dark';
   const { currentProgress } = useDashboardStore();
 
   const avatarRaw = user?.avatar || '';
@@ -38,70 +42,69 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
         : `${API_BASE_URL}${avatarRaw.startsWith('/') ? '' : '/'}${avatarRaw}`)
     : undefined;
 
-  const navigationItems = [
+    const navigationItems = [
     {
       id: 'main',
       label: 'Главная',
-      description: 'Обзор прогресса',
+      description: 'Обзор и статистика',
       icon: IconHome,
       color: 'blue'
     },
     {
       id: 'ielts',
       label: 'IELTS',
-      description: 'Подготовка к тесту',
+      description: 'Подготовка к IELTS',
       icon: IconBook,
       color: 'green'
     },
     {
       id: 'tolc',
       label: 'TOLC',
-      description: 'Итальянский тест',
+      description: 'Подготовка к TOLC',
       icon: IconSchool,
-      color: 'purple'
+      color: 'orange'
     },
     {
       id: 'universities',
       label: 'Университеты',
-      description: 'Поиск и выбор',
+      description: 'Поиск университетов',
       icon: IconBuilding,
-      color: 'orange'
+      color: 'purple'
     },
     {
       id: 'universitaly',
       label: 'Universitaly',
-      description: 'Регистрация',
-      icon: IconFileText,
-      color: 'cyan'
+      description: 'Платформа Universitaly',
+      icon: IconBuilding,
+      color: 'purple'
     },
     {
       id: 'codice',
       label: 'Codice Fiscale',
-      description: 'Налоговый код',
-      icon: IconCreditCard,
+      description: 'Документы и коды',
+      icon: IconFileText,
       color: 'teal'
     },
     {
       id: 'dov',
       label: 'DOV',
-      description: 'Легализация',
+      description: 'Декларация о стоимости',
       icon: IconFile,
       color: 'indigo'
     },
     {
       id: 'visa',
-      label: 'Виза',
-      description: 'Визовая поддержка',
+      label: 'Визовая поддержка',
+      description: 'Помощь с визами',
       icon: IconPlane,
-      color: 'pink'
-    }
-    ,
+      color: 'cyan'
+    },
     {
       id: 'aimentor',
-      label: 'Чат с AIMentor',
-      description: 'Общение с ИИ‑наставником',
+      label: 'AI Ментор',
+      description: 'Персональный помощник',
       icon: IconHelp,
-      color: 'purple'
+      color: 'pink'
     }
   ];
 
@@ -134,27 +137,63 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
   };
 
   return (
-    <Box style={{ height: '100%', backgroundColor: 'var(--app-color-surface)', }}>
+    <Box style={{ height: '100%', backgroundColor: 'var(--app-color-surface)' }}>
+      {/* Мобильный заголовок с кнопкой закрытия */}
+      {isMobile && isDrawer && (
+        <Box style={{ 
+          padding: '16px', 
+          borderBottom: '1px solid var(--mantine-color-gray-3)',
+          backgroundColor: 'var(--app-color-surface)'
+        }}>
+          <Group justify="space-between" align="center">
+            <Text 
+              size="lg" 
+              weight={600}
+              style={{ 
+                background: 'linear-gradient(45deg, var(--mantine-color-blue-6), var(--mantine-color-purple-6))',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}
+            >
+              Навигация
+            </Text>
+            <ActionIcon 
+              variant="subtle" 
+              color="gray" 
+              onClick={onClose}
+              size="md"
+              className="touch-icon-button"
+            >
+              <IconX size={18} />
+            </ActionIcon>
+          </Group>
+        </Box>
+      )}
+
       <Stack gap="xs" style={{ padding: '16px' }}>
-        {/* Top spacer to avoid clipping under app frame */}
-        <Box style={{ height: 8 }} />
+        {/* Top spacer to avoid clipping under app frame - только для десктопа */}
+        {!isMobile && <Box style={{ height: 8 }} />}
+        
         {/* User Profile */}
         <Paper
           withBorder
           radius="lg"
-          p="md"
+          p={isMobile ? "sm" : "md"}
           onClick={() => setShowStudentCard(true)}
           style={{
             backgroundColor: 'var(--app-color-surface)',
             borderColor: 'var(--mantine-color-gray-3)',
             boxShadow: 'var(--app-shadow-sm)',
             cursor: 'pointer',
-            transition: 'box-shadow 150ms ease, transform 150ms ease'
+            transition: 'box-shadow 150ms ease, transform 150ms ease',
+            color: isDark ? 'var(--mantine-color-white)' : undefined
           }}
+          className={isMobile ? "touch-card" : ""}
         >
           <Group>
             <Avatar
-              size="md"
+              size={isMobile ? "md" : "lg"}
               color="blue"
               radius="xl"
               src={avatarSrc}
@@ -162,10 +201,10 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
               {user?.first_name?.[0]}{user?.last_name?.[0]}
             </Avatar>
             <Box style={{ flex: 1 }}>
-              <Text size="sm" fw={700} c="dark">
+              <Text size={isMobile ? "sm" : "md"} fw={700} c={isDark ? 'white' : 'dark'}>
                 {user?.first_name} {user?.last_name}
               </Text>
-              <Text size="xs" c="dimmed">
+              <Text size="xs" c={isDark ? 'white' : 'dimmed'}>
                 Студент
               </Text>
             </Box>
@@ -183,13 +222,12 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
             
             // Определяем живой прогресс по id секции
             const liveProgressMap = {
-              ielts: currentProgress?.ielts ?? 0,
-              tolc: currentProgress?.tolc ?? 0,
-              universitaly: currentProgress?.universitaly ?? 0,
-              codice: currentProgress?.codice ?? 0,
-              dov: currentProgress?.dov ?? 0,
-              visa: currentProgress?.visa ?? 0,
-              aimentor: undefined,
+              ielts: currentProgress?.ielts ?? null,
+              tolc: currentProgress?.tolc ?? null,
+              universitaly: currentProgress?.universitaly ?? null,
+              codice: currentProgress?.codice ?? null,
+              dov: currentProgress?.dov ?? null,
+              visa: currentProgress?.visa ?? null
             };
             const itemProgress = liveProgressMap[item.id];
 
@@ -198,16 +236,37 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
                 key={item.id}
                 variant={isActive ? 'filled' : 'subtle'}
                 color={isActive ? item.color : 'gray'}
-                onClick={() => onSectionChange(item.id)}
+                onClick={() => {
+                  onSectionChange(item.id);
+                  if (isMobile && onClose) {
+                    onClose();
+                  }
+                }}
                 justify="flex-start"
-                size="md"
+                size={isMobile ? "sm" : "md"}
                 radius="md"
                 aria-current={isActive ? 'page' : undefined}
                 title={item.description}
+                style={{
+                  minHeight: isMobile ? '48px' : '44px',
+                  padding: isMobile ? '8px 12px' : undefined
+                }}
+                className={isMobile ? "touch-nav-item" : ""}
+                styles={{
+                  root: {
+                    display: 'flex',
+                    alignItems: 'center'
+                  },
+                  label: {
+                    color: isDark && !isActive ? '#ffffff' : undefined,
+                    fontSize: isMobile ? '14px' : undefined,
+                    fontWeight: isActive ? 600 : 500
+                  }
+                }}
                 leftSection={
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Icon 
-                      size={20} 
+                      size={isMobile ? 18 : 20} 
                       color={isActive ? 'white' : getColorValue(item.color)} 
                     />
                   </div>
@@ -215,7 +274,7 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
                 rightSection={
                   typeof itemProgress === 'number' ? (
                     <Badge 
-                      size="xs" 
+                      size={isMobile ? "xs" : "sm"} 
                       color={item.color} 
                       variant="light"
                       radius="sm"
@@ -224,26 +283,29 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
                     </Badge>
                   ) : null
                 }
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  height: 'auto',
-                  minHeight: 52,
-                  padding: '10px 12px',
-                  borderRadius: 'var(--app-radius-md)',
-                  backgroundColor: isActive ? getColorValue(item.color) : 'transparent',
-                  borderLeft: isActive ? `3px solid ${getColorValue(item.color)}` : '3px solid transparent',
-                  transition: 'background-color 0.2s ease, transform 0.2s ease',
-                  boxShadow: isActive ? 'var(--app-shadow-sm)' : 'none'
-                }}
               >
-                <Box style={{ textAlign: 'left', lineHeight: 1.2 }}>
-                  <Text size="sm" fw={isActive ? 700 : 500} c={isActive ? 'white' : 'dark'} style={{ lineHeight: 1.2 }}>
+                <Box style={{ 
+                  textAlign: 'left', 
+                  lineHeight: 1.2, 
+                  color: isDark && !isActive ? 'white' : undefined 
+                }}>
+                  <Text 
+                    size={isMobile ? "sm" : "md"} 
+                    fw={isActive ? 700 : 500} 
+                    c={isActive ? 'white' : (isDark ? 'white' : 'dark')} 
+                    style={{ lineHeight: 1.2 }}
+                  >
                     {item.label}
                   </Text>
-                  <Text size="xs" c={isActive ? 'white' : 'dimmed'} style={{ lineHeight: 1.2 }}>
-                    {item.description}
-                  </Text>
+                  {!isMobile && (
+                    <Text 
+                      size="xs" 
+                      c={isActive ? 'white' : (isDark ? 'white' : 'dimmed')} 
+                      style={{ lineHeight: 1.2 }}
+                    >
+                      {item.description}
+                    </Text>
+                  )}
                 </Box>
               </Button>
             );
@@ -272,10 +334,10 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
           }}
         >
           <Box style={{ textAlign: 'left', lineHeight: 1.2 }}>
-            <Text size="sm" fw={activeSection === 'settings' ? 600 : 500}>
+            <Text size="md" fw={activeSection === 'settings' ? 600 : 500} c={isDark ? 'white' : (activeSection === 'settings' ? 'dark' : undefined)}>
               Настройки
             </Text>
-            <Text size="xs" c="dimmed" style={{ lineHeight: 1.2 }}>
+            <Text size="sm" c={isDark ? 'white' : 'dimmed'} style={{ lineHeight: 1.2 }}>
               Профиль и предпочтения
             </Text>
           </Box>
@@ -301,10 +363,10 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
             onClick={() => onSectionChange('help')}
           >
             <Box style={{ textAlign: 'left', lineHeight: 1.2 }}>
-              <Text size="sm" fw={500}>
+              <Text size="md" fw={500} c={isDark ? 'white' : undefined}>
                 Помощь
               </Text>
-              <Text size="xs" c="dimmed" style={{ lineHeight: 1.2 }}>
+              <Text size="sm" c={isDark ? 'white' : 'dimmed'} style={{ lineHeight: 1.2 }}>
                 FAQ и поддержка
               </Text>
             </Box>
@@ -328,10 +390,10 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
             onClick={() => onSectionChange('notifications')}
           >
             <Box style={{ textAlign: 'left', lineHeight: 1.2 }}>
-              <Text size="sm" fw={500}>
+              <Text size="md" fw={500} c={isDark ? 'white' : undefined}>
                 Уведомления
               </Text>
-              <Text size="xs" c="dimmed" style={{ lineHeight: 1.2 }}>
+              <Text size="sm" c={isDark ? 'white' : 'dimmed'} style={{ lineHeight: 1.2 }}>
                 Настройки уведомлений
               </Text>
             </Box>
@@ -354,23 +416,29 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
             radius="lg"
             shadow="xl"
             style={{
-              width: 580,
+              width: 720,
               maxWidth: '100%',
-              height: 260,
-              background: 'var(--app-color-surface)',
-              border: '1px solid var(--app-color-border)',
-              boxShadow: 'var(--app-shadow-lg)',
+              height: 320,
+              background: 'transparent',
+              border: 'none',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
               borderRadius: 16,
               position: 'relative',
               overflow: 'hidden'
             }}
           >
-            {/* Decorative overlay with subtle gradient depending on theme */}
-            <Box style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(135deg, color-mix(in srgb, var(--mantine-color-blue-6) 10%, transparent), transparent 60%)' }} />
+            {/* 3D Card background with gradient */}
+            <Box style={{ 
+              position: 'absolute', 
+              inset: 0, 
+              pointerEvents: 'none', 
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%)',
+              borderRadius: 16
+            }} />
 
-            <Group justify="space-between" style={{ padding: 24, position: 'relative', zIndex: 1 }}>
-              <Box>
-                <Group gap={8}>
+            <Group justify="space-between" align="flex-start" style={{ padding: '32px 32px 24px 32px', position: 'relative', zIndex: 1 }}>
+              <Box style={{ flex: 1, marginRight: 24 }}>
+                <Group gap={8} mb={16}>
                   <Box style={{
                     width: 30,
                     height: 30,
@@ -383,33 +451,60 @@ const LeftNavigation = ({ activeSection, onSectionChange, user }) => {
                   }}>
                     <Text fw={800} c="var(--mantine-color-blue-6)">U</Text>
                   </Box>
-                  <Text fw={700}>University Card</Text>
+                  <Text fw={700} c="white">AIEdu Student Card</Text>
                 </Group>
+                
+                <Box style={{ marginBottom: 20 }}>
+                  <Text size="xl" fw={700} style={{ lineHeight: 1.1, marginBottom: 8 }} c="white">
+                    {user?.first_name || 'Jane'} {user?.last_name || 'Doe'}
+                  </Text>
+                  <Text size="md" c="white" style={{ opacity: 0.9 }}>
+                    {user?.profile?.interests?.[0] || 'Computer Science'}
+                  </Text>
+                </Box>
+                
+                <Badge
+                  size="lg"
+                  color="blue"
+                  variant="light"
+                  style={{ 
+                    background: 'rgba(255, 255, 255, 0.2)', 
+                    color: 'white', 
+                    fontWeight: 700, 
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    backdropFilter: 'blur(10px)'
+                  }}
+                >
+                  STUDENT ID: {user?.student_id || '123456'}
+                </Badge>
               </Box>
-              <Avatar src={avatarSrc} radius="md" size={84} alt="student" />
-            </Group>
-
-            <Group style={{ padding: '0 24px', position: 'relative', zIndex: 1 }}>
-              <Box style={{ flex: 1 }}>
-                <Text size="lg" fw={700} style={{ lineHeight: 1.1 }}>
-                  {user?.first_name || 'Jane'} {user?.last_name || 'Doe'}
-                </Text>
-                <Text size="sm" c="dimmed" style={{ marginTop: 4 }}>
-                  Computer Science
-                </Text>
-              </Box>
-            </Group>
-
-            <Group style={{ padding: 24, marginTop: 16, position: 'relative', zIndex: 1 }}>
-              <Badge
-                size="lg"
-                color="blue"
-                variant="light"
-                style={{ background: 'color-mix(in srgb, var(--mantine-color-blue-6) 15%, var(--app-color-surface))', color: 'var(--mantine-color-blue-6)', fontWeight: 700, border: '1px solid color-mix(in srgb, var(--mantine-color-blue-6) 30%, var(--app-color-border))' }}
+              
+              <Box
+                style={{
+                  width: '220px',
+                  height: '260px',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  background: '#f0f0f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}
               >
-                STUDENT ID: {user?.student_id || '123456'}
-              </Badge>
+                <img
+                  src={avatarSrc}
+                  alt="student"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: '12px'
+                  }}
+                />
+              </Box>
             </Group>
+
           </Paper>
         </Box>
       </Modal>

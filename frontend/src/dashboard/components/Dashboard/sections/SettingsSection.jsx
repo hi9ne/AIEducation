@@ -1097,7 +1097,16 @@ const SettingsSection = () => {
                         variant={activeSection === item.id ? 'filled' : 'light'}
                         color={activeSection === item.id ? 'blue' : 'gray'}
                       >
-                        <item.icon size={16} />
+                        <item.icon 
+                          size={16} 
+                          color={
+                            activeSection === item.id
+                              ? '#ffffff'
+                              : (theme.colorScheme === 'dark' 
+                                  ? theme.colors.gray[3]
+                                  : theme.colors.gray[7])
+                          }
+                        />
                       </ThemeIcon>
                       <Box style={{ flex: 1 }}>
                         <Text fw={activeSection === item.id ? 600 : 500} size="sm">

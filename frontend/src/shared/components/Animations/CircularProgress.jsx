@@ -1,8 +1,10 @@
 import React from 'react';
-import { Box, Text } from '@mantine/core';
+import { Box, Text, useMantineTheme } from '@mantine/core';
 import { motion } from "framer-motion";
 
-const CircularProgress = ({ value = 0, size = 120, strokeWidth = 12, color = '#37B34A' }) => {
+const CircularProgress = ({ value = 0, size = 120, strokeWidth = 12, color = '#37B34A', textColor }) => {
+  const theme = useMantineTheme();
+  const isDark = theme.colorScheme === 'dark';
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const progress = Math.min(Math.max(value, 0), 100);
@@ -30,7 +32,7 @@ const CircularProgress = ({ value = 0, size = 120, strokeWidth = 12, color = '#3
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#E9ECEF"
+          stroke={isDark ? '#374151' : '#E9ECEF'}
           strokeWidth={strokeWidth}
         />
       </svg>
@@ -44,12 +46,19 @@ const CircularProgress = ({ value = 0, size = 120, strokeWidth = 12, color = '#3
           position: 'absolute',
         }}
       >
+        <defs>
+          <linearGradient id={`gradient-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={isDark ? '#10b981' : '#37B34A'} />
+            <stop offset="50%" stopColor={isDark ? '#059669' : '#2d8f3f'} />
+            <stop offset="100%" stopColor={isDark ? '#047857' : '#1f6b2f'} />
+          </linearGradient>
+        </defs>
         <motion.circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={color}
+          stroke={`url(#gradient-${size})`}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
@@ -79,7 +88,7 @@ const CircularProgress = ({ value = 0, size = 120, strokeWidth = 12, color = '#3
             weight={700}
             style={{
               fontSize: size * 0.25,
-              color: '#2C2E33',
+              color: textColor || (isDark ? '#ffffff' : '#000000'),
             }}
           >
             {Math.round(progress)}%

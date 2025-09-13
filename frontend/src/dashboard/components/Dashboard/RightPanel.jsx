@@ -72,7 +72,7 @@ import api, { API_BASE_URL } from '../../../shared/services/api';
 import { useDashboardStore } from '../../../store/dashboardStore';
 import AIMentorChat from './components/AIMentorChat.jsx';
 
-const RightPanel = () => {
+const RightPanel = ({ activeSection, currentProgress, isMobile = false, activeTab = 'ai' }) => {
   const dispatch = useDispatch();
   const { user, isAuthenticated } = useAuth();
   const messagesEndRef = useRef(null);

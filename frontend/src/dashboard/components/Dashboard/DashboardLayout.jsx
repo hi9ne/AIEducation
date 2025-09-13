@@ -1,62 +1,167 @@
 import React, { useState, useEffect } from 'react';
-import { Box, ScrollArea, Text, Button } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { Box, ScrollArea, Text, Button, useMatches, Drawer } from '@mantine/core';
+import { useDisclosure, useViewportSize } from '@mantine/hooks';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchProfile } from '../../../store/authSlice';
 import LeftNavigation from './LeftNavigation';
 import CentralContent from './CentralContent';
 import RightPanel from './RightPanel';
+import MobileHeader from './MobileHeader';
+import MobileRightPanel from './MobileRightPanel';
+import MobileFAB from './MobileFAB';
 import { useDashboardStore } from '../../../store/dashboardStore';
 import './Dashboard.css';
 
 const DashboardLayout = () => {
   const [activeSection, setActiveSection] = useState('main');
-  const [opened, { toggle }] = useDisclosure(false);
+  const [mobileNavOpened, { toggle: toggleMobileNav, close: closeMobileNav }] = useDisclosure(false);
+  const [mobileRightPanelOpened, { toggle: toggleMobileRightPanel, close: closeMobileRightPanel }] = useDisclosure(false);
+  const [activeRightPanelTab, setActiveRightPanelTab] = useState('ai');
   const { currentProgress, overallProgress, initFromBackend } = useDashboardStore();
-  const [showMobileRightPanel, setShowMobileRightPanel] = useState(false);
+  const { width } = useViewportSize();
   const user = useSelector(state => state.auth.user);
   const dispatch = useDispatch();
 
+  // Определяем тип устройства
+  const isMobile = width < 768;
+  const isTablet = width >= 768 && width < 1024;
+  const isDesktop = width >= 1024;
+
   useEffect(() => {
     dispatch(fetchProfile());
-  // Инициализация стора реальными данными
-  initFromBackend?.();
+    // Инициализация стора реальными данными
+    initFromBackend?.();
   }, [dispatch]);
 
+  // Закрываем мобильные панели при изменении размера экрана
+  useEffect(() => {
+    if (!isMobile) {
+      closeMobileNav();
+      closeMobileRightPanel();
+    }
+  }, [isMobile, closeMobileNav, closeMobileRightPanel]);
+
+  const handleNotificationsToggle = () => {
+    setActiveRightPanelTab('notifications');
+    toggleMobileRightPanel();
+  };
+
+  const handleAiToggle = () => {
+    setActiveRightPanelTab('ai');
+    toggleMobileRightPanel();
+  };
+
+  const handleSettingsToggle = () => {
+    setActiveSection('settings');
+  };
+
   return (
-    <Box className="dashboard-layout" style={{
-      minHeight: '100vh',
-      width: '100%',
-      overflow: 'hidden',
-      position: 'relative',
-      background: 'linear-gradient(180deg, var(--app-color-bg) 0%, var(--app-color-surface) 40%, var(--app-color-bg) 100%)'
-    }}>
-      <div style={{ display: 'flex', flexDirection: 'row', minHeight: '100vh', width: '100%' }}>
-        {/* Левая панель навигации */}
-        <div className="left-navigation" style={{
-          flex: '0 0 20%',
-          maxWidth: '250px',
-          borderRight: '1px solid var(--mantine-color-gray-3)',
-          backgroundColor: 'var(--app-color-surface)',
-          minHeight: '100vh',
-          boxShadow: 'var(--app-shadow-md)'
-        }}>
-          <LeftNavigation 
+    <Box 
+      className="dashboard-layout" 
+      style={{
+        minHeight: '100vh',
+        width: '100%',
+        overflow: 'hidden',
+        position: 'relative',
+        background: 'linear-gradient(180deg, var(--app-color-bg) 0%, var(--app-color-surface) 40%, var(--app-color-bg) 100%)',
+        paddingBottom: 0 // Убираем отступ для нижней навигации
+      }}
+    >
+      {/* Мобильный заголовок */}
+      {isMobile && (
+        <MobileHeader
+          user={user}
+          onMenuToggle={toggleMobileNav}
+          onNotificationsToggle={handleNotificationsToggle}
+          onAiToggle={handleAiToggle}
+          isMenuOpen={mobileNavOpened}
+          unreadNotifications={5} // Здесь должно быть реальное количество
+        />
+      )}
+
+      {/* Мобильная навигация */}
+      {isMobile && (
+        <Drawer
+          opened={mobileNavOpened}
+          onClose={closeMobileNav}
+          position="left"
+          size="280px"
+          padding={0}
+          withCloseButton={false}
+          overlayProps={{ 
+            opacity: 0.5, 
+            blur: 4 
+          }}
+          transitionProps={{
+            transition: 'slide-right',
+            duration: 200,
+            timingFunction: 'ease'
+          }}
+          styles={{
+            content: {
+              backgroundColor: 'var(--app-color-surface)',
+            },
+            body: {
+              padding: 0,
+              height: '100%'
+            }
+          }}
+        >
+          <LeftNavigation
             activeSection={activeSection}
-            onSectionChange={setActiveSection}
-            isOpened={opened}
-            onToggle={toggle}
+            onSectionChange={(section) => {
+              setActiveSection(section);
+              closeMobileNav(); // Закрываем меню после выбора
+            }}
             user={user}
+            isMobile={true}
+            isDrawer={true}
+            onClose={closeMobileNav}
           />
-          {/* Кнопка показа панели ИИ удалена по требованию */}
-        </div>
+        </Drawer>
+      )}
+
+      {/* Мобильная правая панель */}
+      <MobileRightPanel
+        opened={mobileRightPanelOpened}
+        onClose={closeMobileRightPanel}
+        activeSection={activeSection}
+        currentProgress={currentProgress}
+        activeTab={activeRightPanelTab}
+      />
+
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'row', 
+        minHeight: isMobile ? 'calc(100vh - 64px)' : '100vh', 
+        width: '100%' 
+      }}>
+        {/* Левая панель навигации - скрыта на мобильных */}
+        {!isMobile && (
+          <div className="left-navigation" style={{
+            flex: isTablet ? '0 0 25%' : '0 0 20%',
+            maxWidth: isTablet ? '200px' : '250px',
+            borderRight: '1px solid var(--mantine-color-gray-3)',
+            backgroundColor: 'var(--app-color-surface)',
+            minHeight: '100vh',
+            boxShadow: 'var(--app-shadow-md)'
+          }}>
+            <LeftNavigation 
+              activeSection={activeSection}
+              onSectionChange={setActiveSection}
+              isOpened={false}
+              onToggle={() => {}}
+              user={user}
+            />
+          </div>
+        )}
 
         {/* Центральная зона контента */}
         <div className="central-content" style={{
           flex: '1 1 auto',
-          borderRight: '1px solid var(--mantine-color-gray-3)',
+          borderRight: !isMobile && !isTablet ? '1px solid var(--mantine-color-gray-3)' : 'none',
           backgroundColor: 'transparent',
-          minHeight: '100vh',
+          minHeight: isMobile ? 'calc(100vh - 64px)' : '100vh',
           overflow: 'auto'
         }}>
           <ScrollArea style={{ height: '100%' }}>
@@ -64,71 +169,45 @@ const DashboardLayout = () => {
               activeSection={activeSection}
               overallProgress={overallProgress}
               currentProgress={currentProgress}
+              isMobile={isMobile}
+              isTablet={isTablet}
             />
           </ScrollArea>
         </div>
 
-        {/* Правая панель AI и дедлайнов - Desktop */}
-        <div className="right-panel right-panel-container desktop-panel" style={{ 
-          flex: '0 0 30%', 
-          maxWidth: '360px', 
-          backgroundColor: 'var(--app-color-surface)', 
-          minHeight: '100vh', 
-          overflow: 'auto', 
-          border: '1px solid var(--mantine-color-gray-3)',
-          boxShadow: 'var(--app-shadow-md)',
-          position: 'relative',
-          zIndex: 1000,
-          display: 'block'
-        }}>
-          <RightPanel 
-            activeSection={activeSection}
-            currentProgress={currentProgress}
-          />
-        </div>
-        
-        {/* Mobile right panel that appears when toggled */}
-  {/* Мобильная правая панель отключена */}
-  {false && showMobileRightPanel && (
-          <div style={{
-            position: 'fixed',
-            top: '0',
-            right: '0',
-            width: '300px',
-            height: '100vh',
-            backgroundColor: 'var(--app-color-surface)',
-            zIndex: 2000,
-            boxShadow: 'var(--app-shadow-lg)',
+        {/* Правая панель AI и дедлайнов - скрыта на мобильных и планшетах */}
+        {isDesktop && (
+          <div className="right-panel right-panel-container desktop-panel" style={{ 
+            flex: '0 0 30%', 
+            maxWidth: '360px', 
+            backgroundColor: 'var(--app-color-surface)', 
+            minHeight: '100vh', 
+            overflow: 'auto', 
             border: '1px solid var(--mantine-color-gray-3)',
-            overflow: 'auto'
+            boxShadow: 'var(--app-shadow-md)',
+            position: 'relative',
+            zIndex: 1000,
+            display: 'block'
           }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              padding: '10px'
-            }}>
-              <div 
-                style={{
-                  cursor: 'pointer',
-                  padding: '5px 10px',
-                  backgroundColor: 'red',
-                  color: 'white',
-                  borderRadius: '5px'
-                }}
-                onClick={() => setShowMobileRightPanel(false)}
-              >
-                Закрыть
-              </div>
-            </div>
             <RightPanel 
               activeSection={activeSection}
               currentProgress={currentProgress}
+              isMobile={false}
+              activeTab="ai"
             />
           </div>
         )}
-        
-  {/* Floating mobile button removed per request */}
       </div>
+
+      {/* Floating Action Button для мобильных */}
+      {isMobile && (
+        <MobileFAB
+          onNotificationsToggle={handleNotificationsToggle}
+          onAiToggle={handleAiToggle}
+          onSettingsToggle={handleSettingsToggle}
+          unreadNotifications={5} // Здесь должно быть реальное количество
+        />
+      )}
     </Box>
   );
 };

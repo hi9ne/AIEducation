@@ -50,6 +50,7 @@
   background: linear-gradient(135deg, var(--app-color-bg) 0%, var(--app-color-surface) 100%);
   box-shadow: var(--app-shadow-md);
   padding: var(--app-spacing-md);
+  padding-right: calc(var(--app-spacing-md) + 19px);
   scrollbar-width: thin;
   scrollbar-color: var(--mantine-color-blue-3) var(--mantine-color-blue-0);
 }
@@ -273,8 +274,8 @@
   border-radius: 16px;
   box-shadow: none;
   margin-left: auto;
-  margin-right: 40px; /* leave room for avatar on right */
-  max-width: calc(100% - 56px);
+  margin-right: 72px; /* leave room for 64px avatar + gap */
+  max-width: calc(100% - 88px);
   min-width: 60px;
   font-size: 14px;
   padding: 8px 12px;
@@ -287,8 +288,8 @@
   border-radius: 16px;
   box-shadow: none;
   margin-right: auto;
-  margin-left: 40px; /* leave room for avatar on left */
-  max-width: calc(100% - 56px);
+  margin-left: 72px; /* leave room for 64px avatar + gap */
+  max-width: calc(100% - 88px);
   min-width: 60px;
   font-size: 14px;
   padding: 8px 12px;
@@ -416,21 +417,22 @@
 @media (max-width: 768px) {
   .rightPanel {
   padding: var(--app-spacing-sm);
+  padding-right: calc(var(--app-spacing-sm) + 12px);
   width: 100%;
   }
   .userMessage,
   .aiMessage {
-    margin-left: 36px;
-    margin-right: 36px;
-    max-width: calc(100% - 72px);
+    margin-left: 72px;
+    margin-right: 72px;
+    max-width: calc(100% - 144px);
   }
   
   .userMessage {
-    margin-left: 1rem;
+    margin-left: 72px;
   }
   
   .aiMessage {
-    margin-right: 1rem;
+    margin-right: 72px;
   }
   
   .quickActionChip {

@@ -15,62 +15,70 @@ const SettingsSection = React.lazy(() => import('./sections/SettingsSection.jsx'
 const HelpSection = React.lazy(() => import('./sections/HelpSection.jsx'));
 const NotificationsSection = React.lazy(() => import('./sections/NotificationsSection.jsx'));
 
-const CentralContent = ({ activeSection, overallProgress, currentProgress }) => {
+const CentralContent = ({ activeSection, overallProgress, currentProgress, isMobile = false, isTablet = false }) => {
   const getSectionComponent = () => {
     const progress = { overallProgress, currentProgress };
+    const deviceProps = { isMobile, isTablet };
     
     switch (activeSection) {
       case 'main':
-        return <MainPage />;
+        return <MainPage {...deviceProps} />;
+      case 'education':
       case 'ielts':
-        return <IELTSSection progress={progress} />;
+        return <IELTSSection progress={progress} {...deviceProps} />;
+      case 'examprep':
       case 'tolc':
-        return <TOLCSection progress={progress} />;
+        return <TOLCSection progress={progress} {...deviceProps} />;
       case 'universities':
-        return <UniversitiesSection progress={progress} />;
+        return <UniversitiesSection progress={progress} {...deviceProps} />;
       case 'universitaly':
-        return <UniversitalySection progress={progress} />;
+        return <UniversitalySection progress={progress} {...deviceProps} />;
+      case 'documents':
       case 'codice':
-        return <CodiceSection progress={progress} />;
+        return <CodiceSection progress={progress} {...deviceProps} />;
+      case 'reports':
       case 'dov':
-        return <DOVSection progress={progress} />;
+        return <DOVSection progress={progress} {...deviceProps} />;
       case 'visa':
-        return <VisaSection progress={progress} />;
+        return <VisaSection progress={progress} {...deviceProps} />;
+      case 'payments':
+        return <div>Раздел платежей (в разработке)</div>;
       case 'aimentor':
-        return <AIMentorSection />;
+        return <AIMentorSection {...deviceProps} />;
       case 'settings':
-        return <SettingsSection progress={progress} />;
+        return <SettingsSection progress={progress} {...deviceProps} />;
       case 'help':
-        return <HelpSection />;
+        return <HelpSection {...deviceProps} />;
       case 'notifications':
-        return <NotificationsSection />;
+        return <NotificationsSection {...deviceProps} />;
       default:
-        return <MainPage />;
+        return <MainPage {...deviceProps} />;
     }
   };
 
   return (
-    <Box style={{ 
-      height: '100%', 
-      background: 'transparent',
-      overflowY: 'auto',
-      overflowX: 'hidden',
-      padding: 'var(--app-spacing-md)'
-    }}>
+    <Box 
+      style={{ 
+        height: '100%', 
+        background: 'transparent',
+        padding: isMobile ? '8px' : isTablet ? '16px' : 'var(--app-spacing-md)'
+      }}
+      className={`central-content-container ${isMobile ? 'mobile-content' : isTablet ? 'tablet-content' : 'desktop-content'} hide-scrollbar`}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSection}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: isMobile ? 10 : 20 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
+          exit={{ opacity: 0, y: isMobile ? -10 : -20 }}
           transition={{ 
-            duration: 0.3,
+            duration: isMobile ? 0.2 : 0.3,
             ease: "easeInOut"
           }}
           style={{ height: '100%' }}
         >
           <React.Suspense fallback={<div />}> 
-            <PageTransition direction="right">
+            <PageTransition direction="right" isMobile={isMobile} isTablet={isTablet}>
               {getSectionComponent()}
             </PageTransition>
           </React.Suspense>
