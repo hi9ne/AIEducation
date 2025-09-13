@@ -24,7 +24,17 @@ import {
   IconSettings,
   IconBell,
   IconHelp,
-  IconX
+  IconX,
+  IconStar,
+  IconMapPin,
+  IconCalendar,
+  IconUser,
+  IconMail,
+  IconPhone,
+  IconWorldWww,
+  IconTrophy,
+  IconCertificate,
+  IconTarget
 } from '@tabler/icons-react';
 import { useDashboardStore } from '../../../store/dashboardStore';
 import { API_BASE_URL } from '../../../shared/services/api.js';
@@ -137,6 +147,48 @@ const LeftNavigation = ({ activeSection, onSectionChange, user, isMobile = false
   };
 
   return (
+    <>
+      {/* CSS animations */}
+      <style>{`
+        @keyframes cardFloat {
+          0%, 100% {
+            transform: perspective(1000px) rotateX(5deg) translateY(0px);
+          }
+          50% {
+            transform: perspective(1000px) rotateX(5deg) translateY(-8px);
+          }
+        }
+        
+        @keyframes shimmer {
+          0% {
+            background-position: -200% 0;
+          }
+          100% {
+            background-position: 200% 0;
+          }
+        }
+        
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.8;
+          }
+        }
+        
+        @keyframes slideInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+      
     <Box style={{ height: '100%', backgroundColor: 'var(--app-color-surface)' }}>
       {/* Мобильный заголовок с кнопкой закрытия */}
       {isMobile && isDrawer && (
@@ -215,7 +267,7 @@ const LeftNavigation = ({ activeSection, onSectionChange, user, isMobile = false
         </Paper>
 
         {/* Navigation Items */}
-        <Stack gap="xs">
+        <Stack gap="md">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
@@ -243,30 +295,39 @@ const LeftNavigation = ({ activeSection, onSectionChange, user, isMobile = false
                   }
                 }}
                 justify="flex-start"
-                size={isMobile ? "sm" : "md"}
+                size={isMobile ? "md" : "lg"}
                 radius="md"
                 aria-current={isActive ? 'page' : undefined}
                 title={item.description}
                 style={{
-                  minHeight: isMobile ? '48px' : '44px',
-                  padding: isMobile ? '8px 12px' : undefined
+                  minHeight: isMobile ? '64px' : '68px',
+                  padding: isMobile ? '12px 16px' : '16px 18px',
+                  height: 'auto'
                 }}
                 className={isMobile ? "touch-nav-item" : ""}
                 styles={{
                   root: {
                     display: 'flex',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    height: 'auto'
                   },
                   label: {
                     color: isDark && !isActive ? '#ffffff' : undefined,
                     fontSize: isMobile ? '14px' : undefined,
-                    fontWeight: isActive ? 600 : 500
+                    fontWeight: isActive ? 600 : 500,
+                    whiteSpace: 'normal',
+                    textAlign: 'left',
+                    overflow: 'visible'
+                  },
+                  inner: {
+                    justifyContent: 'flex-start',
+                    height: 'auto'
                   }
                 }}
                 leftSection={
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Icon 
-                      size={isMobile ? 18 : 20} 
+                      size={isMobile ? 20 : 22} 
                       color={isActive ? 'white' : getColorValue(item.color)} 
                     />
                   </div>
@@ -312,7 +373,7 @@ const LeftNavigation = ({ activeSection, onSectionChange, user, isMobile = false
           })}
         </Stack>
 
-        <Divider style={{ margin: '16px 0' }} />
+        <Divider style={{ margin: '20px 0' }} />
 
         {/* Settings */}
         <Button
@@ -320,15 +381,15 @@ const LeftNavigation = ({ activeSection, onSectionChange, user, isMobile = false
           color={activeSection === 'settings' ? 'gray' : 'gray'}
           onClick={() => onSectionChange('settings')}
           justify="flex-start"
-          leftSection={<IconSettings size={20} />}
-          size="md"
+          leftSection={<IconSettings size={22} />}
+          size="lg"
           radius="md"
           aria-current={activeSection === 'settings' ? 'page' : undefined}
           style={{
             alignItems: 'flex-start',
             height: 'auto',
-            minHeight: 52,
-            padding: '12px',
+            minHeight: 64,
+            padding: '16px 18px',
             borderRadius: 'var(--app-radius-md)',
             transition: 'background-color 0.2s ease'
           }}
@@ -344,19 +405,19 @@ const LeftNavigation = ({ activeSection, onSectionChange, user, isMobile = false
         </Button>
 
         {/* Help & Support */}
-        <Stack gap="xs" style={{ marginTop: '16px' }}>
+        <Stack gap="md" style={{ marginTop: '20px' }}>
           <Button
             variant="subtle"
             color="gray"
             justify="flex-start"
-            leftSection={<IconHelp size={20} />}
-            size="md"
+            leftSection={<IconHelp size={22} />}
+            size="lg"
             radius="md"
             style={{
               alignItems: 'flex-start',
               height: 'auto',
-              minHeight: 52,
-              padding: '12px',
+              minHeight: 64,
+              padding: '16px 18px',
               borderRadius: 'var(--app-radius-md)',
               transition: 'background-color 0.2s ease'
             }}
@@ -376,14 +437,14 @@ const LeftNavigation = ({ activeSection, onSectionChange, user, isMobile = false
             variant="subtle"
             color="gray"
             justify="flex-start"
-            leftSection={<IconBell size={20} />}
-            size="md"
+            leftSection={<IconBell size={22} />}
+            size="lg"
             radius="md"
             style={{
               alignItems: 'flex-start',
               height: 'auto',
-              minHeight: 52,
-              padding: '12px',
+              minHeight: 64,
+              padding: '16px 18px',
               borderRadius: 'var(--app-radius-md)',
               transition: 'background-color 0.2s ease'
             }}
@@ -407,108 +468,191 @@ const LeftNavigation = ({ activeSection, onSectionChange, user, isMobile = false
         onClose={() => setShowStudentCard(false)}
         withCloseButton={false}
         centered
-        size="lg"
-        overlayProps={{ backgroundOpacity: 0.45, blur: 3 }}
-        transitionProps={{ transition: 'slide-right', duration: 300, timingFunction: 'ease' }}
+        size="xl"
+        overlayProps={{ backgroundOpacity: 0.4, blur: 4 }}
+        transitionProps={{ transition: 'fade', duration: 300, timingFunction: 'ease-out' }}
+        styles={{
+          content: {
+            background: 'transparent',
+            boxShadow: 'none'
+          }
+        }}
       >
         <Box style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <Paper
             radius="lg"
             shadow="xl"
             style={{
-              width: 720,
-              maxWidth: '100%',
-              height: 320,
-              background: 'transparent',
+              width: 650,
+              maxWidth: '90vw',
+              height: 450,
+              background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
               border: 'none',
-              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+              boxShadow: '0 20px 40px rgba(76, 29, 149, 0.25), 0 8px 16px rgba(0, 0, 0, 0.15)',
               borderRadius: 16,
               position: 'relative',
               overflow: 'hidden'
             }}
           >
-            {/* 3D Card background with gradient */}
+            {/* Top curved design with logo */}
             <Box style={{ 
               position: 'absolute', 
-              inset: 0, 
-              pointerEvents: 'none', 
-              background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%)',
-              borderRadius: 16
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 120,
+              background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)',
+              clipPath: 'polygon(0 0, 100% 0, 100% 70%, 80% 100%, 0 85%)',
+              zIndex: 1
+            }}>
+              {/* Logo and company info */}
+              <Group gap={12} style={{ padding: '20px 32px' }}>
+                <Box style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  background: 'rgba(251, 191, 36, 0.9)',
+                  border: '2px solid white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <IconCertificate size={24} color="#1e1b4b" />
+                </Box>
+                <Box>
+                  <Text fw={700} c="white" size="lg">AIEducation International</Text>
+                  <Text c="rgba(255, 255, 255, 0.9)" size="sm">Student Identification Card</Text>
+                </Box>
+              </Group>
+            </Box>
+
+            {/* Curved decorative wave */}
+            <Box style={{
+              position: 'absolute',
+              top: 100,
+              left: 0,
+              right: 0,
+              height: 80,
+              background: 'linear-gradient(45deg, rgba(251, 191, 36, 0.9) 0%, rgba(245, 158, 11, 0.8) 100%)',
+              clipPath: 'polygon(0 50%, 100% 20%, 100% 100%, 0 100%)',
+              zIndex: 2
             }} />
 
-            <Group justify="space-between" align="flex-start" style={{ padding: '32px 32px 24px 32px', position: 'relative', zIndex: 1 }}>
-              <Box style={{ flex: 1, marginRight: 24 }}>
-                <Group gap={8} mb={16}>
-                  <Box style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 8,
-                    background: 'var(--app-color-surface)',
-                    border: '1px solid var(--app-color-border)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <Text fw={800} c="var(--mantine-color-blue-6)">U</Text>
-                  </Box>
-                  <Text fw={700} c="white">AIEdu Student Card</Text>
-                </Group>
-                
-                <Box style={{ marginBottom: 20 }}>
-                  <Text size="xl" fw={700} style={{ lineHeight: 1.1, marginBottom: 8 }} c="white">
-                    {user?.first_name || 'Jane'} {user?.last_name || 'Doe'}
-                  </Text>
-                  <Text size="md" c="white" style={{ opacity: 0.9 }}>
-                    {user?.profile?.interests?.[0] || 'Computer Science'}
+            {/* White content area */}
+            <Box style={{
+              position: 'absolute',
+              top: 140,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: '#f8fafc',
+              zIndex: 3
+            }} />
+
+            <Group justify="space-between" align="flex-start" style={{ 
+              position: 'relative',
+              zIndex: 4,
+              height: '100%',
+              padding: 0
+            }}>
+              {/* Left content area */}
+              <Box style={{ flex: 1, paddingTop: 170, paddingLeft: 32, paddingRight: 20, paddingBottom: 40 }}>
+                {/* Orange name strip */}
+                <Box style={{
+                  background: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)',
+                  borderRadius: '8px',
+                  padding: '12px 20px',
+                  marginBottom: 20,
+                  boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+                }}>
+                  <Text size="xl" fw={800} c="white" style={{ letterSpacing: '0.5px' }}>
+                    {user?.first_name || 'Имя'} {user?.last_name || 'Фамилия'}
                   </Text>
                 </Box>
                 
-                <Badge
-                  size="lg"
-                  color="blue"
-                  variant="light"
-                  style={{ 
-                    background: 'rgba(255, 255, 255, 0.2)', 
-                    color: 'white', 
-                    fontWeight: 700, 
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    backdropFilter: 'blur(10px)'
-                  }}
-                >
-                  STUDENT ID: {user?.student_id || '123456'}
-                </Badge>
+                {/* Student information */}
+                <Stack gap={8}>
+                  <Group justify="space-between">
+                    <Text size="sm" c="#374151" fw={600}>Student ID</Text>
+                    <Text size="sm" c="#1f2937" fw={700} style={{ fontFamily: 'monospace' }}>
+                      {user?.student_id || '1234-456-7890'}
+                    </Text>
+                  </Group>
+                  
+                  <Group justify="space-between">
+                    <Text size="sm" c="#374151" fw={600}>D.O.B</Text>
+                    <Text size="sm" c="#1f2937" fw={600}>
+                      {user?.profile?.date_of_birth ? 
+                        new Date(user.profile.date_of_birth).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        }) : 
+                        'January 15, 2000'
+                      }
+                    </Text>
+                  </Group>
+                  
+                  <Group justify="space-between">
+                    <Text size="sm" c="#374151" fw={600}>Faculty</Text>
+                    <Text size="sm" c="#1f2937" fw={600}>
+                      {user?.profile?.interests?.[0] || 'Computer Science'}
+                    </Text>
+                  </Group>
+                  
+                  <Group justify="space-between">
+                    <Text size="sm" c="#374151" fw={600}>Progress</Text>
+                    <Badge 
+                      color="violet" 
+                      variant="filled" 
+                      size="sm"
+                      style={{ background: 'linear-gradient(45deg, #7c3aed 0%, #5b21b6 100%)' }}
+                    >
+                      75% Complete
+                    </Badge>
+                  </Group>
+                </Stack>
               </Box>
               
-              <Box
-                style={{
-                  width: '220px',
-                  height: '260px',
+              {/* Right photo area */}
+              <Box style={{
+                width: 140,
+                height: '100%',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                paddingTop: 170,
+                paddingRight: 32,
+                paddingBottom: 40
+              }}>
+                {/* Student photo */}
+                <Box style={{
+                  width: 120,
+                  height: 140,
                   borderRadius: '12px',
-                  overflow: 'hidden',
-                  background: '#f0f0f0',
+                  background: avatarSrc 
+                    ? `url(${avatarSrc})` 
+                    : 'linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  border: '3px solid white',
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0
-                }}
-              >
-                <img
-                  src={avatarSrc}
-                  alt="student"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    borderRadius: '12px'
-                  }}
-                />
+                  justifyContent: 'center'
+                }}>
+                  {!avatarSrc && (
+                    <IconUser size={50} color="#7c3aed" />
+                  )}
+                </Box>
               </Box>
             </Group>
-
           </Paper>
         </Box>
       </Modal>
     </Box>
+    </>
   );
 };
 
