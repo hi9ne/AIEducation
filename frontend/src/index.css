@@ -6,6 +6,9 @@
 @import '@mantine/tiptap/styles.css';
 @import '@mantine/nprogress/styles.css';
 
+/* Import responsive utilities */
+@import './dashboard/components/Dashboard/ResponsiveStyles.css';
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

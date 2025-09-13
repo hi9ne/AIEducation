@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Box, ScrollArea, Text, Button, useMatches, Drawer } from '@mantine/core';
+import { Box, ScrollArea, Drawer } from '@mantine/core';
 import { useDisclosure, useViewportSize } from '@mantine/hooks';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchProfile } from '../../../store/authSlice';
 import LeftNavigation from './LeftNavigation';
 import CentralContent from './CentralContent';
-import RightPanel from './RightPanel';
 import MobileHeader from './MobileHeader';
-import MobileRightPanel from './MobileRightPanel';
 import MobileFAB from './MobileFAB';
 import { useDashboardStore } from '../../../store/dashboardStore';
 import './Dashboard.css';
@@ -15,8 +13,6 @@ import './Dashboard.css';
 const DashboardLayout = () => {
   const [activeSection, setActiveSection] = useState('main');
   const [mobileNavOpened, { toggle: toggleMobileNav, close: closeMobileNav }] = useDisclosure(false);
-  const [mobileRightPanelOpened, { toggle: toggleMobileRightPanel, close: closeMobileRightPanel }] = useDisclosure(false);
-  const [activeRightPanelTab, setActiveRightPanelTab] = useState('ai');
   const { currentProgress, overallProgress, initFromBackend } = useDashboardStore();
   const { width } = useViewportSize();
   const user = useSelector(state => state.auth.user);
@@ -31,25 +27,14 @@ const DashboardLayout = () => {
     dispatch(fetchProfile());
     // Инициализация стора реальными данными
     initFromBackend?.();
-  }, [dispatch]);
+  }, [dispatch, initFromBackend]);
 
-  // Закрываем мобильные панели при изменении размера экрана
+  // Закрываем мобильную панель при изменении размера экрана
   useEffect(() => {
     if (!isMobile) {
       closeMobileNav();
-      closeMobileRightPanel();
     }
-  }, [isMobile, closeMobileNav, closeMobileRightPanel]);
-
-  const handleNotificationsToggle = () => {
-    setActiveRightPanelTab('notifications');
-    toggleMobileRightPanel();
-  };
-
-  const handleAiToggle = () => {
-    setActiveRightPanelTab('ai');
-    toggleMobileRightPanel();
-  };
+  }, [isMobile, closeMobileNav]);
 
   const handleSettingsToggle = () => {
     setActiveSection('settings');
@@ -72,10 +57,7 @@ const DashboardLayout = () => {
         <MobileHeader
           user={user}
           onMenuToggle={toggleMobileNav}
-          onNotificationsToggle={handleNotificationsToggle}
-          onAiToggle={handleAiToggle}
           isMenuOpen={mobileNavOpened}
-          unreadNotifications={5} // Здесь должно быть реальное количество
         />
       )}
 
@@ -121,15 +103,6 @@ const DashboardLayout = () => {
         </Drawer>
       )}
 
-      {/* Мобильная правая панель */}
-      <MobileRightPanel
-        opened={mobileRightPanelOpened}
-        onClose={closeMobileRightPanel}
-        activeSection={activeSection}
-        currentProgress={currentProgress}
-        activeTab={activeRightPanelTab}
-      />
-
       <div style={{ 
         display: 'flex', 
         flexDirection: 'row', 
@@ -156,10 +129,9 @@ const DashboardLayout = () => {
           </div>
         )}
 
-        {/* Центральная зона контента */}
+        {/* Центральная зона контента - теперь занимает всю ширину */}
         <div className="central-content" style={{
           flex: '1 1 auto',
-          borderRight: !isMobile && !isTablet ? '1px solid var(--mantine-color-gray-3)' : 'none',
           backgroundColor: 'transparent',
           minHeight: isMobile ? 'calc(100vh - 64px)' : '100vh',
           overflow: 'auto'
@@ -174,38 +146,12 @@ const DashboardLayout = () => {
             />
           </ScrollArea>
         </div>
-
-        {/* Правая панель AI и дедлайнов - скрыта на мобильных и планшетах */}
-        {isDesktop && (
-          <div className="right-panel right-panel-container desktop-panel" style={{ 
-            flex: '0 0 30%', 
-            maxWidth: '360px', 
-            backgroundColor: 'var(--app-color-surface)', 
-            minHeight: '100vh', 
-            overflow: 'auto', 
-            border: '1px solid var(--mantine-color-gray-3)',
-            boxShadow: 'var(--app-shadow-md)',
-            position: 'relative',
-            zIndex: 1000,
-            display: 'block'
-          }}>
-            <RightPanel 
-              activeSection={activeSection}
-              currentProgress={currentProgress}
-              isMobile={false}
-              activeTab="ai"
-            />
-          </div>
-        )}
       </div>
 
       {/* Floating Action Button для мобильных */}
       {isMobile && (
         <MobileFAB
-          onNotificationsToggle={handleNotificationsToggle}
-          onAiToggle={handleAiToggle}
           onSettingsToggle={handleSettingsToggle}
-          unreadNotifications={5} // Здесь должно быть реальное количество
         />
       )}
     </Box>

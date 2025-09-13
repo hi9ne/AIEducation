@@ -2,6 +2,7 @@ import React from 'react';
 import { Box } from '@mantine/core';
 import { motion, AnimatePresence } from 'framer-motion';
 import PageTransition from '../../../shared/components/Animations/PageTransition.jsx';
+import TopActionButtons from './TopActionButtons.jsx';
 const MainPage = React.lazy(() => import('./sections/MainPage.jsx'));
 const IELTSSection = React.lazy(() => import('./sections/IELTSSection.jsx'));
 const TOLCSection = React.lazy(() => import('./sections/TOLCSection.jsx'));
@@ -61,29 +62,35 @@ const CentralContent = ({ activeSection, overallProgress, currentProgress, isMob
       style={{ 
         height: '100%', 
         background: 'transparent',
-        padding: isMobile ? '8px' : isTablet ? '16px' : 'var(--app-spacing-md)'
+        padding: 0
       }}
       className={`central-content-container ${isMobile ? 'mobile-content' : isTablet ? 'tablet-content' : 'desktop-content'} hide-scrollbar`}
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeSection}
-          initial={{ opacity: 0, y: isMobile ? 10 : 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: isMobile ? -10 : -20 }}
-          transition={{ 
-            duration: isMobile ? 0.2 : 0.3,
-            ease: "easeInOut"
-          }}
-          style={{ height: '100%' }}
-        >
-          <React.Suspense fallback={<div />}> 
-            <PageTransition direction="right" isMobile={isMobile} isTablet={isTablet}>
-              {getSectionComponent()}
-            </PageTransition>
-          </React.Suspense>
-        </motion.div>
-      </AnimatePresence>
+      {/* Кнопки уведомлений и AI рекомендаций в верхней части */}
+      <TopActionButtons isMobile={isMobile} isTablet={isTablet} />
+      
+      {/* Основной контент */}
+      <Box style={{ padding: isMobile ? '8px' : isTablet ? '16px' : 'var(--app-spacing-md)' }}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeSection}
+            initial={{ opacity: 0, y: isMobile ? 10 : 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: isMobile ? -10 : -20 }}
+            transition={{ 
+              duration: isMobile ? 0.2 : 0.3,
+              ease: "easeInOut"
+            }}
+            style={{ height: '100%' }}
+          >
+            <React.Suspense fallback={<div />}> 
+              <PageTransition direction="right" isMobile={isMobile} isTablet={isTablet}>
+                {getSectionComponent()}
+              </PageTransition>
+            </React.Suspense>
+          </motion.div>
+        </AnimatePresence>
+      </Box>
     </Box>
   );
 };
