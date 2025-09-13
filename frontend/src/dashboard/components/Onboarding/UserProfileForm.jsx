@@ -49,8 +49,6 @@ import {
   IconBriefcase,
   IconTarget,
   IconLanguage,
-  IconCurrencyDollar,
-  IconClock,
   IconCheck,
   IconArrowRight,
   IconArrowLeft,
@@ -117,7 +115,7 @@ const UserProfileForm = () => {
     work_experience: '',
     
     // Интересы и цели
-    interests: [],
+    interests: '',
     goals: [],
     
     // Языковые навыки
@@ -126,9 +124,6 @@ const UserProfileForm = () => {
 	// География обучения
 	preferred_countries: [],
     
-  // Предпочтения по обучению
-    budget_range: '',
-    study_duration: '',
     // Внутренние поля для сертификатов
     exams: {
       ielts: { status: 'no', date: '', score: '', target: '', file: null },
@@ -160,8 +155,6 @@ const UserProfileForm = () => {
     interests: useRef(null),
     goals: useRef(null),
     preferred_countries: useRef(null),
-    budget_range: useRef(null),
-    study_duration: useRef(null),
     exams: useRef(null),
   };
 
@@ -178,7 +171,6 @@ const UserProfileForm = () => {
 
   // Черновик анкеты (autosave)
   const draftKey = useMemo(() => (user?.id ? `onboarding_draft_${user.id}` : 'onboarding_draft_guest'), [user?.id]);
-  const [isDraftSaved, setIsDraftSaved] = useState(false);
 
   useEffect(() => {
     // Загрузка черновика, если есть
@@ -232,25 +224,6 @@ const UserProfileForm = () => {
     return () => window.removeEventListener('keydown', handler);
   }, [activeStep]);
 
-  const saveDraft = () => {
-    try {
-      localStorage.setItem(draftKey, JSON.stringify({ formData, activeStep, savedAt: new Date().toISOString() }));
-      setIsDraftSaved(true);
-      setTimeout(() => setIsDraftSaved(false), 1500);
-    } catch {
-      /* ignore manual draft save error */
-    }
-  };
-
-  const clearDraft = () => {
-    try {
-      localStorage.removeItem(draftKey);
-      setIsDraftSaved(false);
-    } catch {
-      /* ignore manual draft clear error */
-    }
-  };
-
   // Проверяем, заполнен ли профиль
   const isProfileComplete = () => {
     if (!user || !user.profile) return false;
@@ -262,9 +235,7 @@ const UserProfileForm = () => {
       profile.education_background &&
       profile.interests?.length > 0 &&
       profile.goals?.length > 0 &&
-      Object.keys(profile.language_levels || {}).length > 0 &&
-      profile.budget_range &&
-      profile.study_duration
+      Object.keys(profile.language_levels || {}).length > 0
     );
   };
 
@@ -286,8 +257,10 @@ const UserProfileForm = () => {
 
   useEffect(() => {
     if (user) {
+      console.log('UserProfileForm: User updated, onboarding_completed:', user.profile?.onboarding_completed);
       // Если анкета уже заполнена, сразу редиректим в кабинет
       if (user.profile?.onboarding_completed) {
+        console.log('UserProfileForm: Redirecting to dashboard due to completed onboarding');
         navigate('/app/dashboard', { replace: true });
         return;
       }
@@ -304,12 +277,10 @@ const UserProfileForm = () => {
         bio: user.profile?.bio || '',
         education_background: user.profile?.education_background || '',
         work_experience: user.profile?.work_experience || '',
-        interests: toArray(user.profile?.interests),
+        interests: Array.isArray(user.profile?.interests) ? user.profile.interests[0] || '' : user.profile?.interests || '',
         goals: toArray(user.profile?.goals),
         language_levels: toObject(user.profile?.language_levels),
         preferred_countries: toArray(user.profile?.preferred_countries),
-        budget_range: user.profile?.budget_range || '',
-        study_duration: user.profile?.study_duration || '',
         exams: {
           ...prev.exams,
           ielts: {
@@ -333,9 +304,8 @@ const UserProfileForm = () => {
     { title: 'Личные данные', icon: IconUser },
     { title: 'Образование', icon: IconBook },
     { title: 'Сертификаты', icon: IconCertificate },
-    { title: 'Направления', icon: IconTarget },
     { title: 'География', icon: IconMap },
-    { title: 'Предпочтения', icon: IconMapPin },
+    { title: 'Желаемая специальность', icon: IconTarget },
     { title: 'Завершение', icon: IconCheck },
   ];
 
@@ -394,25 +364,6 @@ const UserProfileForm = () => {
     'Великобритания','Ирландия','США','Канада','Турция','ОАЭ'
   ];
 
-
-  const budgetRanges = [
-    'До 5,000€ в год',
-    '5,000€ - 10,000€ в год',
-    '10,000€ - 20,000€ в год',
-    '20,000€ - 30,000€ в год',
-    '30,000€ - 50,000€ в год',
-    'Более 50,000€ в год'
-  ];
-
-  const studyDurations = [
-    '1 семестр',
-    '1 год',
-    '2 года',
-    '3 года',
-    '4 года',
-    '5+ лет'
-  ];
-
   // Валидация по шагу без побочных эффектов
   const getStepErrors = (step) => {
     const newErrors = {};
@@ -447,15 +398,12 @@ const UserProfileForm = () => {
         }
         break;
       case 3:
-        if ((formData.interests || []).length === 0) newErrors.interests = 'Выберите хотя бы одно направление';
-        if ((formData.goals || []).length === 0) newErrors.goals = 'Выберите хотя бы одну цель';
+        if (!formData.city || !String(formData.city).trim()) newErrors.city = 'Выберите город обучения';
+        if (!formData.university || !String(formData.university).trim()) newErrors.university = 'Выберите университет';
         break;
       case 4:
-        if ((formData.preferred_countries || []).length === 0) newErrors.preferred_countries = 'Укажите предпочитаемые страны обучения';
-        break;
-      case 5:
-        if (!formData.budget_range) newErrors.budget_range = 'Укажите бюджет';
-        if (!formData.study_duration) newErrors.study_duration = 'Укажите продолжительность обучения';
+        if (!formData.interests || !String(formData.interests).trim()) newErrors.interests = 'Выберите специальность';
+        if ((formData.goals || []).length === 0) newErrors.goals = 'Выберите хотя бы одну цель';
         break;
     }
     return newErrors;
@@ -552,8 +500,6 @@ const UserProfileForm = () => {
         goals: formData.goals,
         language_levels: formData.language_levels,
         preferred_countries: formData.preferred_countries,
-        budget_range: formData.budget_range,
-  study_duration: formData.study_duration,
   onboarding_completed: true,
   // Передаем результаты экзаменов, если есть
   exams: {
@@ -573,7 +519,11 @@ const UserProfileForm = () => {
   }
       };
 
-      await dispatch(updateProfileComplete(payload)).unwrap();
+      console.log('Sending payload with onboarding_completed:', payload.onboarding_completed);
+      const result = await dispatch(updateProfileComplete(payload)).unwrap();
+      console.log('Server response:', result);
+      console.log('Updated user from server:', result.user);
+      console.log('User onboarding_completed:', result.user?.profile?.onboarding_completed);
 
       // Upload attached exam certificates (IELTS/TOLC) to Documents so they show up in sections
       const uploads = [];
@@ -617,8 +567,20 @@ const UserProfileForm = () => {
 	  try { localStorage.removeItem(draftKey); } catch {
 		/* ignore draft remove error */
 	  }
-  navigate('/app/dashboard', { replace: true });
-  dispatch(fetchProfile());
+  
+      // Устанавливаем флаг завершения анкеты в localStorage
+      localStorage.setItem('onboarding_force_completed', 'true');
+      
+      // Обновляем профиль и принудительно редиректим
+      console.log('Updating profile before redirect...');
+      await dispatch(fetchProfile());
+      console.log('Profile updated, redirecting to dashboard...');
+      
+      // Принудительный редирект - форма была успешно отправлена
+      setTimeout(() => {
+        console.log('Executing navigation to dashboard...');
+        navigate('/app/dashboard', { replace: true });
+      }, 500);
     } catch (error) {
       console.error('Error updating profile:', error);
       // Если сервер вернул ошибки по полям — отобразим их
@@ -835,7 +797,7 @@ const UserProfileForm = () => {
                           </>
                         ) : (
                           <>
-                            <IconClock size={12} />
+                            <IconAlertCircle size={12} />
                             В процессе
                           </>
                         )}
@@ -1065,15 +1027,33 @@ const UserProfileForm = () => {
           </Stack>
         );
 
-      case 3: // Направления
+      case 3: {
+        // Используем отдельный компонент GeographyStep
+        // Передаем значения и обработчик для обновления formData
+        const handleGeographyChange = ({ city, university }) => {
+          handleInputChange('city', city);
+          handleInputChange('university', university);
+        };
+        return (
+          <div className={styles.slideIn}>
+            <GeographyStep
+              value={{ city: formData.city, university: formData.university }}
+              onChange={handleGeographyChange}
+              error={errors.city || errors.university}
+            />
+          </div>
+        );
+      }
+
+      case 4: // Желаемая специальность
         return (
           <Stack spacing="md" className={styles.slideIn}>
-            <MultiSelect
-              label="Интересы"
-              placeholder="Выберите ваши интересы"
+            <Select
+              label="Желаемая специальность"
+              placeholder="Выберите специальность"
               data={interests}
-              value={Array.isArray(formData.interests) ? formData.interests : toArray(formData.interests)}
-              onChange={(value) => handleInputChange('interests', Array.isArray(value) ? value : toArray(value))}
+              value={formData.interests}
+              onChange={(value) => handleInputChange('interests', value)}
               error={errors.interests}
               searchable
               ref={refs.interests}
@@ -1092,33 +1072,7 @@ const UserProfileForm = () => {
           </Stack>
         );
 
-      case 4: {
-        // Используем отдельный компонент GeographyStep
-        // Передаем значения и обработчик для обновления formData
-        const handleGeographyChange = ({ city, university }) => {
-          handleInputChange('city', city);
-          handleInputChange('university', university);
-        };
-        return (
-          <div className={styles.slideIn}>
-            <GeographyStep
-              value={{ city: formData.city, university: formData.university }}
-              onChange={handleGeographyChange}
-              error={errors.city || errors.university}
-            />
-          </div>
-        );
-      }
-
-      case 5: // Предпочтения
-        return (
-          <Stack spacing="md" className={styles.slideIn}>
-            <Select label="Бюджет на обучение" placeholder="Выберите бюджет" data={budgetRanges} value={formData.budget_range} onChange={(value) => handleInputChange('budget_range', value)} error={errors.budget_range} icon={<IconCurrencyDollar size={16} />} ref={refs.budget_range} />
-            <Select label="Планируемая продолжительность обучения" placeholder="Выберите продолжительность" data={studyDurations} value={formData.study_duration} onChange={(value) => handleInputChange('study_duration', value)} error={errors.study_duration} icon={<IconClock size={16} />} ref={refs.study_duration} />
-          </Stack>
-        );
-
-      case 6: // Завершение
+      case 5: // Завершение
         return (
           <Stack spacing="md" className={styles.slideIn}>
             <Alert color="green" icon={<IconCheck size={16} />}>
@@ -1130,10 +1084,10 @@ const UserProfileForm = () => {
               <Stack spacing="xs">
                 <Text size="sm"><strong>Телефон:</strong> {`${formData.phone_code} ${formData.phone_local}`.trim() || 'Не указан'}</Text>
                 <Text size="sm"><strong>Страна/город:</strong> {formData.country || '—'}{formData.city ? `, ${formData.city}` : ''}</Text>
-                <Text size="sm"><strong>Интересы:</strong> {formData.interests.join(', ') || 'Не указаны'}</Text>
+                <Text size="sm"><strong>Университет:</strong> {formData.university || 'Не выбран'}</Text>
+                <Text size="sm"><strong>Желаемая специальность:</strong> {formData.interests || 'Не указана'}</Text>
                 <Text size="sm"><strong>Цели:</strong> {formData.goals.join(', ') || 'Не указаны'}</Text>
                 <Text size="sm"><strong>Языки:</strong> {Object.keys(formData.language_levels).length} языков</Text>
-                <Text size="sm"><strong>Страны обучения:</strong> {(formData.preferred_countries || []).join(', ') || 'Не выбраны'}</Text>
                 
               </Stack>
             </Card>
@@ -1157,7 +1111,7 @@ const UserProfileForm = () => {
       case 3:
         return ['Выберите направления и цели обучения, чтобы мы могли подобрать подходящие программы.'];
       case 4:
-        return ['Выберите страны, где хотите учиться. Это поможет подобрать университеты и дедлайны.'];
+        return ['Выберите город и университеты, где хотите учиться.'];
       case 5:
         return ['Укажите бюджет и продолжительность обучения для более точного подбора программ.'];
       case 6:
@@ -1366,11 +1320,9 @@ const UserProfileForm = () => {
                               country: 'Страна',
                               city: 'Город',
                               education_level: 'Образование',
-                              interests: 'Интересы',
+                              interests: 'Желаемая специальность',
                               goals: 'Цели',
-                              preferred_countries: 'Страны обучения',
-                              budget_range: 'Бюджет',
-                              study_duration: 'Продолжительность',
+                              university: 'Университет',
                               exams: 'Сертификаты',
                               avatar: 'Аватар',
                               ielts_file: 'IELTS файл',
@@ -1385,13 +1337,9 @@ const UserProfileForm = () => {
                 </Alert>
               )}
 
-              <Group position="apart" mt="sm">
-                <Group>
-                  <Button variant="subtle" onClick={saveDraft}>Сохранить черновик</Button>
-                  <Button variant="outline" color="red" onClick={clearDraft}>Сбросить черновик</Button>
-                </Group>
-                <Text size="sm" c={isDraftSaved ? 'teal' : 'dimmed'}>
-                  {isDraftSaved ? 'Черновик сохранен' : 'Черновик сохраняется автоматически'}
+              <Group justify="center" mt="sm">
+                <Text size="sm" c="dimmed" ta="center">
+                  Черновик сохраняется автоматически
                 </Text>
               </Group>
             </Paper>

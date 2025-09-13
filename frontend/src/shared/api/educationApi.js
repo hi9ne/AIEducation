@@ -106,7 +106,9 @@ class EducationAPI {
 
   // Университеты
   async getUniversities(params = {}) {
-    const queryString = new URLSearchParams(params).toString();
+    // Устанавливаем большой лимит, чтобы получить все университеты
+    const paramsWithLimit = { ...params, limit: 1000 };
+    const queryString = new URLSearchParams(paramsWithLimit).toString();
     return this.request(`/universities/${queryString ? '?' + queryString : ''}`);
   }
 

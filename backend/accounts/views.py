@@ -362,7 +362,7 @@ def update_user_profile(request):
         profile_fields = [
             'bio', 'interests', 'goals', 'language_levels', 
             'education_background', 'work_experience', 
-            'preferred_countries', 'budget_range', 'study_duration',
+            'preferred_countries', 'onboarding_completed',
             'ielts_exam_date',
             # прямые поля для результатов экзаменов
             'ielts_current_score', 'ielts_target_score',
@@ -458,12 +458,18 @@ def update_user_profile(request):
             if profile_serializer.is_valid():
                 # Если данные профиля включают ключевые поля, можно отметить онбординг завершенным
                 updated_profile = profile_serializer.save()
+                
+                # Если onboarding_completed явно передано как True, устанавливаем его
+                if profile_data.get('onboarding_completed') is True:
+                    updated_profile.onboarding_completed = True
+                    updated_profile.save(update_fields=['onboarding_completed'])
+                
+                # Альтернативно: автоматическая проверка завершенности (без budget_range и study_duration)
                 try:
                     required_ok = all([
                         bool(updated_profile.education_background),
-                        bool(updated_profile.budget_range),
-                        bool(updated_profile.study_duration),
-                        isinstance(updated_profile.interests, list) and len(updated_profile.interests) > 0,
+                        (isinstance(updated_profile.interests, list) and len(updated_profile.interests) > 0) or 
+                        (isinstance(updated_profile.interests, str) and len(updated_profile.interests.strip()) > 0),
                         isinstance(updated_profile.goals, list) and len(updated_profile.goals) > 0,
                         isinstance(updated_profile.language_levels, dict) and len(updated_profile.language_levels) > 0,
                         bool(user.phone),

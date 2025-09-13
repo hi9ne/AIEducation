@@ -9,14 +9,18 @@ const PrivateLayout = () => {
 
   // Use backend flag
   const onboardingCompleted = user?.profile?.onboarding_completed === true;
+  const forceCompleted = localStorage.getItem('onboarding_force_completed');
   const isProfileKnown = useMemo(() => (user ? true : false), [user]);
 
   // Если профиль завершен и пользователь попал на онбординг — перенаправим в кабинет
   useEffect(() => {
-    if (onboardingCompleted && location.pathname === '/app/onboarding') {
+    if ((onboardingCompleted || forceCompleted) && location.pathname === '/app/onboarding') {
+      if (forceCompleted) {
+        localStorage.removeItem('onboarding_force_completed');
+      }
       navigate('/app/dashboard', { replace: true });
     }
-  }, [onboardingCompleted, location.pathname, navigate]);
+  }, [onboardingCompleted, forceCompleted, location.pathname, navigate]);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -27,8 +31,8 @@ const PrivateLayout = () => {
     return <main><Outlet /></main>;
   }
 
-  // Если профиль незаполнен — направляем на онбординг
-  if (!onboardingCompleted && location.pathname !== '/app/onboarding') {
+  // Если профиль незаполнен — направляем на онбординг (но не если есть флаг принудительного завершения)
+  if (!onboardingCompleted && !forceCompleted && location.pathname !== '/app/onboarding') {
     return <Navigate to="/app/onboarding" replace />;
   }
 
